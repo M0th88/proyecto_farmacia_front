@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../../src/generated/asistencial"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TipoUbicacion {
+  BODEGA
+  VITRINA
+}
+
+enum TipoMovimientoStock {
+  ENTRADA
+  SALIDA
+  AJUSTE
+  TRASPASO
+}
+
+model Rol {
+  id          Int      @id @default(autoincrement())
+  nombre      String   @unique
+  descripcion String?
+
+  usuarios Usuario[]
+
+  creadoEn DateTime @default(now())
+}
+
+model Usuario {
+  id       Int    @id @default(autoincrement())
+  rut      String @unique
+  nombre   String
+  apellido String?
+  telefono String?
+  email    String @unique
+  password String
+
+  activo Boolean @default(true)
+
+  rolId Int
+  rol   Rol @relation(fields: [rolId], references: [id])
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  @@index([rolId])
+}
+
+model CategoriaMedicamento {
+  id          Int     @id @default(autoincrement())
+  nombre      String  @unique
+  descripcion String?
+
+  medicamentos Medicamento[]
+}
+
+model Medicamento {
+  id Int @id @default(autoincrement())
+
+  codigoBarra String? @unique
+  nombre      String
+
+  principioActivo   String?
+  concentracion     String?
+  formaFarmaceutica String?
+
+  activo Boolean @default(true)
+
+  categoriaId Int?
+
+  categoria CategoriaMedicamento? @relation(fields: [categoriaId], references: [id])
+
+  lotes Lote[]
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  @@index([nombre])
+  @@index([categoriaId])
+}
+
+model Lote {
+  id Int @id @default(autoincrement())
+
+  numeroLote String
+
+  medicamentoId Int
+
+  fechaFabricacion DateTime?
+  fechaVencimiento DateTime
+
+  medicamento Medicamento @relation(fields: [medicamentoId], references: [id])
+
+  stocks      Stock[]
+  movimientos MovimientoStock[]
+
+  creadoEn DateTime @default(now())
+
+  @@unique([medicamentoId, numeroLote])
+  @@index([fechaVencimiento])
+  @@index([medicamentoId])
+}
+
+model UbicacionInventario {
+  id Int @id @default(autoincrement())
+
+  nombre String
+
+  tipo TipoUbicacion
+
+  stocks Stock[]
+
+  creadoEn DateTime @default(now())
+}
+
+model Stock {
+  id Int @id @default(autoincrement())
+
+  cantidad Int @default(0)
+
+  loteId      Int
+  ubicacionId Int
+
+  lote Lote @relation(fields: [loteId], references: [id])
+
+  ubicacion UbicacionInventario @relation(fields: [ubicacionId], references: [id])
+
+  @@unique([loteId, ubicacionId])
+  @@index([loteId])
+  @@index([ubicacionId])
+}
+
+model MovimientoStock {
+  id Int @id @default(autoincrement())
+
+  tipo     TipoMovimientoStock
+  cantidad Int
+  motivo   String?
+
+  loteId Int
+
+  lote Lote @relation(fields: [loteId], references: [id])
+
+  creadoEn DateTime @default(now())
+
+  @@index([loteId])
+  @@index([creadoEn])
+}

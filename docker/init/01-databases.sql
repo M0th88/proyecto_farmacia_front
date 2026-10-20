@@ -1,0 +1,2 @@
+CREATE DATABASE farmacia_privada;
+CREATE DATABASE farmacia_asistencial;

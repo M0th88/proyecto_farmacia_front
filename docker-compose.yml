@@ -1,0 +1,27 @@
+name: sistema-farmacia-backend
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: farmacia_postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: farmacia
+      POSTGRES_PASSWORD: farmacia123
+      POSTGRES_DB: postgres
+
+    ports:
+      - "127.0.0.1:5432:5432"
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U farmacia -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - farmacia_postgres_data:/var/lib/postgresql/data
+      - ./docker/init:/docker-entrypoint-initdb.d:ro
+
+volumes:
+  farmacia_postgres_data:
