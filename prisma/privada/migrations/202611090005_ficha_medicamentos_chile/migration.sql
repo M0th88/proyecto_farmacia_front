@@ -1,0 +1,22 @@
+CREATE TABLE "FichaMedicamentoChile" (
+  "id" SERIAL PRIMARY KEY,
+  "medicamentoId" INTEGER NOT NULL UNIQUE REFERENCES "Medicamento"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+  "grupoGeneral" TEXT,
+  "subgrupoFarmacologico" TEXT,
+  "mecanismoResumido" TEXT,
+  "atcArchivo" TEXT,
+  "productoIspEjemplo" TEXT,
+  "nombreFantasia" TEXT,
+  "laboratorioTitular" TEXT,
+  "registroIsp" TEXT,
+  "estadoIsp" TEXT,
+  "fuenteIsp" TEXT,
+  "observaciones" TEXT,
+  "condicionVentaIsp" TEXT,
+  "concentracionEjemplo" TEXT,
+  "formaFarmaceuticaEjemplo" TEXT,
+  "viaAdministracion" TEXT,
+  "tipoAlmacenamiento" TEXT,
+  "condicionAlmacenamiento" TEXT,
+  "actualizadoEn" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

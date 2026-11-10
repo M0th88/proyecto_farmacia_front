@@ -27,7 +27,8 @@
     "prisma:studio:asistencial": "prisma studio --config prisma.asistencial.config.ts",
     "admin:create:privada": "node scripts/create-private-admin.mjs",
     "demo:precios:privada": "node scripts/seed-private-demo-prices.mjs",
-    "demo:pos:privada": "node scripts/seed-private-demo-pos.mjs"
+    "demo:pos:privada": "node scripts/seed-private-demo-pos.mjs",
+    "import:medicamentos:chile": "node scripts/import-private-medicines-chile.mjs"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",

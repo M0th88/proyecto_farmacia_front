@@ -20,6 +20,12 @@ Para reproducir los datos de demostración de farmacia privada en una instalaci�
 
 La migración agrega los 40 nombres de medicamentos. El primer comando asigna precios **ficticios** a los que aún no tengan precio. El segundo crea tres productos `DEMO-POS-001` a `DEMO-POS-003` con precio, lote vigente y stock para ensayar ventas. Los scripts no duplican ni reemplazan datos existentes. Las ventas y otros cambios hechos directamente en PostgreSQL local no se suben a GitHub.
 
+La planilla integrada de Chile está reproducida en `data/medicamentos-chile.json`. Después de aplicar las migraciones, importa sus 45 fichas con:
+
+    npm run import:medicamentos:chile
+
+La importación crea los 5 medicamentos faltantes y actualiza las fichas de los 40 existentes. El ejemplo de registro ISP, concentración y condición de venta queda en `FichaMedicamentoChile`, separado de la ficha genérica. No cambia el código de barras, precio, stock ni la condición de venta usada por el POS. Los campos pendientes de verificación quedan vacíos.
+
 ## Bases de datos y Prisma
 
 Las dos bases usan configuraciones, esquemas, migraciones y clientes independientes:

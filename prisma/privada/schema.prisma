@@ -81,6 +81,7 @@ model Medicamento {
   categoriaId Int?
 
   categoria CategoriaMedicamento? @relation(fields: [categoriaId], references: [id])
+  fichaChile FichaMedicamentoChile?
 
   lotes Lote[]
   detallesVenta DetalleVenta[]
@@ -90,6 +91,30 @@ model Medicamento {
 
   @@index([nombre])
   @@index([categoriaId])
+}
+
+model FichaMedicamentoChile {
+  id Int @id @default(autoincrement())
+  medicamentoId Int @unique
+  medicamento Medicamento @relation(fields: [medicamentoId], references: [id])
+  grupoGeneral String?
+  subgrupoFarmacologico String?
+  mecanismoResumido String?
+  atcArchivo String?
+  productoIspEjemplo String?
+  nombreFantasia String?
+  laboratorioTitular String?
+  registroIsp String?
+  estadoIsp String?
+  fuenteIsp String?
+  observaciones String?
+  condicionVentaIsp String?
+  concentracionEjemplo String?
+  formaFarmaceuticaEjemplo String?
+  viaAdministracion String?
+  tipoAlmacenamiento String?
+  condicionAlmacenamiento String?
+  actualizadoEn DateTime @updatedAt
 }
 
 model Lote {
