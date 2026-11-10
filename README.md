@@ -13,6 +13,13 @@ Desde la raíz del proyecto, en PowerShell:
 
 Abre http://localhost:3000. La comprobación de ambas bases está disponible en http://localhost:3000/api/health.
 
+Para reproducir los datos de demostración de farmacia privada en una instalación nueva, después de `db:deploy` ejecuta:
+
+    npm run demo:precios:privada
+    npm run demo:pos:privada
+
+La migración agrega los 40 nombres de medicamentos. El primer comando asigna precios **ficticios** a los que aún no tengan precio. El segundo crea tres productos `DEMO-POS-001` a `DEMO-POS-003` con precio, lote vigente y stock para ensayar ventas. Los scripts no duplican ni reemplazan datos existentes. Las ventas y otros cambios hechos directamente en PostgreSQL local no se suben a GitHub.
+
 ## Bases de datos y Prisma
 
 Las dos bases usan configuraciones, esquemas, migraciones y clientes independientes:

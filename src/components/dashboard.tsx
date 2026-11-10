@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 type Health = { status: string; basesDatos: { privada: { estado: string; medicamentos: number }; asistencial: { estado: string; medicamentos: number } } };
@@ -47,7 +48,7 @@ export function Dashboard({ selected }: { selected?: ModuleKey }) {
         <Link className={!selected ? "nav-item active" : "nav-item"} href="/"><span>⌂</span>Vista general</Link>
         {(Object.keys(modules) as ModuleKey[]).map(key => <Link key={key} className={selected === key ? "nav-item active" : "nav-item"} href={modules[key].href}><span className={modules[key].color}>{modules[key].mark}</span>{modules[key].name}</Link>)}
       </nav>
-      <div className="side-bottom"><div className="help"><span>✦</span><b>Todo en orden</b><p>Tu espacio está listo para comenzar.</p></div><div className="user"><span className="avatar">SF</span><span><b>Equipo farmacia</b><small>Administrador</small></span></div></div>
+      <div className="side-bottom"><div className="inacap-badge"><Image src="/inacap-logo.png" alt="INACAP 60 años" width={150} height={34} /></div><div className="help"><span>✦</span><b>Todo en orden</b><p>Tu espacio está listo para comenzar.</p></div><div className="user"><span className="avatar">SF</span><span><b>Equipo farmacia</b><small>Administrador</small></span></div></div>
     </aside>
     <main className="main">
       <header className="topbar"><div className="crumb">Inicio <span>/</span> <b>{title}</b></div><div className={"status " + (checking ? "wait" : health ? "good" : "bad")}><i />{checking ? "Conectando" : health ? "Sistema conectado" : "API sin conexión"}</div></header>

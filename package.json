@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "predev": "npm run prisma:generate",
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "prebuild": "npm run prisma:generate",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
@@ -24,7 +24,10 @@
     "prisma:deploy:privada": "prisma migrate deploy --config prisma.privada.config.ts",
     "prisma:deploy:asistencial": "prisma migrate deploy --config prisma.asistencial.config.ts",
     "prisma:studio:privada": "prisma studio --config prisma.privada.config.ts",
-    "prisma:studio:asistencial": "prisma studio --config prisma.asistencial.config.ts"
+    "prisma:studio:asistencial": "prisma studio --config prisma.asistencial.config.ts",
+    "admin:create:privada": "node scripts/create-private-admin.mjs",
+    "demo:precios:privada": "node scripts/seed-private-demo-prices.mjs",
+    "demo:pos:privada": "node scripts/seed-private-demo-pos.mjs"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",
@@ -32,7 +35,7 @@
     "bcrypt": "^6.0.0",
     "dotenv": "^17.4.2",
     "jsonwebtoken": "^9.0.3",
-    "next": "16.4.0",
+    "next": "16.4.6",
     "pg": "^8.23.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
@@ -47,7 +50,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.4.0",
+    "eslint-config-next": "16.4.6",
     "prisma": "^7.10.0",
     "tailwindcss": "^4",
     "typescript": "^5"
