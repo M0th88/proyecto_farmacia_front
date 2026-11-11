@@ -1,5 +1,5 @@
-import { prismaAsistencial } from "@/config/prismaAsistencial";
-import { prismaPrivada } from "@/config/prismaPrivada";
+import { prismaAsistencial } from "@/lib/db/prisma-asistencial";
+import { prismaPrivada } from "@/lib/db/prisma-privada";
 
 export async function GET() {
   try {

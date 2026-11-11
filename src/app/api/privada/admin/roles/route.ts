@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { prismaPrivada } from "@/config/prismaPrivada";
-import { ALL_PRIVATE_PERMISSIONS } from "@/lib/private-permissions";
-import { noAdmin, privateAdmin } from "@/lib/private-admin";
+import { prismaPrivada } from "@/lib/db/prisma-privada";
+import { ALL_PRIVATE_PERMISSIONS } from "@/lib/private/permissions";
+import { noAdmin, privateAdmin } from "@/lib/private/admin";
 
 const permiso = z.enum(ALL_PRIVATE_PERMISSIONS);
 const entrada = z.object({

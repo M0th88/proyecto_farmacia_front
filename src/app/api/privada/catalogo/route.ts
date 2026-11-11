@@ -1,6 +1,8 @@
-import { prismaPrivada } from "@/config/prismaPrivada";
+import { prismaPrivada } from "@/lib/db/prisma-privada";
+import { currentPrivateUser } from "@/lib/private/auth";
 
 export async function GET() {
+  if (!await currentPrivateUser()) return Response.json({ error: "Debes iniciar sesión." }, { status: 401 });
   try {
     const medicamentos = await prismaPrivada.medicamento.findMany({
       where: { activo: true },

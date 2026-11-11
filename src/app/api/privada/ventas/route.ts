@@ -1,6 +1,7 @@
-import { prismaPrivada } from "@/config/prismaPrivada";
+import { prismaPrivada } from "@/lib/db/prisma-privada";
 import { Prisma } from "@/generated/privada/client";
 import { z } from "zod";
+import { currentPrivateUser } from "@/lib/private/auth";
 
 const entrada = z.object({
   metodoPago: z.enum(["EFECTIVO", "DEBITO", "CREDITO", "TRANSFERENCIA"]),
@@ -9,6 +10,7 @@ const entrada = z.object({
 });
 
 export async function GET() {
+  if (!await currentPrivateUser()) return Response.json({ error: "Debes iniciar sesión." }, { status: 401 });
   try {
     const ventas = await prismaPrivada.venta.findMany({ take: 30, orderBy: { creadaEn: "desc" }, include: { detalles: { include: { medicamento: { select: { nombre: true } }, lote: { select: { numeroLote: true } } } } } });
     return Response.json(ventas.map(v => ({ id: v.id, creadaEn: v.creadaEn, metodoPago: v.metodoPago, total: Number(v.total), detalles: v.detalles.map(d => ({ nombre: d.medicamento.nombre, lote: d.lote.numeroLote, cantidad: d.cantidad, precioUnitario: Number(d.precioUnitario), subtotal: Number(d.subtotal) })) })), { headers: { "Cache-Control": "no-store" } });
@@ -19,6 +21,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!await currentPrivateUser()) return Response.json({ error: "Debes iniciar sesión." }, { status: 401 });
   const parsed = entrada.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: "Datos de venta inválidos." }, { status: 400 });
   const { items, metodoPago, recibido } = parsed.data;

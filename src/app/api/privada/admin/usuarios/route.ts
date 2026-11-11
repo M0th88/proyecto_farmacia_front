@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { z } from "zod";
-import { prismaPrivada } from "@/config/prismaPrivada";
-import { noAdmin, privateAdmin } from "@/lib/private-admin";
+import { prismaPrivada } from "@/lib/db/prisma-privada";
+import { noAdmin, privateAdmin } from "@/lib/private/admin";
 
 const entrada = z.object({ rut: z.string().trim().min(6).max(20), nombre: z.string().trim().min(2).max(80), apellido: z.string().trim().max(80).optional(), email: z.email().max(254), password: z.string().min(12).max(200), rolId: z.number().int().positive() });
 export async function GET() {

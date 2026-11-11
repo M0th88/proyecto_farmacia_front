@@ -1,0 +1,62 @@
+.shell {
+  --sidebar-width: 256px;
+  --navbar-height: 84px;
+  --navbar-background: #1e1e1e;
+  min-height: 100svh;
+  background: #fafafa;
+  color: #171b1e;
+  font-family: var(--font-sans);
+}
+.sidebar { position: fixed; inset: 0 auto 0 0; z-index: 20; width: var(--sidebar-width); height: 100svh; display: flex; flex-direction: column; background: #eff0f4; color: #415070; transition: transform 200ms ease; }
+.sidebarHeader { height: var(--navbar-height); flex-shrink: 0; display: flex; align-items: center; padding: 16px; background: var(--navbar-background); }
+.sidebarTitle { margin: 0; color: #fff; font-size: var(--text-lg); line-height: 1.5; font-weight: 600; }
+.sidebarBody { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 8px 0; }
+.sidebarNav { display: block; min-width: 0; }
+.sidebarList { list-style: none; margin: 0; padding: 0; }
+.sidebarLink { display: flex; align-items: center; gap: 8px; min-height: 60px; padding: 12px 16px; font-size: var(--text-lg); line-height: 1.5; font-weight: 400; transition: background 150ms, color 150ms; }
+.sidebarLink svg { flex-shrink: 0; }
+.sidebarLink:hover { background: #1e1e1ebf; color: #fffcfb; }
+.sidebarLink[aria-current="page"] { background: #1e1e1e; color: #fffcfb; }
+.sidebarLink:focus-visible { outline: 2px solid #415070; outline-offset: -3px; }
+.shell[data-sidebar-open="false"] .sidebar { transform: translateX(-100%); }
+.workspace { min-height: 100svh; min-width: 0; margin-left: var(--sidebar-width); transition: margin-left 200ms ease; }
+.shell[data-sidebar-open="false"] .workspace { margin-left: 0; }
+.navbar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; justify-content: space-between; gap: 16px; height: var(--navbar-height); padding: 12px 32px 12px 16px; background: var(--navbar-background); color: #fffcfb; }
+.navbarStart { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.brand { display: flex; align-items: center; flex-shrink: 0; }
+.logo { width: 180px; height: auto; filter: brightness(0) invert(1); }
+.iconButton { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 8px; border: 0; border-radius: 6px; background: transparent; color: #fffcfb; cursor: pointer; flex-shrink: 0; }
+.iconButton:hover, .pharmacyButton:hover { background: #ffffff18; }
+.iconButton:focus-visible, .brand:focus-visible, .pharmacyButton:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.mobileTrigger { display: none; }
+.navMenu { position: relative; min-width: 0; }
+.pharmacyButton { display: flex; align-items: center; gap: 12px; max-width: 100%; padding: 6px; border: 0; border-radius: 6px; color: inherit; background: transparent; font: inherit; cursor: pointer; }
+.profile { display: flex; flex-direction: column; text-align: right; min-width: 0; }
+.pharmacyName { font-size: var(--text-base); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 240px; }
+.role { font-size: var(--text-xs); font-weight: 400; }
+.avatar { display: grid; place-items: center; flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; background: #efefef; color: #1e1e1e; font-size: var(--text-sm); font-weight: 600; }
+.chevronOpen { transform: rotate(180deg); }
+.dropdown { position: absolute; top: calc(100% + 12px); right: 0; width: min(250px, calc(100vw - 32px)); padding: 5px; border: 1px solid #d8d8d8; border-radius: 8px; background: #fff; color: #171b1e; box-shadow: 0 4px 12px #00000014; }
+.dropdownIdentity { margin: 0; padding: 10px 12px; border-bottom: 1px solid #d8d8d8; font-size: var(--text-sm); font-weight: 600; overflow-wrap: anywhere; }
+.dropdownIdentity small { display: block; font-size: var(--text-xs); color: #4c637e; font-weight: 400; }
+.dropdown a { display: block; padding: 10px 12px; border-radius: 4px; font-size: var(--text-sm); }
+.dropdown a:hover, .dropdown a:focus-visible { background: #efefef; outline: none; }
+.main { min-width: 0; min-height: calc(100svh - var(--navbar-height)); padding: 40px 32px; }
+.mobileSidebar { --navbar-height: 84px; position: fixed; inset: 0 auto 0 0; width: min(288px, 85vw); max-width: none; height: 100svh; max-height: none; margin: 0; padding: 0; border: 0; background: #eff0f4; color: #415070; }
+.mobileSidebar[open] { display: flex; flex-direction: column; }
+.mobileSidebar::backdrop { background: #0008; }
+.mobileSidebarHeader { height: var(--navbar-height); flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 16px; background: #1e1e1e; color: #fffcfb; font-size: var(--text-base); font-weight: 600; }
+@media (min-width: 768px) and (max-width: 1023px) { .navbar { padding-right: 16px; } .pharmacyName { max-width: 150px; } .logo { width: 140px; } .navbarStart { gap: 8px; } .main { padding: 40px 24px; } }
+@media (max-width: 767px) {
+  .sidebar { display: none; }
+  .workspace { margin-left: 0; }
+  .navbar { padding: 12px 16px; gap: 8px; }
+  .logo { width: 140px; }
+  .navbarStart { gap: 8px; }
+  .desktopTrigger { display: none; }
+  .mobileTrigger { display: inline-flex; }
+  .profile { display: none; }
+  .pharmacyButton { gap: 6px; }
+  .main { padding: 32px 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .sidebar, .workspace, .sidebarLink { transition: none; } }

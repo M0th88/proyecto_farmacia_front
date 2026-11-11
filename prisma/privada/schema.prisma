@@ -66,6 +66,7 @@ model Medicamento {
   fuenteCatalogo String?
 
   codigoBarra String? @unique
+  datosCatalogo Json?
   nombre      String
 
   principioActivo   String?

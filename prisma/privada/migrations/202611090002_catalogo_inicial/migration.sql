@@ -1,7 +1,7 @@
-ALTER TABLE "Medicamento" ADD COLUMN "codigoCatalogo" TEXT;
-ALTER TABLE "Medicamento" ADD COLUMN "codigoAtc" TEXT;
-ALTER TABLE "Medicamento" ADD COLUMN "fuenteCatalogo" TEXT;
-CREATE UNIQUE INDEX "Medicamento_codigoCatalogo_key" ON "Medicamento"("codigoCatalogo");
+ALTER TABLE "Medicamento" ADD COLUMN IF NOT EXISTS "codigoCatalogo" TEXT;
+ALTER TABLE "Medicamento" ADD COLUMN IF NOT EXISTS "codigoAtc" TEXT;
+ALTER TABLE "Medicamento" ADD COLUMN IF NOT EXISTS "fuenteCatalogo" TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS "Medicamento_codigoCatalogo_key" ON "Medicamento"("codigoCatalogo");
 
 INSERT INTO "Medicamento" ("codigoCatalogo","nombre","principioActivo","codigoAtc","fuenteCatalogo","precioVenta","creadoEn","actualizadoEn") VALUES
 ('MED-001','Amlodipino','Amlodipino','C08CA01','catalogo-local',NULL,NOW(),NOW()),
@@ -43,4 +43,7 @@ INSERT INTO "Medicamento" ("codigoCatalogo","nombre","principioActivo","codigoAt
 ('MED-037','Apixabán','Apixabán','B01AF02','catalogo-local',NULL,NOW(),NOW()),
 ('MED-038','Rivaroxabán','Rivaroxabán','B01AF01','catalogo-local',NULL,NOW(),NOW()),
 ('MED-039','Hierro oral','Hierro','B03AA07','catalogo-local',NULL,NOW(),NOW()),
-('MED-040','Sulfato ferroso','Sulfato ferroso','B03AA07','catalogo-local',NULL,NOW(),NOW());
+('MED-040','Sulfato ferroso','Sulfato ferroso','B03AA07','catalogo-local',NULL,NOW(),NOW())
+ON CONFLICT ("codigoCatalogo") DO UPDATE SET
+  "codigoAtc" = COALESCE("Medicamento"."codigoAtc", EXCLUDED."codigoAtc"),
+  "fuenteCatalogo" = COALESCE("Medicamento"."fuenteCatalogo", EXCLUDED."fuenteCatalogo");

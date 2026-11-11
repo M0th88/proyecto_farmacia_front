@@ -2,7 +2,7 @@ import "dotenv/config";
 import { readFile } from "node:fs/promises";
 import pg from "pg";
 
-const records = JSON.parse(await readFile(new URL("../data/medicamentos-chile.json", import.meta.url), "utf8"));
+const records = JSON.parse(await readFile(new URL("../prisma/data/medicamentos-chile.json", import.meta.url), "utf8"));
 if (!Array.isArray(records) || records.length !== 45 || new Set(records.map(r => r.codigoCatalogo)).size !== records.length) {
   throw new Error("El catálogo integrado debe contener 45 códigos únicos.");
 }

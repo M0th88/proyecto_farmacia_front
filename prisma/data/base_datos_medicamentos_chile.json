@@ -1,0 +1,1296 @@
+{
+  "esquema": "catalogo-medicamentos-chile/1.0",
+  "pais": "Chile",
+  "fechaRevision": "2026-09-29",
+  "totalMedicamentos": 45,
+  "productosISPVerificados": 40,
+  "medicamentosSinProductoVerificado": 5,
+  "definicionConcentracion": "Potencia o concentración de la presentación registrada; no es una pauta de administración para pacientes.",
+  "fuentesDeIntegracion": [
+    "preloadedMedications.ts",
+    "medicamentos_adicionales.json",
+    "registros_isp.json",
+    "condiciones_venta_isp.json",
+    "detalles_presentacion_isp.json",
+    "crear_catalogo.mjs"
+  ],
+  "referenciaATC": "https://atcddd.fhi.no/atc_ddd_index/",
+  "referenciaISP": "https://registrosanitario.ispch.gob.cl/",
+  "medicamentos": [
+    {
+      "id": "MED-001",
+      "origen": "archivo_original",
+      "medicamento": "Amlodipino",
+      "principioActivo": "Amlodipino",
+      "clasificacion": {
+        "grupoGeneral": "Antihipertensivo",
+        "subgrupoFarmacologico": "Bloqueador de canales de calcio dihidropiridínico",
+        "mecanismoResumido": "Bloquea canales de calcio tipo L vasculares",
+        "atcOriginal": "C08CA01",
+        "atcRevisado": "C08CA01"
+      },
+      "productoISP": {
+        "nombreRegistrado": "AMLODIPINO COMPRIMIDOS 5 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "MDC HEALTH S.p.A.",
+        "numeroRegistro": "F-26633/22",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "5 mg/comprimido",
+        "formaFarmaceutica": "Comprimido",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-26633%2F22"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-002",
+      "origen": "archivo_original",
+      "medicamento": "Verapamilo",
+      "principioActivo": "Verapamilo",
+      "clasificacion": {
+        "grupoGeneral": "Antihipertensivo / antiarrítmico",
+        "subgrupoFarmacologico": "Bloqueador de canales de calcio no dihidropiridínico",
+        "mecanismoResumido": "Bloquea canales de calcio tipo L cardíacos y vasculares",
+        "atcOriginal": "C08DA01",
+        "atcRevisado": "C08DA01"
+      },
+      "productoISP": {
+        "nombreRegistrado": "CARDIOLEN CÁPSULAS 80 mg",
+        "nombreDeFantasia": "CARDIOLEN",
+        "laboratorioTitular": "INSTITUTO SANITAS S.A.",
+        "numeroRegistro": "F-3292/25",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "80 mg/cápsula",
+        "formaFarmaceutica": "Cápsula",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 25 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-3292%2F25"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-003",
+      "origen": "archivo_original",
+      "medicamento": "Furosemida",
+      "principioActivo": "Furosemida",
+      "clasificacion": {
+        "grupoGeneral": "Diurético / antihipertensivo",
+        "subgrupoFarmacologico": "Diurético de asa",
+        "mecanismoResumido": "Inhibe el cotransportador Na-K-2Cl (NKCC2)",
+        "atcOriginal": "C03CA01",
+        "atcRevisado": "C03CA01"
+      },
+      "productoISP": {
+        "nombreRegistrado": "FUROSEMIDA COMPRIMIDOS 40 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "LABORATORIO CHILE S.A.",
+        "numeroRegistro": "F-2274/24",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "40 mg/comprimido",
+        "formaFarmaceutica": "Comprimido",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-2274%2F24"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-004",
+      "origen": "archivo_original",
+      "medicamento": "Hidroclorotiazida",
+      "principioActivo": "Hidroclorotiazida",
+      "clasificacion": {
+        "grupoGeneral": "Diurético / antihipertensivo",
+        "subgrupoFarmacologico": "Diurético tiazídico",
+        "mecanismoResumido": "Inhibe el cotransportador Na-Cl (NCC)",
+        "atcOriginal": "C03AA03",
+        "atcRevisado": "C03AA03"
+      },
+      "productoISP": {
+        "nombreRegistrado": "HIDROCLOROTIAZIDA COMPRIMIDOS 50 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "OPKO CHILE S.A.",
+        "numeroRegistro": "F-24661/24",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "50 mg/comprimido",
+        "formaFarmaceutica": "Comprimido",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-24661%2F24"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-005",
+      "origen": "archivo_original",
+      "medicamento": "Enalapril",
+      "principioActivo": "Enalapril",
+      "clasificacion": {
+        "grupoGeneral": "Antihipertensivo",
+        "subgrupoFarmacologico": "IECA",
+        "mecanismoResumido": "Inhibe la enzima convertidora de angiotensina",
+        "atcOriginal": "C09AA02",
+        "atcRevisado": "C09AA02"
+      },
+      "productoISP": {
+        "nombreRegistrado": "ENALAPRIL MALEATO COMPRIMIDOS 10 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "LABORATORIOS ANDRÓMACO S.A.",
+        "numeroRegistro": "F-27633/23",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "10 mg/comprimido",
+        "formaFarmaceutica": "Comprimido",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 25 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-27633%2F23"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-006",
+      "origen": "archivo_original",
+      "medicamento": "Captopril",
+      "principioActivo": "Captopril",
+      "clasificacion": {
+        "grupoGeneral": "Antihipertensivo",
+        "subgrupoFarmacologico": "IECA",
+        "mecanismoResumido": "Inhibe la enzima convertidora de angiotensina",
+        "atcOriginal": "C09AA01",
+        "atcRevisado": "C09AA01"
+      },
+      "productoISP": {
+        "nombreRegistrado": "CAPTOPRIL COMPRIMIDOS 25 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "MINTLAB Co. S.A.",
+        "numeroRegistro": "F-16954/23",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "25 mg/comprimido",
+        "formaFarmaceutica": "Comprimido",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 25 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-16954%2F23"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-007",
+      "origen": "archivo_original",
+      "medicamento": "Losartan",
+      "principioActivo": "Losartan",
+      "clasificacion": {
+        "grupoGeneral": "Antihipertensivo",
+        "subgrupoFarmacologico": "ARA-II",
+        "mecanismoResumido": "Bloquea el receptor AT1 de angiotensina II",
+        "atcOriginal": "C09CA01",
+        "atcRevisado": "C09CA01"
+      },
+      "productoISP": {
+        "nombreRegistrado": "SIMPERTEN COMPRIMIDOS RECUBIERTOS 50 mg (LOSARTÁN)",
+        "nombreDeFantasia": "SIMPERTEN",
+        "laboratorioTitular": "LABORATORIO CHILE S.A.",
+        "numeroRegistro": "F-8493/26",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "50 mg/comprimido",
+        "formaFarmaceutica": "Comprimido recubierto",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-8493%2F26"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-008",
+      "origen": "archivo_original",
+      "medicamento": "Metoclopramida",
+      "principioActivo": "Metoclopramida",
+      "clasificacion": {
+        "grupoGeneral": "Antiemético / procinético",
+        "subgrupoFarmacologico": "Antagonista dopaminérgico D2",
+        "mecanismoResumido": "Antagoniza D2; favorece el vaciamiento gástrico",
+        "atcOriginal": "A03FA01",
+        "atcRevisado": "A03FA01"
+      },
+      "productoISP": {
+        "nombreRegistrado": "METOCLOPRAMIDA CLORHIDRATO COMPRIMIDOS 10 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "LABORATORIO CHILE S.A.",
+        "numeroRegistro": "F-3988/25",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "10 mg/comprimido",
+        "formaFarmaceutica": "Comprimido",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 25 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-3988%2F25"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-009",
+      "origen": "archivo_original",
+      "medicamento": "Domperidona",
+      "principioActivo": "Domperidona",
+      "clasificacion": {
+        "grupoGeneral": "Antiemético / procinético",
+        "subgrupoFarmacologico": "Antagonista dopaminérgico D2 periférico",
+        "mecanismoResumido": "Antagoniza D2 periférico",
+        "atcOriginal": "A03FA03",
+        "atcRevisado": "A03FA03"
+      },
+      "productoISP": {
+        "nombreRegistrado": "DOMPERIDONA CÁPSULAS 10 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "LABORATORIO CHILE S.A.",
+        "numeroRegistro": "F-6270/25",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "10 mg/cápsula",
+        "formaFarmaceutica": "Cápsula",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Ambiente; según envase",
+          "condicion": "No más de 25 o 30 °C, según envase autorizado"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-6270%2F25"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-010",
+      "origen": "archivo_original",
+      "medicamento": "Omeprazol",
+      "principioActivo": "Omeprazol",
+      "clasificacion": {
+        "grupoGeneral": "Antisecretor gástrico",
+        "subgrupoFarmacologico": "Inhibidor de bomba de protones (IBP)",
+        "mecanismoResumido": "Inhibe la H+/K+-ATPasa gástrica",
+        "atcOriginal": "A02BC01",
+        "atcRevisado": "A02BC01"
+      },
+      "productoISP": {
+        "nombreRegistrado": "OMEPRAZOL CÁPSULAS CON GRÁNULOS CON RECUBRIMIENTO ENTÉRICO 20 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "LABORATORIO CHILE S.A.",
+        "numeroRegistro": "F-21448/24",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "20 mg/cápsula",
+        "formaFarmaceutica": "Cápsula con gránulos entéricos",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 25 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-21448%2F24"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-011",
+      "origen": "archivo_original",
+      "medicamento": "Pantoprazol",
+      "principioActivo": "Pantoprazol",
+      "clasificacion": {
+        "grupoGeneral": "Antisecretor gástrico",
+        "subgrupoFarmacologico": "Inhibidor de bomba de protones (IBP)",
+        "mecanismoResumido": "Inhibe la H+/K+-ATPasa gástrica",
+        "atcOriginal": "A02BC02",
+        "atcRevisado": "A02BC02"
+      },
+      "productoISP": {
+        "nombreRegistrado": "ZOLTUM COMPRIMIDOS CON RECUBRIMIENTO ENTÉRICO 40 mg",
+        "nombreDeFantasia": "ZOLTUM",
+        "laboratorioTitular": "TECNOFARMA S.A.",
+        "numeroRegistro": "F-19452/22",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "40 mg/comprimido",
+        "formaFarmaceutica": "Comprimido con recubrimiento entérico",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-19452%2F22"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-012",
+      "origen": "archivo_original",
+      "medicamento": "Ibuprofeno",
+      "principioActivo": "Ibuprofeno",
+      "clasificacion": {
+        "grupoGeneral": "Analgésico / antiinflamatorio",
+        "subgrupoFarmacologico": "AINE; derivado del ácido propiónico",
+        "mecanismoResumido": "Inhibe ciclooxigenasas COX",
+        "atcOriginal": "M01AE01",
+        "atcRevisado": "M01AE01"
+      },
+      "productoISP": {
+        "nombreRegistrado": "IBUPROFENO COMPRIMIDOS 400 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "LABORATORIO CHILE S.A.",
+        "numeroRegistro": "F-18139/25",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "400 mg/comprimido",
+        "formaFarmaceutica": "Comprimido",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-18139%2F25"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-013",
+      "origen": "archivo_original",
+      "medicamento": "Naproxeno",
+      "principioActivo": "Naproxeno",
+      "clasificacion": {
+        "grupoGeneral": "Analgésico / antiinflamatorio",
+        "subgrupoFarmacologico": "AINE; derivado del ácido propiónico",
+        "mecanismoResumido": "Inhibe ciclooxigenasas COX",
+        "atcOriginal": "M01AE02",
+        "atcRevisado": "M01AE02"
+      },
+      "productoISP": {
+        "nombreRegistrado": "NAPROXENO SÓDICO COMPRIMIDOS RECUBIERTOS 550 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "MINTLAB Co. S.A.",
+        "numeroRegistro": "F-1837/24",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "550 mg/comprimido",
+        "formaFarmaceutica": "Comprimido recubierto",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-1837%2F24"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-014",
+      "origen": "archivo_original",
+      "medicamento": "Diclofenaco",
+      "principioActivo": "Diclofenaco",
+      "clasificacion": {
+        "grupoGeneral": "Analgésico / antiinflamatorio",
+        "subgrupoFarmacologico": "AINE; derivado del ácido acético",
+        "mecanismoResumido": "Inhibe ciclooxigenasas COX",
+        "atcOriginal": "M01AB05",
+        "atcRevisado": "M01AB05"
+      },
+      "productoISP": {
+        "nombreRegistrado": "DICLOFENACO SÓDICO SOLUCIÓN INYECTABLE 75 mg /3 mL",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "LABORATORIO BIOSANO S.A.",
+        "numeroRegistro": "F-7643/26",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "75 mg/3 mL",
+        "formaFarmaceutica": "Solución inyectable",
+        "viaAdministracion": "Intramuscular",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-7643%2F26"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-015",
+      "origen": "archivo_original",
+      "medicamento": "Paracetamol",
+      "principioActivo": "Paracetamol",
+      "clasificacion": {
+        "grupoGeneral": "Analgésico / antipirético",
+        "subgrupoFarmacologico": "Anilida; no AINE clásico",
+        "mecanismoResumido": "Acción analgésica y antipirética principalmente central",
+        "atcOriginal": "N02BE01",
+        "atcRevisado": "N02BE01"
+      },
+      "productoISP": {
+        "nombreRegistrado": "PARACETAMOL COMPRIMIDOS 500 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "LABORATORIO CHILE S.A.",
+        "numeroRegistro": "F-4001/25",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Directa",
+        "concentracionPotencia": "500 mg/comprimido",
+        "formaFarmaceutica": "Comprimido",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 25 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-4001%2F25"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-016",
+      "origen": "archivo_original",
+      "medicamento": "Tramadol",
+      "principioActivo": "Tramadol",
+      "clasificacion": {
+        "grupoGeneral": "Analgésico opioide",
+        "subgrupoFarmacologico": "Opioide atípico",
+        "mecanismoResumido": "Agonismo μ e inhibición de recaptación de noradrenalina/serotonina",
+        "atcOriginal": "N02AX02",
+        "atcRevisado": "N02AX02"
+      },
+      "productoISP": {
+        "nombreRegistrado": "TRAMADOL CLORHIDRATO SOLUCIÓN ORAL PARA GOTAS 100 mg/mL",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "LABORATORIO CHILE S.A.",
+        "numeroRegistro": "F-3836/25",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Retenida",
+        "concentracionPotencia": "100 mg/mL",
+        "formaFarmaceutica": "Gotas orales",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 25 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-3836%2F25"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-017",
+      "origen": "archivo_original",
+      "medicamento": "Morfina",
+      "principioActivo": "Morfina",
+      "clasificacion": {
+        "grupoGeneral": "Analgésico opioide",
+        "subgrupoFarmacologico": "Agonista opioide μ",
+        "mecanismoResumido": "Activa receptores opioides μ",
+        "atcOriginal": "N02AA01",
+        "atcRevisado": "N02AA01"
+      },
+      "productoISP": {
+        "nombreRegistrado": "DIMORF SOLUCIÓN INYECTABLE 0,1 mg/1 mL (MORFINA SULFATO PENTAHIDRATO)",
+        "nombreDeFantasia": "DIMORF",
+        "laboratorioTitular": "CRISTALIA CHILE S.p.A.",
+        "numeroRegistro": "F-28844/25",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Cheque",
+        "concentracionPotencia": "0,1 mg/mL",
+        "formaFarmaceutica": "Solución inyectable",
+        "viaAdministracion": "Intratecal",
+        "almacenamiento": {
+          "tipo": "Ambiente; especial tras dilución",
+          "condicion": "Ampolla: no más de 30 °C. Producto diluido: no más de 25 °C por 24 h"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-28844%2F25"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-018",
+      "origen": "archivo_original",
+      "medicamento": "Codeína",
+      "principioActivo": "Codeína",
+      "clasificacion": {
+        "grupoGeneral": "Antitusivo opioide / analgésico",
+        "subgrupoFarmacologico": "Opioide; codeína sola",
+        "mecanismoResumido": "Activa receptores opioides; ATC de monofármaco según OMS",
+        "atcOriginal": "N02AA59",
+        "atcRevisado": "R05DA04"
+      },
+      "productoISP": null,
+      "observaciones": "ATC original N02AA59 corresponde a combinaciones; para codeína sola se usa R05DA04. No se enlazó una combinación como si fuera monofármaco."
+    },
+    {
+      "id": "MED-019",
+      "origen": "archivo_original",
+      "medicamento": "Bisacodilo",
+      "principioActivo": "Bisacodilo",
+      "clasificacion": {
+        "grupoGeneral": "Laxante",
+        "subgrupoFarmacologico": "Laxante estimulante",
+        "mecanismoResumido": "Estimula motilidad y secreción colónica",
+        "atcOriginal": "A06AB02",
+        "atcRevisado": "A06AB02"
+      },
+      "productoISP": null,
+      "observaciones": "Sin ficha ISP vigente y específica confirmada en esta revisión."
+    },
+    {
+      "id": "MED-020",
+      "origen": "archivo_original",
+      "medicamento": "Lactulosa",
+      "principioActivo": "Lactulosa",
+      "clasificacion": {
+        "grupoGeneral": "Laxante",
+        "subgrupoFarmacologico": "Laxante osmótico; disacárido",
+        "mecanismoResumido": "Retiene agua en colon por efecto osmótico",
+        "atcOriginal": "A06AD11",
+        "atcRevisado": "A06AD11"
+      },
+      "productoISP": {
+        "nombreRegistrado": "LACTULOSA SOLUCIÓN ORAL 65%",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "LABORATORIOS ANDRÓMACO S.A.",
+        "numeroRegistro": "F-25848/25",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "65 %",
+        "formaFarmaceutica": "Solución oral",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Ambiente; según envase",
+          "condicion": "No más de 25 o 30 °C, según envase autorizado"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-25848%2F25"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-021",
+      "origen": "archivo_original",
+      "medicamento": "Macrogol",
+      "principioActivo": "Macrogol",
+      "clasificacion": {
+        "grupoGeneral": "Laxante",
+        "subgrupoFarmacologico": "Laxante osmótico; polietilenglicol (PEG)",
+        "mecanismoResumido": "Retiene agua en la luz intestinal",
+        "atcOriginal": "A06AD15",
+        "atcRevisado": "A06AD15"
+      },
+      "productoISP": {
+        "nombreRegistrado": "MACROGOL 3350 POLVO PARA SOLUCIÓN ORAL, EN SOBRES",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "SOCIEDAD FARMACÉUTICA TERVIS PHARMA LTDA.",
+        "numeroRegistro": "F-26845/22",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "17 g/sobre",
+        "formaFarmaceutica": "Polvo para solución oral",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-26845%2F22"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-022",
+      "origen": "archivo_original",
+      "medicamento": "Levodopa/Carbidopa",
+      "principioActivo": "Levodopa y carbidopa",
+      "clasificacion": {
+        "grupoGeneral": "Antiparkinsoniano",
+        "subgrupoFarmacologico": "Precursor dopaminérgico + inhibidor de descarboxilasa periférica",
+        "mecanismoResumido": "Levodopa aporta dopamina; carbidopa reduce conversión periférica",
+        "atcOriginal": "N04BA02",
+        "atcRevisado": "N04BA02"
+      },
+      "productoISP": {
+        "nombreRegistrado": "CARBIDOPA/LEVODOPA 25/250 COMPRIMIDOS",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "FARMEDICAL S.p.A.",
+        "numeroRegistro": "F-27874/23",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "Carbidopa 25 mg + levodopa 250 mg/comprimido",
+        "formaFarmaceutica": "Comprimido",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-27874%2F23"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-023",
+      "origen": "archivo_original",
+      "medicamento": "Biperideno",
+      "principioActivo": "Biperideno",
+      "clasificacion": {
+        "grupoGeneral": "Antiparkinsoniano",
+        "subgrupoFarmacologico": "Antimuscarínico central",
+        "mecanismoResumido": "Bloquea receptores muscarínicos centrales",
+        "atcOriginal": "N04AA02",
+        "atcRevisado": "N04AA02"
+      },
+      "productoISP": null,
+      "observaciones": "Sin ficha ISP vigente y específica confirmada en esta revisión."
+    },
+    {
+      "id": "MED-024",
+      "origen": "archivo_original",
+      "medicamento": "Risperidona",
+      "principioActivo": "Risperidona",
+      "clasificacion": {
+        "grupoGeneral": "Antipsicótico",
+        "subgrupoFarmacologico": "Antipsicótico de segunda generación",
+        "mecanismoResumido": "Antagoniza receptores D2 y 5-HT2A",
+        "atcOriginal": "N05AX08",
+        "atcRevisado": "N05AX08"
+      },
+      "productoISP": {
+        "nombreRegistrado": "PSICORID SOLUCIÓN ORAL 1 mg / mL (RISPERIDONA)",
+        "nombreDeFantasia": "PSICORID",
+        "laboratorioTitular": "NEOETHICALS CHILE S.p.A.",
+        "numeroRegistro": "F-24485/23",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "1 mg/mL",
+        "formaFarmaceutica": "Solución oral",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Ambiente protegido",
+          "condicion": "No más de 30 °C; protegido de la luz, calor y humedad"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-24485%2F23"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-025",
+      "origen": "archivo_original",
+      "medicamento": "Quetiapina",
+      "principioActivo": "Quetiapina",
+      "clasificacion": {
+        "grupoGeneral": "Antipsicótico",
+        "subgrupoFarmacologico": "Antipsicótico de segunda generación",
+        "mecanismoResumido": "Modula receptores D2 y 5-HT2A, entre otros",
+        "atcOriginal": "N05AH04",
+        "atcRevisado": "N05AH04"
+      },
+      "productoISP": {
+        "nombreRegistrado": "QUETIAPINA COMPRIMIDOS RECUBIERTOS 100 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "LABORATORIO CHILE S.A.",
+        "numeroRegistro": "F-23789/23",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "100 mg/comprimido",
+        "formaFarmaceutica": "Comprimido recubierto",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 25 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-23789%2F23"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-026",
+      "origen": "archivo_original",
+      "medicamento": "Donepezilo",
+      "principioActivo": "Donepezilo",
+      "clasificacion": {
+        "grupoGeneral": "Tratamiento de demencia",
+        "subgrupoFarmacologico": "Inhibidor de acetilcolinesterasa",
+        "mecanismoResumido": "Inhibe acetilcolinesterasa",
+        "atcOriginal": "N06DA02",
+        "atcRevisado": "N06DA02"
+      },
+      "productoISP": {
+        "nombreRegistrado": "NEPOKARE COMPRIMIDOS RECUBIERTOS 10 mg (DONEPEZILO CLORHIDRATO)",
+        "nombreDeFantasia": "NEPOKARE",
+        "laboratorioTitular": "DR. REDDYS LABORATORIES CHILE S.p.A.",
+        "numeroRegistro": "F-27342/23",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "10 mg/comprimido",
+        "formaFarmaceutica": "Comprimido recubierto",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-27342%2F23"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-027",
+      "origen": "archivo_original",
+      "medicamento": "Solifenacina",
+      "principioActivo": "Solifenacina",
+      "clasificacion": {
+        "grupoGeneral": "Antiespasmódico urinario",
+        "subgrupoFarmacologico": "Antimuscarínico vesical",
+        "mecanismoResumido": "Bloquea receptores muscarínicos, con preferencia funcional M3",
+        "atcOriginal": "G04BD08",
+        "atcRevisado": "G04BD08"
+      },
+      "productoISP": {
+        "nombreRegistrado": "VESICARE COMPRIMIDOS RECUBIERTOS 5 mg",
+        "nombreDeFantasia": "VESICARE",
+        "laboratorioTitular": "ITF - LABOMED FARMACÉUTICA LTDA.",
+        "numeroRegistro": "F-18976/21",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "5 mg/comprimido",
+        "formaFarmaceutica": "Comprimido recubierto",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-18976%2F21"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-028",
+      "origen": "archivo_original",
+      "medicamento": "Tolterodina",
+      "principioActivo": "Tolterodina",
+      "clasificacion": {
+        "grupoGeneral": "Antiespasmódico urinario",
+        "subgrupoFarmacologico": "Antimuscarínico vesical",
+        "mecanismoResumido": "Bloquea receptores muscarínicos vesicales",
+        "atcOriginal": "G04BD07",
+        "atcRevisado": "G04BD07"
+      },
+      "productoISP": {
+        "nombreRegistrado": "UROSTOP COMPRIMIDOS RECUBIERTOS 2 mg",
+        "nombreDeFantasia": "UROSTOP",
+        "laboratorioTitular": "SYNTHON CHILE LTDA.",
+        "numeroRegistro": "F-20129/23",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "2 mg/comprimido",
+        "formaFarmaceutica": "Comprimido recubierto",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 25 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-20129%2F23"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-029",
+      "origen": "archivo_original",
+      "medicamento": "Metformina",
+      "principioActivo": "Metformina",
+      "clasificacion": {
+        "grupoGeneral": "Antidiabético",
+        "subgrupoFarmacologico": "Biguanida",
+        "mecanismoResumido": "Reduce producción hepática de glucosa y mejora sensibilidad a insulina",
+        "atcOriginal": "A10BA02",
+        "atcRevisado": "A10BA02"
+      },
+      "productoISP": {
+        "nombreRegistrado": "METFORMINA CLORHIDRATO COMPRIMIDOS RECUBIERTOS 850 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "LABORATORIOS ANDRÓMACO S.A.",
+        "numeroRegistro": "F-15237/25",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "850 mg/comprimido",
+        "formaFarmaceutica": "Comprimido recubierto",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-15237%2F25"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-030",
+      "origen": "archivo_original",
+      "medicamento": "Vitamina B12",
+      "principioActivo": "Cianocobalamina",
+      "clasificacion": {
+        "grupoGeneral": "Antianémico / vitamina",
+        "subgrupoFarmacologico": "Vitamina B12",
+        "mecanismoResumido": "Repone cobalamina en deficiencia",
+        "atcOriginal": "B03BA01",
+        "atcRevisado": "B03BA01"
+      },
+      "productoISP": {
+        "nombreRegistrado": "CIANOCOBALAMINA SOLUCIÓN INYECTABLE 0,1 mg/1 mL",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "DIFEM LABORATORIOS S.A.",
+        "numeroRegistro": "F-25120/24",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "0,1 mg/mL",
+        "formaFarmaceutica": "Solución inyectable",
+        "viaAdministracion": "Intramuscular o subcutánea profunda",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-25120%2F24"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-031",
+      "origen": "archivo_original",
+      "medicamento": "Potasio",
+      "principioActivo": "Cloruro de potasio",
+      "clasificacion": {
+        "grupoGeneral": "Electrolito / suplemento mineral",
+        "subgrupoFarmacologico": "Sal de potasio",
+        "mecanismoResumido": "Repone potasio",
+        "atcOriginal": "A12BA01",
+        "atcRevisado": "A12BA01"
+      },
+      "productoISP": null,
+      "observaciones": "Se hallaron registros de soluciones combinadas con cloruro de potasio; no se atribuyó un registro de combinación al monofármaco."
+    },
+    {
+      "id": "MED-032",
+      "origen": "archivo_original",
+      "medicamento": "Prednisona",
+      "principioActivo": "Prednisona",
+      "clasificacion": {
+        "grupoGeneral": "Antiinflamatorio / inmunosupresor",
+        "subgrupoFarmacologico": "Glucocorticoide sistémico",
+        "mecanismoResumido": "Activa receptor glucocorticoide",
+        "atcOriginal": "H02AB07",
+        "atcRevisado": "H02AB07"
+      },
+      "productoISP": {
+        "nombreRegistrado": "PREDNISONA COMPRIMIDOS 5 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "LABORATORIO CHILE S.A.",
+        "numeroRegistro": "F-1400/23",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Retenida",
+        "concentracionPotencia": "5 mg/comprimido",
+        "formaFarmaceutica": "Comprimido",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-1400%2F23"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-033",
+      "origen": "archivo_original",
+      "medicamento": "Budesonida inhalada",
+      "principioActivo": "Budesonida",
+      "clasificacion": {
+        "grupoGeneral": "Antiasmático / antiinflamatorio respiratorio",
+        "subgrupoFarmacologico": "Corticoide inhalado (CI)",
+        "mecanismoResumido": "Activa receptor glucocorticoide en vías aéreas",
+        "atcOriginal": "R03BA02",
+        "atcRevisado": "R03BA02"
+      },
+      "productoISP": {
+        "nombreRegistrado": "BUDESONIDA AEROSOL PARA INHALACIÓN 200 mcg/dosis",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "FAES FARMA CHILE, SALUD Y NUTRICIÓN SpA",
+        "numeroRegistro": "F-21823/25",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Retenida",
+        "concentracionPotencia": "200 mcg/dosis",
+        "formaFarmaceutica": "Aerosol para inhalación",
+        "viaAdministracion": "Inhalatoria",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-21823%2F25"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-034",
+      "origen": "archivo_original",
+      "medicamento": "Nistatina oral",
+      "principioActivo": "Nistatina",
+      "clasificacion": {
+        "grupoGeneral": "Antifúngico",
+        "subgrupoFarmacologico": "Polieno",
+        "mecanismoResumido": "Se une a ergosterol de membrana fúngica",
+        "atcOriginal": "A01AB04",
+        "atcRevisado": "A01AB04"
+      },
+      "productoISP": {
+        "nombreRegistrado": "NISTATINA SUSPENSIÓN ORAL 100.000 UI/mL",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "BPH SpA",
+        "numeroRegistro": "B-3004/24",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "100.000 UI/mL",
+        "formaFarmaceutica": "Suspensión oral",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Ambiente protegido",
+          "condicion": "No más de 25 °C; protegido de la luz"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=B-3004%2F24"
+      },
+      "observaciones": "ATC depende del sitio de acción: A01AB04 para cavidad bucal; A07AA02 para uso intestinal."
+    },
+    {
+      "id": "MED-035",
+      "origen": "archivo_original",
+      "medicamento": "Sertralina",
+      "principioActivo": "Sertralina",
+      "clasificacion": {
+        "grupoGeneral": "Antidepresivo",
+        "subgrupoFarmacologico": "ISRS",
+        "mecanismoResumido": "Inhibe recaptación de serotonina (SERT)",
+        "atcOriginal": "N06AB06",
+        "atcRevisado": "N06AB06"
+      },
+      "productoISP": {
+        "nombreRegistrado": "SERTRALINA COMPRIMIDOS RECUBIERTOS 50 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "SEVEN PHARMA CHILE S.p.A.",
+        "numeroRegistro": "F-27691/23",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "50 mg/comprimido",
+        "formaFarmaceutica": "Comprimido recubierto",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 25 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-27691%2F23"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-036",
+      "origen": "archivo_original",
+      "medicamento": "Escitalopram",
+      "principioActivo": "Escitalopram",
+      "clasificacion": {
+        "grupoGeneral": "Antidepresivo",
+        "subgrupoFarmacologico": "ISRS",
+        "mecanismoResumido": "Inhibe recaptación de serotonina (SERT)",
+        "atcOriginal": "N06AB10",
+        "atcRevisado": "N06AB10"
+      },
+      "productoISP": {
+        "nombreRegistrado": "ESCITALOPRAM COMPRIMIDOS RECUBIERTOS 10 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "ASCEND LABORATORIES S.p.A.",
+        "numeroRegistro": "F-27400/23",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "10 mg/comprimido",
+        "formaFarmaceutica": "Comprimido recubierto",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-27400%2F23"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-037",
+      "origen": "archivo_original",
+      "medicamento": "Apixabán",
+      "principioActivo": "Apixabán",
+      "clasificacion": {
+        "grupoGeneral": "Anticoagulante",
+        "subgrupoFarmacologico": "Anticoagulante oral directo; inhibidor de factor Xa",
+        "mecanismoResumido": "Inhibe directamente el factor Xa",
+        "atcOriginal": "B01AF02",
+        "atcRevisado": "B01AF02"
+      },
+      "productoISP": {
+        "nombreRegistrado": "APIXABAN COMPRIMIDOS RECUBIERTOS 2,5 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "SEVEN PHARMA CHILE S.p.A.",
+        "numeroRegistro": "F-27640/23",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "2,5 mg/comprimido",
+        "formaFarmaceutica": "Comprimido recubierto",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-27640%2F23"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-038",
+      "origen": "archivo_original",
+      "medicamento": "Rivaroxabán",
+      "principioActivo": "Rivaroxabán",
+      "clasificacion": {
+        "grupoGeneral": "Anticoagulante",
+        "subgrupoFarmacologico": "Anticoagulante oral directo; inhibidor de factor Xa",
+        "mecanismoResumido": "Inhibe directamente el factor Xa",
+        "atcOriginal": "B01AF01",
+        "atcRevisado": "B01AF01"
+      },
+      "productoISP": {
+        "nombreRegistrado": "RIVOXA COMPRIMIDOS RECUBIERTOS 20 mg (RIVAROXABÁN)",
+        "nombreDeFantasia": "RIVOXA",
+        "laboratorioTitular": "LABORATORIOS SAVAL S.A.",
+        "numeroRegistro": "F-26460/21",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "20 mg/comprimido",
+        "formaFarmaceutica": "Comprimido recubierto",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-26460%2F21"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-039",
+      "origen": "archivo_original",
+      "medicamento": "Hierro oral",
+      "principioActivo": "Hierro",
+      "clasificacion": {
+        "grupoGeneral": "Antianémico",
+        "subgrupoFarmacologico": "Hierro oral; sal no especificada",
+        "mecanismoResumido": "Aporta hierro; sal y código ATC específico por definir",
+        "atcOriginal": "B03AA07",
+        "atcRevisado": null
+      },
+      "productoISP": null,
+      "observaciones": "El archivo indica B03AA07, que corresponde específicamente a sulfato ferroso. Se requiere precisar la sal para asignar ATC y producto."
+    },
+    {
+      "id": "MED-040",
+      "origen": "archivo_original",
+      "medicamento": "Sulfato ferroso",
+      "principioActivo": "Sulfato ferroso",
+      "clasificacion": {
+        "grupoGeneral": "Antianémico",
+        "subgrupoFarmacologico": "Hierro bivalente oral; sulfato ferroso",
+        "mecanismoResumido": "Aporta hierro ferroso",
+        "atcOriginal": "B03AA07",
+        "atcRevisado": "B03AA07"
+      },
+      "productoISP": {
+        "nombreRegistrado": "SULFATO FERROSO HEPTAHIDRATO SOLUCIÓN ORAL PARA GOTAS 125 mg/mL",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "BPH SpA",
+        "numeroRegistro": "F-13517/24",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "125 mg/mL de sulfato ferroso heptahidratado",
+        "formaFarmaceutica": "Gotas orales",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-13517%2F24"
+      },
+      "observaciones": "Comparte código fuente con 'Hierro oral'; esta fila sí especifica la sal."
+    },
+    {
+      "id": "MED-041",
+      "origen": "agregado",
+      "medicamento": "Ácido acetilsalicílico",
+      "principioActivo": "Ácido acetilsalicílico",
+      "clasificacion": {
+        "grupoGeneral": "Antiagregante plaquetario",
+        "subgrupoFarmacologico": "Salicilato; inhibidor irreversible de COX-1",
+        "mecanismoResumido": "Reduce síntesis plaquetaria de tromboxano A2",
+        "atcOriginal": "B01AC06",
+        "atcRevisado": "B01AC06"
+      },
+      "productoISP": {
+        "nombreRegistrado": "ÁCIDO ACETILSALICÍLICO COMPRIMIDOS 100 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "LABORATORIO CHILE S.A.",
+        "numeroRegistro": "F-26617/22",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Directa",
+        "concentracionPotencia": "100 mg/comprimido",
+        "formaFarmaceutica": "Comprimido",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 25 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-26617%2F22"
+      },
+      "observaciones": "Ejemplo de 100 mg para uso cardiovascular."
+    },
+    {
+      "id": "MED-042",
+      "origen": "agregado",
+      "medicamento": "Atorvastatina",
+      "principioActivo": "Atorvastatina",
+      "clasificacion": {
+        "grupoGeneral": "Hipolipemiante",
+        "subgrupoFarmacologico": "Estatina; inhibidor de HMG-CoA reductasa",
+        "mecanismoResumido": "Inhibe síntesis hepática de colesterol",
+        "atcOriginal": "C10AA05",
+        "atcRevisado": "C10AA05"
+      },
+      "productoISP": {
+        "nombreRegistrado": "ATORVASTATINA COMPRIMIDOS RECUBIERTOS 20 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "OPKO CHILE S.A.",
+        "numeroRegistro": "F-25865/25",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Simple",
+        "concentracionPotencia": "20 mg/comprimido",
+        "formaFarmaceutica": "Comprimido recubierto",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-25865%2F25"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-043",
+      "origen": "agregado",
+      "medicamento": "Alprazolam",
+      "principioActivo": "Alprazolam",
+      "clasificacion": {
+        "grupoGeneral": "Ansiolítico",
+        "subgrupoFarmacologico": "Benzodiacepina",
+        "mecanismoResumido": "Modulador alostérico positivo del receptor GABA-A",
+        "atcOriginal": "N05BA12",
+        "atcRevisado": "N05BA12"
+      },
+      "productoISP": {
+        "nombreRegistrado": "ADAX COMPRIMIDOS 0,5 mg",
+        "nombreDeFantasia": "ADAX",
+        "laboratorioTitular": "LABORATORIOS SAVAL S.A.",
+        "numeroRegistro": "F-5511/25",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Retenida",
+        "concentracionPotencia": "0,5 mg/comprimido",
+        "formaFarmaceutica": "Comprimido",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 25 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-5511%2F25"
+      },
+      "observaciones": null
+    },
+    {
+      "id": "MED-044",
+      "origen": "agregado",
+      "medicamento": "Fentanilo transdérmico",
+      "principioActivo": "Fentanilo",
+      "clasificacion": {
+        "grupoGeneral": "Analgésico opioide",
+        "subgrupoFarmacologico": "Agonista opioide μ; parche transdérmico",
+        "mecanismoResumido": "Activa receptores opioides μ",
+        "atcOriginal": "N02AB03",
+        "atcRevisado": "N02AB03"
+      },
+      "productoISP": {
+        "nombreRegistrado": "FENTADUR PARCHE TRANSDÉRMICO 12,5 mcg/hora (FENTANILO)",
+        "nombreDeFantasia": "FENTADUR",
+        "laboratorioTitular": "INSUAMÉRICA S.p.A",
+        "numeroRegistro": "F-24747/24",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Cheque",
+        "concentracionPotencia": "12,5 mcg/hora",
+        "formaFarmaceutica": "Parche transdérmico",
+        "viaAdministracion": "Transdérmica",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 30 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-24747%2F24"
+      },
+      "observaciones": "ATC N02AB03 corresponde a esta forma transdérmica; la inyectable tiene otro código."
+    },
+    {
+      "id": "MED-045",
+      "origen": "agregado",
+      "medicamento": "Clonazepam",
+      "principioActivo": "Clonazepam",
+      "clasificacion": {
+        "grupoGeneral": "Antiepiléptico / ansiolítico",
+        "subgrupoFarmacologico": "Benzodiacepina anticonvulsivante",
+        "mecanismoResumido": "Modulador alostérico positivo del receptor GABA-A",
+        "atcOriginal": "N03AE01",
+        "atcRevisado": "N03AE01"
+      },
+      "productoISP": {
+        "nombreRegistrado": "CLONAZEPAM COMPRIMIDOS 0,5 mg",
+        "nombreDeFantasia": null,
+        "laboratorioTitular": "MDC HEALTH S.p.A.",
+        "numeroRegistro": "F-27812/23",
+        "estadoRegistro": "Vigente",
+        "condicionVenta": "Receta Retenida con Control de Existencia",
+        "concentracionPotencia": "0,5 mg/comprimido",
+        "formaFarmaceutica": "Comprimido",
+        "viaAdministracion": "Oral",
+        "almacenamiento": {
+          "tipo": "Temperatura ambiente",
+          "condicion": "No más de 25 °C"
+        },
+        "fuenteISP": "https://registrosanitario.ispch.gob.cl/Ficha.aspx?RegistroISP=F-27812%2F23"
+      },
+      "observaciones": "Se conserva literalmente la condición de venta de esta ficha ISP."
+    }
+  ]
+}
