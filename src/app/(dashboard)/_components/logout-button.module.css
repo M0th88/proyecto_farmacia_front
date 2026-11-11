@@ -1,4 +1,24 @@
-.form { margin: 0; }
-.button { display: block; width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; background: #fff; color: #b80000; font: inherit; font-size: var(--text-sm); white-space: nowrap; text-align: left; cursor: pointer; }
-.button:hover { background: #fff4f4; }
-.button:focus-visible { outline: 2px solid #b80000; outline-offset: 2px; }
+.form {
+  margin: 0;
+}
+.button {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  color: #b80000;
+  font: inherit;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  text-align: left;
+  cursor: pointer;
+}
+.button:hover {
+  background: #fff4f4;
+}
+.button:focus-visible {
+  outline: 2px solid #b80000;
+  outline-offset: 2px;
+}

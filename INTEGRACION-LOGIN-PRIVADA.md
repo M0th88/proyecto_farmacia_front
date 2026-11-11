@@ -2,6 +2,8 @@
 
 El login está implementado para ambas farmacias. Desde la portada, cada botón rojo abre `/login/privada` o `/login/asistencial`; después de autenticar se ingresa al módulo correspondiente.
 
+El acceso privado llega a `/privada`, que redirige a `/privada/panel`. Las secciones usan los mismos nombres que el menú (`productos`, `stock-y-lotes`, `punto-de-venta`, etc.); sus rutas y redirecciones están documentadas en `README.md`. Los contratos de las API y los códigos de permisos guardados en los roles permanecen iguales.
+
 ## Organización del login
 
 - `src/app/login/[pharmacy]/page.tsx`: valida la farmacia y redirige si ya hay sesión.

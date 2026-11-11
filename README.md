@@ -66,25 +66,33 @@ src/
       _components/              # Formulario y estilos INACAP
     (dashboard)/                 # Grupo que no modifica las URLs
       _components/
-        app-shell.tsx            # Navbar y lateral interactivos
+        app-shell.tsx            # Marco compartido y estado del lateral
+        app-navbar.tsx           # Navbar y menú del usuario
+        app-sidebar.tsx          # Lateral de escritorio y diálogo móvil
+        app-sidebar-trigger.tsx  # Botón para abrir y cerrar
+        sidebar-nav.tsx          # Enlaces y selección activa
         app-shell.module.css
       privada/
-        layout.tsx               # Diseño privado de Sebastián
-        page.tsx                 # Panel privado
-        private.css              # Estilos limitados a .private-module
-        _components/             # POS, navegación y usuarios privados
-        pos/                     # Punto de venta
-        catalogo/                # Productos
-        inventario/              # Stock y lotes
-        ventas/                  # Historial
-        caja/                    # Resumen de cobros
+        layout.tsx               # Sesión y marco compartido
+        page.tsx                 # Redirige al Panel
+        privada.css              # Estilos limitados a .private-module
+        panel/
+        punto-de-venta/
+          _components/
+            punto-de-venta.tsx
+        productos/
+        stock-y-lotes/
+        historial/
+        caja/
         compras/
         proveedores/
-        indicadores/
-        usuarios/
+        reportes/
+        usuarios-y-roles/
+          _components/
+            usuarios-y-roles.tsx
         sin-acceso/
       asistencial/
-        layout.tsx               # Navbar azul y lateral plegable de Isidora
+        layout.tsx               # Sesión, navbar y lateral compartidos
         page.tsx                 # Área de trabajo vacía
         _components/
           example-dashboard.tsx
@@ -98,16 +106,82 @@ src/
       prisma-privada.ts
       prisma-asistencial.ts
     private/                     # Autenticación, permisos y acceso de administrador
+    types/                       # Tipos de Punto de venta y Usuarios y roles
   generated/                     # Clientes generados por Prisma
 ```
 
 Los componentes exclusivos de una página van en su carpeta `_components`; los compartidos entre farmacias van en `(dashboard)/_components`. Los estilos visuales propios se mantienen en archivos `.module.css`, junto al componente. `globals.css` contiene solo estilos base. Los futuros endpoints se agregan en `app/api` y las funciones de servidor compartidas en `lib`.
 
-Farmacia Privada conserva el diseño y los módulos de la rama `sebastian`. Farmacia Asistencial usa el navbar azul y el lateral plegable de Isidora, con el área de trabajo vacía. El panel anterior sigue disponible como código de ejemplo en `asistencial/_components`, pero no se monta sobre el nuevo diseño.
+Ambas farmacias usan el marco de navegación compartido. Los módulos privados mantienen su funcionalidad, con sus opciones en el lateral. Farmacia Asistencial conserva el área de trabajo vacía. El panel anterior sigue disponible como código de ejemplo en `asistencial/_components`, pero no se monta sobre el nuevo diseño.
 
-Los estilos de Farmacia Privada están delimitados por `.private-module`; los de Asistencial usan CSS Modules. Así, navegar entre ambas secciones no mezcla sus diseños. Las URLs públicas se mantienen: `/privada`, sus subsecciones y `/asistencial`.
+Los estilos de Farmacia Privada están delimitados por `.private-module`; el marco compartido y el login usan CSS Modules. Así, navegar entre ambas secciones no mezcla sus diseños.
+
+Los nombres de las carpetas privadas coinciden con los del menú. Se usan minúsculas y guiones en los nombres que contienen espacios:
+
+| Sección visible | Carpeta dentro de `src/app/(dashboard)/privada` | URL |
+| --- | --- | --- |
+| Panel | `panel` | `/privada/panel` |
+| POS (navbar) | `punto-de-venta` | `/privada/punto-de-venta` |
+| Productos | `productos` | `/privada/productos` |
+| Stock y lotes | `stock-y-lotes` | `/privada/stock-y-lotes` |
+| Proveedores | `proveedores` | `/privada/proveedores` |
+| Compras | `compras` | `/privada/compras` |
+| Caja | `caja` | `/privada/caja` |
+| Historial | `historial` | `/privada/historial` |
+| Reportes | `reportes` | `/privada/reportes` |
+| Usuarios y roles | `usuarios-y-roles` | `/privada/usuarios-y-roles` |
+
+`/privada` abre el Panel. Las rutas antiguas (`pos`, `catalogo`, `inventario`, `ventas`, `indicadores` y `usuarios`) redirigen a sus equivalentes nuevos mediante `next.config.ts`. Las API conservan sus URLs y las claves de permisos conservan sus valores para mantener la compatibilidad con las integraciones y roles guardados.
+
+### Formato del código
+
+Se usa Biome 2.3.6 con el estilo de APPCONSTANCIAS: sangría de dos espacios, imports organizados y JSX legible en varias líneas. ESLint mantiene la revisión de reglas de React y Next.js.
+
+```sh
+npm run format        # Ordenar imports y aplicar formato
+npm run format:check  # Comprobar formato sin modificar archivos
+npm run check         # Validar esquemas, tipos y reglas de código
+```
+
+`.editorconfig` mantiene la sangría, UTF-8 y finales de línea consistentes. El formateador excluye clientes generados, datos originales y migraciones ya aplicadas. Los esquemas Prisma se ordenan con `prisma format`, sin modificar la base de datos.
 
 La migración de catálogo integrada admite que `codigoCatalogo` ya exista por la carga de Isidora y completa ATC y fuente sin reemplazar medicamentos. Se conserva `datosCatalogo` junto con las nuevas fichas y tablas de ventas. En una base que ya haya aplicado la versión original de `202611090002_catalogo_inicial`, revisar el historial de migraciones antes de usar `prisma migrate dev`, porque esta rama adapta esa migración para compatibilizar las dos cargas.
+
+## Tabla de usuarios y roles
+
+`/privada/usuarios-y-roles` muestra una tabla administradora basada en APPCONSTANCIAS. Incluye estado activo/inactivo, ID, nombre, apellido, rol, correo, RUT, teléfono, creación y actualización, además de un menú **Acciones** (ver detalles, editar usuario y eliminar con confirmación).
+
+La tabla usa TanStack Query, Table, Virtual y Match Sorter para consultas, búsqueda aproximada, ordenación, carga incremental y virtualización. La búsqueda y la ordenación se aplican a todos los registros en el servidor, no solo a las filas cargadas. Hay esqueleto de diez filas, indicador de actualización, estados vacíos, reintentos y desplazamiento horizontal para celulares. Radix proporciona diálogos, menú y controles accesibles; React Hook Form y Zod validan los formularios y Sonner muestra las notificaciones.
+
+La página original completa está conservada en `/privada/usuarios-y-roles/editar`. La opción **Editar usuario** del menú **Acciones** agrega `?usuario=ID`, muestra un formulario de edición del perfil seleccionado y mantiene debajo la gestión original de roles, permisos y creación de perfiles. No se muestran contraseñas ni hashes; una nueva contraseña es opcional en edición.
+
+```text
+usuarios-y-roles/
+  page.tsx                      # Tabla de usuarios
+  loading.tsx                   # Esqueleto de navegación
+  actions.ts                    # Consultas y mutaciones HTTP
+  _components/
+    columns.tsx                 # Columnas y acciones de cada fila
+    users-table.tsx
+    table-skeleton.tsx
+    new-user-dialog.tsx
+    user-profile-form.tsx
+    user-state-toggle.tsx
+    user-actions.tsx
+    user-details-dialog.tsx
+    delete-user-dialog.tsx
+    usuarios-y-roles.tsx         # Gestión anterior conservada
+    usuarios-table.module.css
+  editar/
+    page.tsx                    # Edición seleccionada y gestión anterior
+    loading.tsx
+```
+
+Los componentes reutilizables están en `src/components/data-table.tsx` y `src/components/ui`; el proveedor de consultas y notificaciones está en `src/app/providers.tsx`. Las consultas de servidor y la selección segura de campos están en `src/lib/private/users.ts`.
+
+La API de usuarios conserva su respuesta de array sin parámetros para la gestión anterior. Con `?page=0` devuelve `{ data, totalRows, nextPage }` y acepta `pageSize`, `search`, `sort` y `direction`. Todas las operaciones exigen el rol Administrador. No se puede desactivar, cambiar de rol ni eliminar la propia cuenta administradora. Los hashes nunca se devuelven al cliente.
+
+`scripts/test-users.mjs` recibe las credenciales de un administrador por stdin (`identifier` y `password`), comprueba los flujos HTTP con perfiles temporales propios y los retira al terminar. Las preferencias de estructura, formato y uso de APPCONSTANCIAS para futuras tareas están registradas en `AGENTS.md`.
 
 ## Catálogo inicial de medicamentos privados
 

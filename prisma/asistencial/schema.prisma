@@ -20,8 +20,8 @@ enum TipoMovimientoStock {
 }
 
 model Rol {
-  id          Int      @id @default(autoincrement())
-  nombre      String   @unique
+  id          Int     @id @default(autoincrement())
+  nombre      String  @unique
   descripcion String?
 
   usuarios Usuario[]
@@ -30,12 +30,12 @@ model Rol {
 }
 
 model Usuario {
-  id       Int    @id @default(autoincrement())
-  rut      String @unique
+  id       Int     @id @default(autoincrement())
+  rut      String  @unique
   nombre   String
   apellido String?
   telefono String?
-  email    String @unique
+  email    String  @unique
   password String
 
   activo Boolean @default(true)
