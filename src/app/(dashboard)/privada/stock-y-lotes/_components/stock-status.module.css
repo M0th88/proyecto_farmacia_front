@@ -1,0 +1,11 @@
+.warning {
+  border-color: #e8c44c;
+  background: #fff3bf;
+  color: #714b00;
+}
+
+.expired {
+  border-color: #d42d10;
+  background: #d42d10;
+  color: #fff;
+}

@@ -1,12 +1,8 @@
-import Link from "next/link";
-
 export default function ComprasPage() {
   return (
     <section className="pos-shell">
       <header className="pos-header">
         <div>
-          <Link href="/">← Panel principal</Link>
-          <p>FARMACIA PRIVADA / ABASTECIMIENTO</p>
           <h1>Compras</h1>
           <span>
             Órdenes a proveedores y recepción de medicamentos por lote.

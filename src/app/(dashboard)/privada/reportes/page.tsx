@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { connection } from "next/server";
 import { requirePharmacyUser } from "@/lib/auth/session";
 import { prismaPrivada } from "@/lib/db/prisma-privada";
@@ -45,8 +44,6 @@ export default async function ReportesPage() {
     <section className="pos-shell">
       <header className="pos-header">
         <div>
-          <Link href="/">← Panel principal</Link>
-          <p>FARMACIA PRIVADA / ANÁLISIS</p>
           <h1>Reportes</h1>
           <span>Ventas registradas durante los últimos 14 días en Chile.</span>
         </div>

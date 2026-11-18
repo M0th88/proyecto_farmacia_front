@@ -35,6 +35,13 @@ export function AppShell({ selected, children, user }: Props) {
   }, [toggleSidebar]);
   return (
     <div className={styles.shell} data-sidebar-open={sidebarOpen}>
+      <AppNavbar
+        selected={selected}
+        user={user}
+        sidebarOpen={sidebarOpen}
+        mobileOpen={mobileOpen}
+        toggleSidebar={toggleSidebar}
+      />
       <AppSidebar
         selected={selected}
         sidebarOpen={sidebarOpen}
@@ -42,13 +49,6 @@ export function AppShell({ selected, children, user }: Props) {
         setMobileOpen={setMobileOpen}
       />
       <div className={styles.workspace}>
-        <AppNavbar
-          selected={selected}
-          user={user}
-          sidebarOpen={sidebarOpen}
-          mobileOpen={mobileOpen}
-          toggleSidebar={toggleSidebar}
-        />
         <main
           className={styles.main}
           aria-label={`Área de trabajo de ${pharmacy.name}`}

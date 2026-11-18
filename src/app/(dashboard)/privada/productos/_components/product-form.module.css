@@ -1,0 +1,13 @@
+.details {
+  padding: 12px;
+  border: 1px solid #d8d8d8;
+  border-radius: 6px;
+}
+.details summary {
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+.details[open] summary {
+  margin-bottom: 16px;
+}

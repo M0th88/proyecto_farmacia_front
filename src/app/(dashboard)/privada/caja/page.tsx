@@ -44,8 +44,6 @@ export default async function CajaPage() {
     <section className="pos-shell">
       <header className="pos-header">
         <div>
-          <Link href="/">← Panel principal</Link>
-          <p>FARMACIA PRIVADA / CAJA</p>
           <h1>Caja del día</h1>
           <span>Resumen de las ventas internas registradas hoy en Chile.</span>
         </div>

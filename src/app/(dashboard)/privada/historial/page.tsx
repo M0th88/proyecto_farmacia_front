@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { requirePharmacyUser } from "@/lib/auth/session";
 import { prismaPrivada } from "@/lib/db/prisma-privada";
 export const instant = false;
@@ -28,8 +27,6 @@ export default async function HistorialPage() {
     <section className="pos-shell">
       <header className="pos-header">
         <div>
-          <Link href="/privada/panel">← Volver al panel</Link>
-          <p>FARMACIA PRIVADA / CONTROL</p>
           <h1>Historial de ventas</h1>
           <span>
             Últimas 100 operaciones registradas · Registro interno, no boleta

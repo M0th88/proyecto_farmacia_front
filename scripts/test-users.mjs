@@ -1,6 +1,6 @@
 // Pruebas HTTP de usuarios. Solo crea y elimina perfiles temporales propios.
 import assert from "node:assert/strict";
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomInt } from "node:crypto";
 
 let input = "";
 for await (const chunk of process.stdin) input += chunk;
@@ -10,7 +10,18 @@ const endpoint = "/api/privada/admin/usuarios";
 const fixtures = new Set();
 let adminCookie;
 const nonce = Date.now().toString(36);
-const fixturePassword = randomBytes(18).toString("base64url");
+const fixturePassword = `Aa1!${randomBytes(18).toString("base64url")}`;
+function fixtureRut() {
+  const body = String(randomInt(10000000, 99000000));
+  let sum = 0;
+  let factor = 2;
+  for (let index = body.length - 1; index >= 0; index--) {
+    sum += Number(body[index]) * factor;
+    factor = factor === 7 ? 2 : factor + 1;
+  }
+  const result = 11 - (sum % 11);
+  return `${body.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}-${result === 11 ? "0" : result === 10 ? "K" : result}`;
+}
 
 async function login(pharmacy, identifier, password) {
   const form = new FormData();
@@ -89,16 +100,16 @@ try {
     const result = await api("POST", endpoint, {
       nombre: `${name} Tabla-${nonce}`,
       apellido: "Temporal",
-      rut: `TEST-${nonce}-${index}`,
+      rut: fixtureRut(),
       email: `tabla-${nonce}-${index}@example.invalid`,
-      telefono: `0000000${index}`,
+      telefono: `+5691000000${index}`,
       rolId: role.id,
       activo: true,
       password: fixturePassword,
     });
     assert.equal(result.response.status, 201);
     fixtures.add(result.data.id);
-    assert.equal(result.data.telefono, `0000000${index}`);
+    assert.equal(result.data.telefono, `+5691000000${index}`);
     assert.ok(result.data.creadoEn && result.data.actualizadoEn);
     assertSafe(result.data);
   }
@@ -150,13 +161,13 @@ try {
     id: ids[0],
     nombre: `AA Tabla-${nonce}`,
     apellido: "Editado",
-    telefono: "123456789",
+    telefono: "912345678",
     email: updatedEmail,
     password: "",
   });
   assert.equal(changed.response.status, 200);
   assert.equal(changed.data.apellido, "Editado");
-  assert.equal(changed.data.telefono, "123456789");
+  assert.equal(changed.data.telefono, "+56912345678");
   assertSafe(changed.data);
   const fixtureLogin = await login("privada", updatedEmail, fixturePassword);
   assert.equal(fixtureLogin.response.status, 200);
@@ -165,7 +176,7 @@ try {
       .status,
     403,
   );
-  const newPassword = randomBytes(18).toString("base64url");
+  const newPassword = `Aa1!${randomBytes(18).toString("base64url")}`;
   assert.equal(
     (await api("PATCH", endpoint, { id: ids[0], password: newPassword }))
       .response.status,

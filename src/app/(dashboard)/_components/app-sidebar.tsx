@@ -1,6 +1,6 @@
 "use client";
 import { type Dispatch, type SetStateAction, useEffect, useRef } from "react";
-import { type Pharmacy, pharmacies } from "@/lib/auth/pharmacies";
+import type { Pharmacy } from "@/lib/auth/pharmacies";
 import styles from "./app-shell.module.css";
 import { SidebarNav } from "./sidebar-nav";
 
@@ -16,13 +16,24 @@ export function AppSidebar({
   mobileOpen,
   setMobileOpen,
 }: Props) {
-  const pharmacy = pharmacies[selected];
   const mobileSidebar = useRef<HTMLDialogElement>(null);
+  const previousFocus = useRef<HTMLElement | null>(null);
   useEffect(() => {
     const dialog = mobileSidebar.current;
-    if (mobileOpen) dialog?.showModal();
-    else if (dialog?.open) dialog.close();
-  }, [mobileOpen]);
+    if (mobileOpen && dialog && !dialog.open) {
+      previousFocus.current = document.activeElement as HTMLElement;
+      dialog.show();
+    } else if (!mobileOpen && dialog?.open) {
+      dialog.close();
+      previousFocus.current?.focus();
+    }
+    if (!mobileOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [mobileOpen, setMobileOpen]);
   return (
     <>
       <aside
@@ -31,15 +42,19 @@ export function AppSidebar({
         aria-label="Barra lateral"
         inert={!sidebarOpen}
       >
-        <div className={styles.sidebarHeader}>
-          {selected === "privada" && (
-            <h2 className={styles.sidebarTitle}>{pharmacy.name}</h2>
-          )}
-        </div>
         <div className={styles.sidebarBody}>
           {selected === "privada" && <SidebarNav />}
         </div>
       </aside>
+      {mobileOpen && (
+        <button
+          type="button"
+          className={styles.mobileOverlay}
+          aria-label="Cerrar barra lateral"
+          onClick={() => setMobileOpen(false)}
+          tabIndex={-1}
+        />
+      )}
       <dialog
         id="pharmacy-mobile-sidebar"
         ref={mobileSidebar}
@@ -61,7 +76,6 @@ export function AppSidebar({
         }}
       >
         <div className={styles.mobileSidebarHeader}>
-          <span>{pharmacy.name}</span>
           <button
             type="button"
             className={styles.iconButton}

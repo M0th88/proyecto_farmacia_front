@@ -1,4 +1,11 @@
 import { z } from "zod";
+import {
+  emailError,
+  normalizePhone,
+  passwordError,
+  phoneError,
+  rutError,
+} from "@/lib/validation/user-fields";
 
 export type Role = {
   id: number;
@@ -22,21 +29,62 @@ export type User = {
   actualizadoEn: string;
 };
 
+const validatedText = (validate: (value: string) => string | null) =>
+  z
+    .string()
+    .trim()
+    .superRefine((value, context) => {
+      const message = validate(value);
+      if (message) context.addIssue({ code: "custom", message });
+    });
 export const userProfileSchema = z.object({
   nombre: z.string().trim().min(2, "Ingresa al menos dos caracteres.").max(80),
   apellido: z.string().trim().max(80),
-  rut: z.string().trim().min(6, "Ingresa un RUT válido.").max(20),
-  email: z.email("Ingresa un correo válido.").max(254),
-  telefono: z.string().trim().max(30),
+  rut: validatedText(rutError)
+    .max(12)
+    .transform((value) => value.toUpperCase()),
+  email: validatedText(emailError)
+    .max(254)
+    .transform((value) => value.toLowerCase()),
+  telefono: validatedText(phoneError)
+    .max(30)
+    .transform((value) => {
+      const phone = normalizePhone(value);
+      if (!phone) return "";
+      return phone.startsWith("+56")
+        ? phone
+        : phone.startsWith("56")
+          ? `+${phone}`
+          : `+56${phone}`;
+    }),
   rolId: z.number().int().positive("Selecciona un rol."),
   activo: z.boolean(),
-  password: z
-    .string()
-    .refine(
-      (value) =>
-        !value ||
-        (value.length >= 12 && new TextEncoder().encode(value).length <= 72),
-      "Usa al menos 12 caracteres y como máximo 72 bytes.",
-    ),
+  password: z.string().superRefine((value, context) => {
+    if (!value) return;
+    const message = passwordError(value);
+    if (message) context.addIssue({ code: "custom", message });
+  }),
+});
+export const userCreateProfileSchema = userProfileSchema.extend({
+  password: userProfileSchema.shape.password.refine(
+    (value) => !!value,
+    "Debe ingresar una contraseña",
+  ),
 });
 export type UserProfile = z.infer<typeof userProfileSchema>;
+export const ownProfileSchema = userProfileSchema
+  .pick({
+    nombre: true,
+    apellido: true,
+    rut: true,
+    email: true,
+    telefono: true,
+    password: true,
+  })
+  .partial()
+  .strict()
+  .refine(
+    (value) => Object.keys(value).length > 0,
+    "No hay cambios para guardar.",
+  );
+export type OwnProfile = z.infer<typeof ownProfileSchema>;

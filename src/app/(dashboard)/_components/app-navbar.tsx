@@ -148,6 +148,16 @@ export function AppNavbar({
               <Link href="/" onClick={() => setNavOpen(false)}>
                 Cambiar de farmacia
               </Link>
+              {selected === "privada" && (
+                <Link
+                  href="/privada/configuracion"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setNavOpen(false)}
+                >
+                  Configuración
+                </Link>
+              )}
               <LogoutButton pharmacy={selected} />
             </nav>
           )}

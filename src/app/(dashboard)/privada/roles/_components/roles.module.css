@@ -1,0 +1,48 @@
+.description {
+  resize: vertical;
+}
+
+.actionNote {
+  max-width: 250px;
+  margin: 4px 8px 8px;
+  color: #4c637e;
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
+.counter {
+  align-self: flex-end;
+  font-variant-numeric: tabular-nums;
+}
+
+.counter.overLimit {
+  color: #c3260c;
+}
+
+.permissions {
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid #d8d8d8;
+  border-radius: 6px;
+  font-size: var(--text-sm);
+}
+.permissions legend {
+  padding: 0 6px;
+  font-weight: 500;
+}
+.permissionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+}
+.permissionList {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+@media (max-width: 639px) {
+  .permissionGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

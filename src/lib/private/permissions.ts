@@ -10,9 +10,10 @@ export const PRIVATE_SECTIONS = [
   { key: "indicadores", label: "Reportes", href: "/privada/reportes" },
   {
     key: "usuarios",
-    label: "Usuarios y roles",
-    href: "/privada/usuarios-y-roles",
+    label: "Usuarios",
+    href: "/privada/usuarios",
   },
+  { key: "roles", label: "Roles", href: "/privada/roles" },
 ] as const;
 export type PrivatePermission = (typeof PRIVATE_SECTIONS)[number]["key"];
 export const ALL_PRIVATE_PERMISSIONS = PRIVATE_SECTIONS.map((s) => s.key);

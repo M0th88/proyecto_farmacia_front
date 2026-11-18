@@ -93,6 +93,17 @@
 .row td {
   min-height: 58px;
 }
+
+.row [data-column="acciones"] {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  background: #fff;
+  box-shadow: -3px 0 5px #0000000a;
+}
+.row th[data-column="acciones"] {
+  background: #fafafa;
+}
 .body {
   display: grid;
   position: relative;

@@ -9,30 +9,15 @@
 }
 .sidebar {
   position: fixed;
-  inset: 0 auto 0 0;
+  inset: var(--navbar-height) auto 0 0;
   z-index: 20;
   width: var(--sidebar-width);
-  height: 100svh;
+  height: calc(100svh - var(--navbar-height));
   display: flex;
   flex-direction: column;
   background: #eff0f4;
   color: #415070;
   transition: transform 200ms ease;
-}
-.sidebarHeader {
-  height: var(--navbar-height);
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  background: var(--navbar-background);
-}
-.sidebarTitle {
-  margin: 0;
-  color: #fff;
-  font-size: var(--text-lg);
-  line-height: 1.5;
-  font-weight: 600;
 }
 .sidebarBody {
   flex: 1;
@@ -82,7 +67,7 @@
   transform: translateX(-100%);
 }
 .workspace {
-  min-height: 100svh;
+  min-height: calc(100svh - var(--navbar-height));
   min-width: 0;
   margin-left: var(--sidebar-width);
   transition: margin-left 200ms ease;
@@ -270,12 +255,12 @@
   padding: 40px 32px;
 }
 .mobileSidebar {
-  --navbar-height: 84px;
   position: fixed;
-  inset: 0 auto 0 0;
+  inset: var(--navbar-height) auto 0 0;
+  z-index: 20;
   width: min(288px, 85vw);
   max-width: none;
-  height: 100svh;
+  height: calc(100svh - var(--navbar-height));
   max-height: none;
   margin: 0;
   padding: 0;
@@ -287,21 +272,29 @@
   display: flex;
   flex-direction: column;
 }
-.mobileSidebar::backdrop {
+.mobileOverlay {
+  display: none;
+  position: fixed;
+  inset: var(--navbar-height) 0 0;
+  z-index: 19;
+  border: 0;
+  padding: 0;
   background: #0008;
 }
 .mobileSidebarHeader {
-  height: var(--navbar-height);
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 8px;
-  padding: 16px;
-  background: #1e1e1e;
-  color: #fffcfb;
+  padding: 4px 8px;
+  background: #eff0f4;
+  color: #415070;
   font-size: var(--text-base);
   font-weight: 600;
+}
+.mobileSidebarHeader .iconButton {
+  color: inherit;
 }
 @media (min-width: 768px) and (max-width: 1023px) {
   .navbar {
@@ -324,6 +317,9 @@
   }
 }
 @media (max-width: 767px) {
+  .mobileOverlay {
+    display: block;
+  }
   .sidebar {
     display: none;
   }

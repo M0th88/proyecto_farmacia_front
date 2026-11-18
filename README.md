@@ -87,9 +87,9 @@ src/
         compras/
         proveedores/
         reportes/
-        usuarios-y-roles/
+        usuarios/
           _components/
-            usuarios-y-roles.tsx
+            users-table.tsx
         sin-acceso/
       asistencial/
         layout.tsx               # Sesión, navbar y lateral compartidos
@@ -116,6 +116,8 @@ Ambas farmacias usan el marco de navegación compartido. Los módulos privados m
 
 Los estilos de Farmacia Privada están delimitados por `.private-module`; el marco compartido y el login usan CSS Modules. Así, navegar entre ambas secciones no mezcla sus diseños.
 
+El navbar ocupa todo el ancho y queda fuera del contenedor que desplaza el sidebar. El logo INACAP y el botón del menú conservan su posición al abrir o cerrar la barra lateral. El lateral comienza debajo del navbar y no muestra el título Farmacia Privada. En móvil, el panel y su fondo se abren por debajo del navbar, manteniendo disponible el mismo botón para cerrarlo.
+
 Los nombres de las carpetas privadas coinciden con los del menú. Se usan minúsculas y guiones en los nombres que contienen espacios:
 
 | Sección visible | Carpeta dentro de `src/app/(dashboard)/privada` | URL |
@@ -129,9 +131,10 @@ Los nombres de las carpetas privadas coinciden con los del menú. Se usan minús
 | Caja | `caja` | `/privada/caja` |
 | Historial | `historial` | `/privada/historial` |
 | Reportes | `reportes` | `/privada/reportes` |
-| Usuarios y roles | `usuarios-y-roles` | `/privada/usuarios-y-roles` |
+| Usuarios | `usuarios` | `/privada/usuarios` |
+| Roles | `roles` | `/privada/roles` |
 
-`/privada` abre el Panel. Las rutas antiguas (`pos`, `catalogo`, `inventario`, `ventas`, `indicadores` y `usuarios`) redirigen a sus equivalentes nuevos mediante `next.config.ts`. Las API conservan sus URLs y las claves de permisos conservan sus valores para mantener la compatibilidad con las integraciones y roles guardados.
+`/privada` abre el Panel. Las rutas antiguas (`pos`, `catalogo`, `inventario`, `ventas`, `indicadores`) redirigen a sus equivalentes nuevos mediante `next.config.ts`. Las API conservan sus URLs y las claves de permisos conservan sus valores para mantener la compatibilidad con las integraciones y roles guardados.
 
 ### Formato del código
 
@@ -147,41 +150,52 @@ npm run check         # Validar esquemas, tipos y reglas de código
 
 La migración de catálogo integrada admite que `codigoCatalogo` ya exista por la carga de Isidora y completa ATC y fuente sin reemplazar medicamentos. Se conserva `datosCatalogo` junto con las nuevas fichas y tablas de ventas. En una base que ya haya aplicado la versión original de `202611090002_catalogo_inicial`, revisar el historial de migraciones antes de usar `prisma migrate dev`, porque esta rama adapta esa migración para compatibilizar las dos cargas.
 
-## Tabla de usuarios y roles
+## Usuarios y Roles
 
-`/privada/usuarios-y-roles` muestra una tabla administradora basada en APPCONSTANCIAS. Incluye estado activo/inactivo, ID, nombre, apellido, rol, correo, RUT, teléfono, creación y actualización, además de un menú **Acciones** (ver detalles, editar usuario y eliminar con confirmación).
+El menú del usuario en el navbar incluye **Configuración**, que abre `/privada/configuracion` en una nueva pestaña. Cualquier usuario autenticado puede editar allí sus propios datos y contraseña, con el mismo formulario y validaciones de Usuarios. El formulario compartido está en `src/components/user-profile-form.tsx`. El rol y el estado de la cuenta son de solo lectura. `PATCH /api/privada/perfil` obtiene la cuenta desde la sesión, rechaza identificadores ajenos y campos de rol/estado, y nunca devuelve hashes. La gestión de roles y la edición de roles asignados siguen reservadas al Administrador en las rutas administrativas.
 
-La tabla usa TanStack Query, Table, Virtual y Match Sorter para consultas, búsqueda aproximada, ordenación, carga incremental y virtualización. La búsqueda y la ordenación se aplican a todos los registros en el servidor, no solo a las filas cargadas. Hay esqueleto de diez filas, indicador de actualización, estados vacíos, reintentos y desplazamiento horizontal para celulares. Radix proporciona diálogos, menú y controles accesibles; React Hook Form y Zod validan los formularios y Sonner muestra las notificaciones.
+`/privada/usuarios` conserva la tabla de usuarios, el modal **Crear usuario** y sus acciones de ver detalles, editar y eliminar. La edición individual está en `/privada/usuarios/editar?usuario=ID`.
 
-La página original completa está conservada en `/privada/usuarios-y-roles/editar`. La opción **Editar usuario** del menú **Acciones** agrega `?usuario=ID`, muestra un formulario de edición del perfil seleccionado y mantiene debajo la gestión original de roles, permisos y creación de perfiles. No se muestran contraseñas ni hashes; una nueva contraseña es opcional en edición.
+`/privada/roles` tiene su propia tabla con ID, nombre, descripción, vistas permitidas y cantidad de usuarios asignados. Usa el mismo componente `DataTable`, con búsqueda, ordenación, carga progresiva, virtualización, esqueletos y estados vacíos/de error. **Crear rol** y **Editar Roles** abren un modal con nombre, descripción y vistas permitidas, usando la misma estructura de formulario que Crear usuario. El menú de acciones solo incluye **Editar Roles** y **Eliminar Roles**; eliminar requiere confirmación.
 
-```text
-usuarios-y-roles/
-  page.tsx                      # Tabla de usuarios
-  loading.tsx                   # Esqueleto de navegación
-  actions.ts                    # Consultas y mutaciones HTTP
-  _components/
-    columns.tsx                 # Columnas y acciones de cada fila
-    users-table.tsx
-    table-skeleton.tsx
-    new-user-dialog.tsx
-    user-profile-form.tsx
-    user-state-toggle.tsx
-    user-actions.tsx
-    user-details-dialog.tsx
-    delete-user-dialog.tsx
-    usuarios-y-roles.tsx         # Gestión anterior conservada
-    usuarios-table.module.css
-  editar/
-    page.tsx                    # Edición seleccionada y gestión anterior
-    loading.tsx
-```
+Usuarios y Roles aparecen por separado en el sidebar, en ese orden. Las rutas anteriores `/privada/usuarios-y-roles` y `/privada/usuarios-y-roles/editar?usuario=ID` redirigen a sus equivalentes en `/privada/usuarios`, conservando los parámetros. El componente histórico de gestión combinada se conserva en `usuarios/_components/usuarios-y-roles.tsx`, fuera de las vistas nuevas.
 
-Los componentes reutilizables están en `src/components/data-table.tsx` y `src/components/ui`; el proveedor de consultas y notificaciones está en `src/app/providers.tsx`. Las consultas de servidor y la selección segura de campos están en `src/lib/private/users.ts`.
+Los componentes exclusivos están en `usuarios/_components` y `roles/_components`. La tabla y los estilos compartidos están en `src/components/data-table.tsx` y `src/components/admin-table.module.css`. Radix proporciona los modales y menús; React Hook Form y Zod validan los formularios y Sonner muestra las notificaciones.
 
-La API de usuarios conserva su respuesta de array sin parámetros para la gestión anterior. Con `?page=0` devuelve `{ data, totalRows, nextPage }` y acepta `pageSize`, `search`, `sort` y `direction`. Todas las operaciones exigen el rol Administrador. No se puede desactivar, cambiar de rol ni eliminar la propia cuenta administradora. Los hashes nunca se devuelven al cliente.
+Las API de usuarios y roles mantienen la respuesta de array sin parámetros. Con `?page=0` devuelven `{ data, totalRows, nextPage }` y admiten `pageSize`, `search`, `sort` y `direction`. Todas las operaciones requieren Administrador. No se puede modificar ni eliminar el rol Administrador, asignar permisos administrativos a otros roles ni eliminar roles con usuarios asignados. Las claves de permisos existentes se conservan.
 
-`scripts/test-users.mjs` recibe las credenciales de un administrador por stdin (`identifier` y `password`), comprueba los flujos HTTP con perfiles temporales propios y los retira al terminar. Las preferencias de estructura, formato y uso de APPCONSTANCIAS para futuras tareas están registradas en `AGENTS.md`.
+`node scripts/test-roles.mjs` verifica la API de roles con una base simulada, sin modificar datos reales. `scripts/test-users.mjs` mantiene las pruebas HTTP de usuarios, recibiendo credenciales administradoras por stdin.
+
+Crear usuario formatea automáticamente los puntos y el guion del RUT. El teléfono móvil muestra `+56 9` fijo y permite ingresar sus ocho dígitos restantes, guardando el número completo. Al editar teléfonos fijos existentes se conserva su formato completo. La casilla Usuario activo se alinea con el campo de contraseña sin desplazarse por sus mensajes de validación; en pantallas pequeñas pasa debajo.
+
+Crear usuario reutiliza los validadores ArkType y los requisitos de contraseña de APPCONSTANCIAS (`src/lib/types/users.ts`), integrados con React Hook Form y el esquema compartido de la API. El RUT exige puntos y guion y también verifica el dígito con módulo 11; admite K/k y se guarda con K mayúscula. El correo se valida y normaliza a minúsculas. APPCONSTANCIAS no contiene una regla de teléfono: aquí es opcional, admite nueve dígitos chilenos con prefijo +56 opcional y espacios, paréntesis o guiones, y se guarda con +56. La contraseña exige ocho caracteres, mayúscula, minúscula, número y carácter especial, con máximo 72 bytes por bcrypt. En edición, vacía conserva la actual. `node scripts/test-user-validation.mjs` verifica estas reglas y su aplicación en la API sin crear usuarios reales.
+
+## Dashboard del Panel
+
+`/privada/panel` muestra indicadores de ventas, operaciones, ticket promedio y unidades disponibles. El selector de 7, 14 y 30 días actualiza el gráfico diario, la comparación con el período anterior, la distribución por medios de pago, los productos más vendidos y las ventas recientes. Los cálculos usan fechas de Chile y datos reales de los últimos 60 días; los períodos sin ventas muestran estados vacíos y no incluyen datos de demostración.
+
+El inventario resume las existencias actuales y sus alertas de stock mínimo y vencimiento. Las unidades disponibles excluyen lotes vencidos y productos inactivos. Los gráficos SVG y CSS son interactivos y adaptables, con valores accesibles y sin dependencias adicionales. El botón Actualizar recarga los datos del servidor existente. `node scripts/test-panel.mjs` verifica períodos, comparaciones, pagos, productos, fechas e inventario con datos simulados.
+
+## Productos
+
+`/privada/productos` usa la misma tabla que Usuarios y Stock y lotes, con búsqueda, ordenación, carga progresiva, virtualización y estados de carga/error. Conserva las tarjetas de Productos, Sin precio, Sin código de barras y Sin clasificar.
+
+**Añadir productos** abre un modal con nombre, códigos de barras/catálogo/ATC, fuente, principio activo, concentración, forma farmacéutica, categoría existente o nueva, condición de venta, precio en CLP, stock mínimo y estado activo. Una sección desplegable permite ingresar todos los campos manuales de `FichaMedicamentoChile`, incluidos registro ISP, laboratorio, vía de administración, almacenamiento y observaciones. Identificadores, fechas de auditoría y metadatos JSON de importación son administrados por el sistema. Las existencias y los lotes se registran en Stock y lotes.
+
+`GET /api/privada/productos` admite los mismos filtros de paginación que las otras tablas; `opciones=1` entrega categorías. `POST` crea el producto, su ficha y una categoría nueva en una sola transacción. Requiere Administrador o permiso `catalogo`. Se validan importes, cantidades y códigos únicos; los campos opcionales vacíos se guardan como nulos. Añadir un producto actualiza también la tabla y las opciones de inventario. `node scripts/test-products.mjs` prueba estos flujos con una base simulada.
+
+## Stock y lotes
+
+Productos y Stock y lotes incluyen una columna **Acciones** fija a la derecha con **Ver detalles** y **Editar**. En Productos, **Eliminar** solo aparece para Administrador y la API comprueba ese rol; solo se eliminan productos sin lotes ni ventas, con confirmación. Los productos en uso pueden desactivarse desde Editar.
+
+Stock y lotes no permite eliminar registros, ni siquiera como Administrador: no muestra esa opción y DELETE responde 405. Editar permite modificar número de lote, fechas y cantidad, con un motivo obligatorio y registro de ajuste. El lote y sus fechas son compartidos entre ubicaciones. Se comprueba la cantidad anterior para rechazar cambios sobre stock desactualizado. Editar un producto sin lotes abre el formulario para registrar su primer lote con el producto seleccionado.
+
+
+`/privada/stock-y-lotes` conserva las tarjetas de Productos, Stock bajo, Vencen en 30 días y Lotes vencidos. La lista usa la misma tabla reutilizable que Usuarios: filtro, ordenación en servidor, carga progresiva, virtualización, esqueletos y estados vacíos/de error. Cada fila representa un lote en una ubicación; los productos sin lotes también aparecen. Las tarjetas resumen el inventario completo, sin depender del filtro ni contar dos veces los lotes repartidos entre ubicaciones.
+
+**Añadir stock** usa el mismo modal y estructura de formulario que Crear usuario. Permite seleccionar producto, número de lote, fabricación opcional, vencimiento, ubicación, cantidad y motivo opcional. Si no existe una ubicación adecuada, puede registrarse una de tipo Bodega o Vitrina. Los lotes existentes conservan sus fechas y la entrada suma unidades. No se aceptan cantidades negativas/fraccionarias, productos inactivos ni lotes vencidos.
+
+`GET /api/privada/stock-y-lotes` admite `page`, `pageSize`, `search`, `sort`, `direction`; con `opciones=1` entrega productos y ubicaciones para el formulario. `POST` registra lote, ubicación, cantidad y movimiento de entrada en una transacción serializable. La página y la API requieren Administrador o el permiso `inventario`. `node scripts/test-stock.mjs` verifica validación, permisos, acumulación, trazabilidad, rollback, métricas, búsqueda y paginación con una base simulada, sin modificar el inventario real.
 
 ## Catálogo inicial de medicamentos privados
 

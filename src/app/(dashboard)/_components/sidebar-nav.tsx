@@ -19,6 +19,7 @@ const icons: Record<PrivatePermission, string> = {
   caja: "M4 3h16v18H4Z M8 7h8 M8 11h1 M15 11h1 M8 15h1 M15 15h1 M8 18h1 M15 18h1",
   ventas: "M3 12a9 9 0 1 0 3-7 M3 3v6h6 M12 7v5l3 2",
   indicadores: "M4 3v18h17 M8 16v-5 M13 16V7 M18 16v-9",
+  roles: "M12 3 3 7v5c0 5 9 9 9 9s9-4 9-9V7Z M9 12l2 2 4-4",
   usuarios:
     "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M17 4a4 4 0 0 1 0 7 M22 21v-2a4 4 0 0 0-3-4",
 };

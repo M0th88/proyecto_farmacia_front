@@ -1,12 +1,8 @@
-import Link from "next/link";
-
 export default function ProveedoresPage() {
   return (
     <section className="pos-shell">
       <header className="pos-header">
         <div>
-          <Link href="/">← Panel principal</Link>
-          <p>FARMACIA PRIVADA / ABASTECIMIENTO</p>
           <h1>Proveedores</h1>
           <span>Laboratorios y distribuidores que abastecen la farmacia.</span>
         </div>

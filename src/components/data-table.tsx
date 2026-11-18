@@ -32,6 +32,8 @@ import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
 
 type Props<T> = {
+  renderSummary?: (page: PaginationResponse<T> | undefined) => ReactNode;
+  entityLabel?: string;
   columns: ColumnDef<T>[];
   queryKey: readonly unknown[];
   queryFn: (options: {
@@ -47,6 +49,8 @@ type Props<T> = {
 };
 
 export function DataTable<T>({
+  renderSummary,
+  entityLabel = "usuarios",
   columns,
   queryKey,
   queryFn,
@@ -112,6 +116,7 @@ export function DataTable<T>({
   };
   return (
     <div className={styles.container}>
+      {renderSummary?.(query.data?.pages[0])}
       <div className={styles.toolbar}>
         <div className={styles.search}>
           <label htmlFor={id}>Filtrar</label>
@@ -128,8 +133,8 @@ export function DataTable<T>({
         <div className={styles.toolbarActions}>
           <Button
             variant="outline"
-            aria-label="Actualizar usuarios"
-            title="Actualizar usuarios"
+            aria-label={`Actualizar ${entityLabel}`}
+            title={`Actualizar ${entityLabel}`}
             disabled={query.isFetching}
             onClick={() => void query.refetch()}
           >
@@ -157,7 +162,7 @@ export function DataTable<T>({
             className={styles.scroll}
             ref={scrollRef}
             onScroll={loadMore}
-            aria-label="Tabla de usuarios; desplazamiento horizontal y vertical"
+            aria-label={`Tabla de ${entityLabel}; desplazamiento horizontal y vertical`}
             tabIndex={0}
           >
             <table
@@ -166,7 +171,7 @@ export function DataTable<T>({
                 minWidth: table.getTotalSize() + (columns.length - 1) * 16,
               }}
               aria-rowcount={total + 1}
-              aria-label="Usuarios de Farmacia Privada"
+              aria-label={`Tabla de ${entityLabel}`}
               aria-busy={query.isFetching}
             >
               <thead className={styles.header}>
@@ -175,6 +180,7 @@ export function DataTable<T>({
                     {group.headers.map((header) => (
                       <th
                         key={header.id}
+                        data-column={header.column.id}
                         scope="col"
                         style={{ width: header.getSize() }}
                         aria-sort={
@@ -236,6 +242,7 @@ export function DataTable<T>({
                       {row.getVisibleCells().map((cell) => (
                         <td
                           key={cell.id}
+                          data-column={cell.column.id}
                           style={{ width: cell.column.getSize() }}
                         >
                           {flexRender(
@@ -269,14 +276,14 @@ export function DataTable<T>({
           </div>
           <div className={styles.footer} role="status">
             <span>
-              {data.length} de {total} usuarios
+              {data.length} de {total} {entityLabel}
               {debouncedSearch ? " encontrados" : ""}
             </span>
             {query.isFetching && (
               <span className={styles.loading}>
                 <LoaderCircle size={16} className={styles.spinner} />
                 {query.isFetchingNextPage
-                  ? "Cargando más usuarios…"
+                  ? `Cargando más ${entityLabel}…`
                   : "Actualizando…"}
               </span>
             )}
@@ -309,7 +316,7 @@ export function TableSkeleton({ headers }: { headers: readonly string[] }) {
     <div
       className={styles.skeletonWrap}
       role="status"
-      aria-label="Cargando tabla de usuarios"
+      aria-label="Cargando tabla"
     >
       <table className={styles.skeletonTable}>
         <thead>

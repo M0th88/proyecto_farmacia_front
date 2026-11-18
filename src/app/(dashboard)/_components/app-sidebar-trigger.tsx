@@ -46,7 +46,7 @@ export function AppSidebarTrigger({
         type="button"
         className={`${styles.iconButton} ${styles.mobileTrigger}`}
         onClick={toggleSidebar}
-        aria-label="Abrir barra lateral"
+        aria-label={mobileOpen ? "Cerrar barra lateral" : "Abrir barra lateral"}
         aria-expanded={mobileOpen}
         aria-controls="pharmacy-mobile-sidebar"
       >

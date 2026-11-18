@@ -8,15 +8,15 @@ import {
   userListSchema,
   userSelect,
 } from "@/lib/private/users";
-import { userProfileSchema } from "@/lib/types/usuarios-y-roles";
+import {
+  userCreateProfileSchema,
+  userProfileSchema,
+} from "@/lib/types/usuarios-y-roles";
 
-const createSchema = userProfileSchema.extend({
+const createSchema = userCreateProfileSchema.extend({
   apellido: userProfileSchema.shape.apellido.default(""),
   telefono: userProfileSchema.shape.telefono.default(""),
   activo: userProfileSchema.shape.activo.default(true),
-  password: userProfileSchema.shape.password.refine(
-    (value) => value.length >= 12,
-  ),
 });
 const updateSchema = userProfileSchema
   .partial()
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
     return Response.json(
       {
         error:
-          "Completa los datos y usa una contraseña de al menos 12 caracteres (máximo 72 bytes).",
+          parsed.error.issues[0]?.message ?? "Revisa los datos del usuario.",
       },
       { status: 400 },
     );
@@ -95,7 +95,10 @@ export async function PATCH(request: Request) {
   const parsed = updateSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success)
     return Response.json(
-      { error: "Datos del usuario inválidos." },
+      {
+        error:
+          parsed.error.issues[0]?.message ?? "Datos del usuario inválidos.",
+      },
       { status: 400 },
     );
   const { id, password, ...profile } = parsed.data;

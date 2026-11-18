@@ -32,8 +32,8 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
-        source: "/privada/usuarios",
-        destination: "/privada/usuarios-y-roles",
+        source: "/privada/usuarios-y-roles/:path*",
+        destination: "/privada/usuarios/:path*",
         permanent: true,
       },
     ];

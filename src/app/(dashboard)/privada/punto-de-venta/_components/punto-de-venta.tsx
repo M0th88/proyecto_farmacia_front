@@ -144,8 +144,6 @@ export function PuntoDeVenta() {
     <section className="pos-shell">
       <header className="pos-header">
         <div>
-          <Link href="/privada/panel">← Volver al panel</Link>
-          <p>FARMACIA PRIVADA / POS</p>
           <h1>POS</h1>
           <span>Escanea, prepara el pedido y registra el cobro.</span>
           <p>
