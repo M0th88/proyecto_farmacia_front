@@ -18,7 +18,7 @@ const diaChile = (fecha: Date) =>
     day: "2-digit",
   }).format(fecha);
 
-export default async function CajaPage() {
+export default async function CajaDelDiaPage() {
   await requirePharmacyUser("privada");
   await connection();
   const ahora = new Date();
@@ -44,7 +44,7 @@ export default async function CajaPage() {
     <section className="pos-shell">
       <header className="pos-header">
         <div>
-          <h1>Caja del día</h1>
+          <h1>Caja del Día</h1>
           <span>Resumen de las ventas internas registradas hoy en Chile.</span>
         </div>
       </header>
@@ -95,7 +95,10 @@ export default async function CajaPage() {
             inicial, retiros y conciliación con terminal de pago se incorporarán
             cuando exista usuario y turno de caja.
           </p>
-          <Link className="pos-action-link" href="/privada/historial">
+          <Link
+            className="pos-action-link"
+            href="/privada/historial-y-reportes#operaciones-recientes"
+          >
             Ver historial de ventas →
           </Link>
         </aside>

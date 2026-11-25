@@ -14,7 +14,7 @@ import {
   type StockOptions,
   stockEntrySchema,
 } from "@/lib/types/stock-y-lotes";
-import { productsQueryKey } from "../../productos/actions";
+import { productsQueryKey } from "../../productos-y-empaques/actions";
 import { saveStock, stockOptionsQueryKey, stockQueryKey } from "../actions";
 import { ProductSearch } from "./product-search";
 

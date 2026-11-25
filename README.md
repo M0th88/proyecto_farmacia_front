@@ -118,23 +118,34 @@ Los estilos de Farmacia Privada están delimitados por `.private-module`; el mar
 
 El navbar ocupa todo el ancho y queda fuera del contenedor que desplaza el sidebar. El logo INACAP y el botón del menú conservan su posición al abrir o cerrar la barra lateral. El lateral comienza debajo del navbar y no muestra el título Farmacia Privada. En móvil, el panel y su fondo se abren por debajo del navbar, manteniendo disponible el mismo botón para cerrarlo.
 
-Los nombres de las carpetas privadas coinciden con los del menú. Se usan minúsculas y guiones en los nombres que contienen espacios:
+El lateral abre sus grupos por defecto. Cada grupo se puede plegar y el enlace de la página activa queda resaltado. Las carpetas de las páginas están dentro de `src/app/(dashboard)/privada`.
 
-| Sección visible | Carpeta dentro de `src/app/(dashboard)/privada` | URL |
+| Grupo | Opción | URL |
 | --- | --- | --- |
-| Panel | `panel` | `/privada/panel` |
-| POS (navbar) | `punto-de-venta` | `/privada/punto-de-venta` |
-| Productos | `productos` | `/privada/productos` |
-| Stock y lotes | `stock-y-lotes` | `/privada/stock-y-lotes` |
-| Proveedores | `proveedores` | `/privada/proveedores` |
-| Compras | `compras` | `/privada/compras` |
-| Caja | `caja` | `/privada/caja` |
-| Historial | `historial` | `/privada/historial` |
-| Reportes | `reportes` | `/privada/reportes` |
-| Usuarios | `usuarios` | `/privada/usuarios` |
-| Roles | `roles` | `/privada/roles` |
+| Acceso directo | Panel | `/privada/panel` |
+| Acceso directo | Compras | `/privada/compras` |
+| Almacén | Stocks y Lotes | `/privada/stocks-y-lotes` |
+| Almacén | Otros Productos | `/privada/otros-productos` |
+| Almacén | Ubicaciones | `/privada/ubicaciones` |
+| Almacén | Cuarentena Sanitaria | `/privada/cuarentena-sanitaria` |
+| Almacén | Cuarentena Transitoria | `/privada/cuarentena-transitoria` |
+| Segregación de Productos | Segregar Productos | `/privada/segregar-productos` |
+| Segregación de Productos | Productos Vencidos | `/privada/productos-vencidos` |
+| Segregación de Productos | Retiro de Mercado | `/privada/retiro-de-mercado` |
+| Segregación de Productos | Productos Rechazados | `/privada/productos-rechazados` |
+| Segregación de Productos | Devoluciones a Proveedor | `/privada/devoluciones-a-proveedor` |
+| Administrador | Productos y Empaques | `/privada/productos-y-empaques` |
+| Administrador | Proveedores | `/privada/proveedores` |
+| Administrador | Usuarios | `/privada/usuarios` |
+| Administrador | Roles | `/privada/roles` |
+| Administrador | Marcas | `/privada/marcas` |
+| Reportes Generales | Auditoría FEFO | `/privada/auditoria-fefo` |
+| Reportes Generales | Inventario Histórico | `/privada/inventario-historico` |
+| Reportes Generales | Historial y Reportes | `/privada/historial-y-reportes` |
+| Reportes Generales | Caja del Día | `/privada/caja-del-dia` |
+| Navbar | POS | `/privada/punto-de-venta` |
 
-`/privada` abre el Panel. Las rutas antiguas (`pos`, `catalogo`, `inventario`, `ventas`, `indicadores`) redirigen a sus equivalentes nuevos mediante `next.config.ts`. Las API conservan sus URLs y las claves de permisos conservan sus valores para mantener la compatibilidad con las integraciones y roles guardados.
+`/privada` abre el Panel. `historial`, `reportes`, `ventas` e `indicadores` redirigen a Historial y Reportes. `caja`, `productos`, `stock-y-lotes` y sus demás alias conservan el acceso mediante las redirecciones de `next.config.ts`. Las API conservan sus URLs y las claves de permisos conservan sus valores para mantener la compatibilidad con las integraciones y roles guardados.
 
 ### Formato del código
 
@@ -178,7 +189,7 @@ El inventario resume las existencias actuales y sus alertas de stock mínimo y v
 
 ## Productos
 
-`/privada/productos` usa la misma tabla que Usuarios y Stock y lotes, con búsqueda, ordenación, carga progresiva, virtualización y estados de carga/error. Conserva las tarjetas de Productos, Sin precio, Sin código de barras y Sin clasificar.
+`/privada/productos-y-empaques` usa la misma tabla que Usuarios y Stocks y Lotes, con búsqueda, ordenación, carga progresiva, virtualización y estados de carga/error. Conserva las tarjetas de Productos, Sin precio, Sin código de barras y Sin clasificar.
 
 **Añadir productos** abre un modal con nombre, códigos de barras/catálogo/ATC, fuente, principio activo, concentración, forma farmacéutica, categoría existente o nueva, condición de venta, precio en CLP, stock mínimo y estado activo. Una sección desplegable permite ingresar todos los campos manuales de `FichaMedicamentoChile`, incluidos registro ISP, laboratorio, vía de administración, almacenamiento y observaciones. Identificadores, fechas de auditoría y metadatos JSON de importación son administrados por el sistema. Las existencias y los lotes se registran en Stock y lotes.
 
@@ -191,7 +202,7 @@ Productos y Stock y lotes incluyen una columna **Acciones** fija a la derecha co
 Stock y lotes no permite eliminar registros, ni siquiera como Administrador: no muestra esa opción y DELETE responde 405. Editar permite modificar número de lote, fechas y cantidad, con un motivo obligatorio y registro de ajuste. El lote y sus fechas son compartidos entre ubicaciones. Se comprueba la cantidad anterior para rechazar cambios sobre stock desactualizado. Editar un producto sin lotes abre el formulario para registrar su primer lote con el producto seleccionado.
 
 
-`/privada/stock-y-lotes` conserva las tarjetas de Productos, Stock bajo, Vencen en 30 días y Lotes vencidos. La lista usa la misma tabla reutilizable que Usuarios: filtro, ordenación en servidor, carga progresiva, virtualización, esqueletos y estados vacíos/de error. Cada fila representa un lote en una ubicación; los productos sin lotes también aparecen. Las tarjetas resumen el inventario completo, sin depender del filtro ni contar dos veces los lotes repartidos entre ubicaciones.
+`/privada/stocks-y-lotes` conserva las tarjetas de Productos, Stock bajo, Vencen en 30 días y Lotes vencidos. La lista usa la misma tabla reutilizable que Usuarios: filtro, ordenación en servidor, carga progresiva, virtualización, esqueletos y estados vacíos/de error. Cada fila representa un lote en una ubicación; los productos sin lotes también aparecen. Las tarjetas resumen el inventario completo, sin depender del filtro ni contar dos veces los lotes repartidos entre ubicaciones.
 
 **Añadir stock** usa el mismo modal y estructura de formulario que Crear usuario. Permite seleccionar producto, número de lote, fabricación opcional, vencimiento, ubicación, cantidad y motivo opcional. Si no existe una ubicación adecuada, puede registrarse una de tipo Bodega o Vitrina. Los lotes existentes conservan sus fechas y la entrada suma unidades. No se aceptan cantidades negativas/fraccionarias, productos inactivos ni lotes vencidos.
 

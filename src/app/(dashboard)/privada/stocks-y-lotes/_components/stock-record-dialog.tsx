@@ -16,7 +16,7 @@ import {
   type StockRow,
   stockEditSchema,
 } from "@/lib/types/stock-y-lotes";
-import { productsQueryKey } from "../../productos/actions";
+import { productsQueryKey } from "../../productos-y-empaques/actions";
 import {
   stockOptions,
   stockOptionsQueryKey,

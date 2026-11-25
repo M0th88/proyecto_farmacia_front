@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function ProductsLoading() {
   return (
     <section className={styles.page}>
-      <h1 className={styles.title}>Productos</h1>
+      <h1 className={styles.title}>Productos y Empaques</h1>
       <div className="pos-metrics">
         {[
           "Productos",

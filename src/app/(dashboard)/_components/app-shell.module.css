@@ -1,5 +1,5 @@
 .shell {
-  --sidebar-width: 256px;
+  --sidebar-width: 284px;
   --navbar-height: 84px;
   --navbar-background: #1e1e1e;
   min-height: 100svh;
@@ -24,42 +24,93 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 8px 0;
+  padding: 10px 8px;
 }
 .sidebarNav {
   display: block;
   min-width: 0;
 }
-.sidebarList {
+.sidebarList,
+.sidebarGroupList {
   list-style: none;
   margin: 0;
   padding: 0;
 }
-.sidebarLink {
+.sidebarLink,
+.sidebarGroupToggle {
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-height: 60px;
-  padding: 12px 16px;
-  font-size: var(--text-lg);
-  line-height: 1.5;
-  font-weight: 400;
+  gap: 10px;
+  min-height: 40px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: var(--text-sm);
+  line-height: 1.35;
   transition:
     background 150ms,
     color 150ms;
 }
-.sidebarLink svg {
+.sidebarLink svg,
+.sidebarGroupToggle svg {
   flex-shrink: 0;
 }
-.sidebarLink:hover {
-  background: #1e1e1ebf;
-  color: #fffcfb;
+.sidebarGroup {
+  margin-top: 7px;
+}
+.sidebarGroupToggle {
+  cursor: pointer;
+  font-weight: 650;
+  list-style: none;
+}
+.sidebarGroupToggle::-webkit-details-marker {
+  display: none;
+}
+.sidebarChevron {
+  margin-inline-start: auto;
+}
+.sidebarGroup details[open] .sidebarChevron {
+  transform: rotate(180deg);
+}
+.sidebarGroupToggle[data-active="true"] {
+  color: #253754;
+}
+.sidebarGroupList {
+  margin: 1px 0 6px 18px;
+  padding-left: 12px;
+  background:
+    linear-gradient(#b9c4d5, #b9c4d5) left center / 1px calc(100% - 34px)
+    no-repeat;
+}
+.sidebarGroupList .sidebarLink {
+  position: relative;
+  min-height: 34px;
+  padding: 7px 9px;
+}
+.sidebarGroupList .sidebarLink::before {
+  position: absolute;
+  inset: 50% auto auto -14px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #7a8da9;
+  content: "";
+  transform: translateY(-50%);
+}
+.sidebarLink:hover,
+.sidebarGroupToggle:hover {
+  background: #e1e6ee;
+  color: #253754;
 }
 .sidebarLink[aria-current="page"] {
-  background: #1e1e1e;
-  color: #fffcfb;
+  background: #dbe3ef;
+  color: #253754;
+  font-weight: 650;
 }
-.sidebarLink:focus-visible {
+.sidebarGroupList .sidebarLink[aria-current="page"]::before {
+  background: currentColor;
+}
+.sidebarLink:focus-visible,
+.sidebarGroupToggle:focus-visible {
   outline: 2px solid #415070;
   outline-offset: -3px;
 }
@@ -376,7 +427,8 @@
 @media (prefers-reduced-motion: reduce) {
   .sidebar,
   .workspace,
-  .sidebarLink {
+  .sidebarLink,
+  .sidebarGroupToggle {
     transition: none;
   }
 }

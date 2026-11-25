@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function StockLoading() {
   return (
     <section className={styles.page} aria-label="Cargando stock y lotes">
-      <h1 className={styles.title}>Stock y lotes</h1>
+      <h1 className={styles.title}>Stocks y Lotes</h1>
       <div className="pos-metrics">
         {["Productos", "Stock bajo", "Vencen en 30 días", "Lotes vencidos"].map(
           (label) => (

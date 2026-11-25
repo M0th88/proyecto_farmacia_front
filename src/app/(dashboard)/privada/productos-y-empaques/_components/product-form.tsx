@@ -20,7 +20,7 @@ import {
 import {
   stockOptionsQueryKey,
   stockQueryKey,
-} from "../../stock-y-lotes/actions";
+} from "../../stocks-y-lotes/actions";
 import {
   productOptionsQueryKey,
   productsQueryKey,

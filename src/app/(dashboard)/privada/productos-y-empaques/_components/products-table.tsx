@@ -15,7 +15,7 @@ import {
 import {
   stockOptionsQueryKey,
   stockQueryKey,
-} from "../../stock-y-lotes/actions";
+} from "../../stocks-y-lotes/actions";
 import {
   listProducts,
   type ProductPage,
@@ -146,7 +146,7 @@ export function ProductsTable({
   ];
   return (
     <section className={styles.page}>
-      <h1 className={styles.title}>Productos</h1>
+      <h1 className={styles.title}>Productos y Empaques</h1>
       <DataTable<ProductRow>
         columns={actionColumns}
         queryKey={[...productsQueryKey, currentUserId]}

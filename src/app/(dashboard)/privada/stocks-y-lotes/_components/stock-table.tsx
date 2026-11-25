@@ -112,7 +112,7 @@ export function StockTable({
   ];
   return (
     <section className={styles.page}>
-      <h1 className={styles.title}>Stock y lotes</h1>
+      <h1 className={styles.title}>Stocks y Lotes</h1>
       <DataTable<StockRow>
         columns={actionColumns}
         queryKey={[...stockQueryKey, currentUserId]}

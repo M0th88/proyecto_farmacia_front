@@ -1,14 +1,14 @@
 import { connection } from "next/server";
 import { requirePharmacyUser } from "@/lib/auth/session";
+import { panelDay } from "@/lib/dashboard-summary";
 import { prismaPrivada } from "@/lib/db/prisma-privada";
+import { pesos } from "./_components/format";
+import {
+  getRecentOperations,
+  OperacionesRecientes,
+} from "./_components/operaciones-recientes";
 
 export const instant = false;
-const pesos = (n: number) =>
-  new Intl.NumberFormat("es-CL", {
-    style: "currency",
-    currency: "CLP",
-    maximumFractionDigits: 0,
-  }).format(n);
 const diaChile = (d: Date) =>
   new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/Santiago",
@@ -17,19 +17,22 @@ const diaChile = (d: Date) =>
     day: "2-digit",
   }).format(d);
 
-export default async function ReportesPage() {
+export default async function HistorialYReportesPage() {
   await requirePharmacyUser("privada");
   await connection();
   const ahora = new Date();
-  const ventas = await prismaPrivada.venta.findMany({
-    where: {
-      creadaEn: { gte: new Date(ahora.getTime() - 15 * 24 * 60 * 60 * 1000) },
-    },
-    select: { creadaEn: true, total: true },
-  });
+  const [ventas, operacionesRecientes] = await Promise.all([
+    prismaPrivada.venta.findMany({
+      where: {
+        creadaEn: { gte: new Date(ahora.getTime() - 15 * 24 * 60 * 60 * 1000) },
+      },
+      select: { creadaEn: true, total: true },
+    }),
+    getRecentOperations(),
+  ]);
+  const hoy = diaChile(ahora);
   const dias = Array.from({ length: 14 }, (_, i) => {
-    const fecha = new Date(ahora.getTime() - (13 - i) * 24 * 60 * 60 * 1000);
-    const clave = diaChile(fecha);
+    const clave = panelDay(hoy, i - 13);
     const delDia = ventas.filter((v) => diaChile(v.creadaEn) === clave);
     return {
       clave,
@@ -44,7 +47,7 @@ export default async function ReportesPage() {
     <section className="pos-shell">
       <header className="pos-header">
         <div>
-          <h1>Reportes</h1>
+          <h1>Historial y Reportes</h1>
           <span>Ventas registradas durante los últimos 14 días en Chile.</span>
         </div>
       </header>
@@ -66,6 +69,7 @@ export default async function ReportesPage() {
           <strong>{dias.filter((d) => d.tickets > 0).length}</strong>
         </div>
       </div>
+      <OperacionesRecientes ventas={operacionesRecientes} />
       <section className="pos-panel">
         <div className="pos-title">
           <div>

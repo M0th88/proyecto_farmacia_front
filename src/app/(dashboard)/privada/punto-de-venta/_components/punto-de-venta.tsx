@@ -147,8 +147,11 @@ export function PuntoDeVenta() {
           <h1>POS</h1>
           <span>Escanea, prepara el pedido y registra el cobro.</span>
           <p>
-            <Link href="/privada/historial">Historial de ventas →</Link>　
-            <Link href="/privada/stock-y-lotes">Stock y vencimientos →</Link>
+            <Link href="/privada/historial-y-reportes#operaciones-recientes">
+              Historial de ventas →
+            </Link>
+            {"　"}
+            <Link href="/privada/stocks-y-lotes">Stock y vencimientos →</Link>
           </p>
         </div>
         <button onClick={() => void cargar()}>Actualizar catálogo</button>

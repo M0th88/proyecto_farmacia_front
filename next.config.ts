@@ -13,22 +13,47 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/privada/catalogo",
-        destination: "/privada/productos",
+        destination: "/privada/productos-y-empaques",
+        permanent: true,
+      },
+      {
+        source: "/privada/productos",
+        destination: "/privada/productos-y-empaques",
         permanent: true,
       },
       {
         source: "/privada/inventario",
-        destination: "/privada/stock-y-lotes",
+        destination: "/privada/stocks-y-lotes",
+        permanent: true,
+      },
+      {
+        source: "/privada/stock-y-lotes/:path*",
+        destination: "/privada/stocks-y-lotes/:path*",
         permanent: true,
       },
       {
         source: "/privada/ventas",
-        destination: "/privada/historial",
+        destination: "/privada/historial-y-reportes",
         permanent: true,
       },
       {
         source: "/privada/indicadores",
-        destination: "/privada/reportes",
+        destination: "/privada/historial-y-reportes",
+        permanent: true,
+      },
+      {
+        source: "/privada/historial",
+        destination: "/privada/historial-y-reportes",
+        permanent: true,
+      },
+      {
+        source: "/privada/reportes",
+        destination: "/privada/historial-y-reportes",
+        permanent: true,
+      },
+      {
+        source: "/privada/caja",
+        destination: "/privada/caja-del-dia",
         permanent: true,
       },
       {
