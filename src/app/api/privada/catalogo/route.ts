@@ -1,8 +1,11 @@
 import { prismaPrivada } from "@/lib/db/prisma-privada";
+import { aptStock, canOperate } from "@/lib/fefo";
 import { currentPrivateUser } from "@/lib/private/auth";
 
-export async function GET() {
-  if (!(await currentPrivateUser()))
+export async function GET(request: Request) {
+  const branchId = Number(new URL(request.url).searchParams.get("sucursalId"));
+  const user = await currentPrivateUser();
+  if (!user || !canOperate(user, "pos"))
     return Response.json({ error: "Debes iniciar sesión." }, { status: 401 });
   try {
     const medicamentos = await prismaPrivada.medicamento.findMany({
@@ -10,13 +13,13 @@ export async function GET() {
       include: {
         categoria: true,
         lotes: {
-          include: { stocks: true },
+          include: { stocks: { include: { ubicacion: true } } },
           orderBy: { fechaVencimiento: "asc" },
         },
       },
       orderBy: { nombre: "asc" },
     });
-    const ahora = new Date();
+
     return Response.json(
       medicamentos.map((m) => ({
         id: m.id,
@@ -28,12 +31,18 @@ export async function GET() {
         precio: m.precioVenta === null ? null : Number(m.precioVenta),
         condicionVenta: m.condicionVenta,
         stockMinimo: m.stockMinimo,
-        stock: m.lotes
-          .filter((l) => l.fechaVencimiento > ahora)
-          .reduce(
-            (s, l) => s + l.stocks.reduce((n, x) => n + x.cantidad, 0),
-            0,
-          ),
+        stock: m.lotes.reduce(
+          (sum, lote) =>
+            sum +
+            lote.stocks
+              .filter(
+                (stock) =>
+                  stock.ubicacion.sucursalId === branchId &&
+                  aptStock({ ...stock, lote }),
+              )
+              .reduce((n, stock) => n + stock.cantidad, 0),
+          0,
+        ),
       })),
       { headers: { "Cache-Control": "no-store" } },
     );

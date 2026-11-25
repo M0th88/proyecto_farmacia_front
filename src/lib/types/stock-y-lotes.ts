@@ -53,6 +53,7 @@ export type StockRow = {
   cantidad: number;
   diasParaVencer: number | null;
   estado:
+    | (string & {})
     | "Sin lotes"
     | "Vencido"
     | "Vence hoy"
@@ -110,5 +111,10 @@ export type StockOptions = {
       fechaVencimiento: string;
     }[];
   }[];
-  ubicaciones: { id: number; nombre: string; tipo: "BODEGA" | "VITRINA" }[];
+  ubicaciones: {
+    id: number;
+    nombre: string;
+    sucursalId?: number | null;
+    tipo: "BODEGA" | "VITRINA";
+  }[];
 };

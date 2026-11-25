@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { stockOptions, stockOptionsQueryKey } from "../actions";
-import { StockForm } from "./stock-form";
+import { ReceiptForm as StockForm } from "./receipt-form";
 
 export function NewStockDialog({ currentUserId }: { currentUserId: number }) {
   const [open, setOpen] = useState(false);

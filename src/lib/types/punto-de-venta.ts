@@ -3,6 +3,7 @@ export type Producto = {
   nombre: string;
   codigoBarra: string | null;
   concentracion: string | null;
+  formaFarmaceutica?: string | null;
   categoria: string;
   precio: number | null;
   stock: number;
@@ -26,3 +27,8 @@ export const mediosPago = {
 
 export type MedioPago = keyof typeof mediosPago;
 export type TipoDocumento = "BOLETA" | "FACTURA";
+export type VentaConfirmada = {
+  id: number;
+  total: number;
+  vuelto: number | null;
+};

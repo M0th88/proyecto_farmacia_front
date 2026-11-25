@@ -91,6 +91,11 @@ export default async function DocumentoVentaPage({
             ? "La emisión electrónica ante el SII está pendiente."
             : "Esta venta no tiene un tipo de documento registrado."}
         </p>
+        {venta.estado === "ANULADA" && (
+          <p className={styles.notice}>
+            Venta anulada. {venta.motivoAnulacion}
+          </p>
+        )}
         {facturacion && (
           <section>
             <h3>Datos de facturación</h3>

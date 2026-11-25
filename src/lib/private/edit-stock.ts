@@ -11,6 +11,10 @@ export async function editStock(input: StockEdit, userId: number) {
     async (tx) => {
       const lot = await tx.lote.findUnique({ where: { id: input.loteId } });
       if (!lot) throw new Error("El lote ya no existe.");
+      if (["RETIRADO_ALERTA", "DETERIORADO"].includes(lot.estado))
+        throw new Error(
+          "El lote está retirado o deteriorado. No admite modificaciones desde la edición de stock.",
+        );
       const stock = input.stockId
         ? await tx.stock.findUnique({
             where: { id: input.stockId },
@@ -32,6 +36,14 @@ export async function editStock(input: StockEdit, userId: number) {
           numeroLote: input.numeroLote,
           fechaFabricacion: new Date(`${input.fechaFabricacion}T12:00:00Z`),
           fechaVencimiento: stockExpiry(input.fechaVencimiento),
+          ...(stockDate(lot.fechaVencimiento) !== input.fechaVencimiento ||
+          lot.numeroLote !== input.numeroLote
+            ? {
+                estado: "PENDIENTE_REVISION",
+                rotuloVencimiento: input.fechaVencimiento,
+                precisionVencimiento: "DIA",
+              }
+            : {}),
         },
       });
       if (stock)
@@ -44,6 +56,9 @@ export async function editStock(input: StockEdit, userId: number) {
           tipo: "AJUSTE",
           cantidad: stock ? input.cantidad - stock.cantidad : 0,
           loteId: lot.id,
+          usuarioId: userId,
+          ubicacionId: stock?.ubicacionId,
+          origen: "EDICION_STOCK",
           motivo: `Edición por usuario #${userId} · ${stock?.ubicacion.nombre ?? "Lote sin ubicación"} · Stock ${stock?.cantidad ?? 0} → ${input.cantidad} · Lote ${lot.numeroLote} → ${input.numeroLote} · Fabricación ${lot.fechaFabricacion ? stockDate(lot.fechaFabricacion) : "Sin fecha"} → ${input.fechaFabricacion} · Vencimiento ${stockDate(lot.fechaVencimiento)} → ${input.fechaVencimiento} · ${input.motivo}`,
         },
       });

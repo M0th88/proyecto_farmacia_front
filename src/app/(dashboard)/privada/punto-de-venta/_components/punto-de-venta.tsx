@@ -2,16 +2,19 @@
 import { FileText, Printer, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Modal } from "@/components/ui/modal";
 import {
   type Item,
   type MedioPago,
   mediosPago,
   type Producto,
   type TipoDocumento,
+  type VentaConfirmada,
 } from "@/lib/types/punto-de-venta";
 import {
   calcularTotales,
   camposFacturacion,
+  type DocumentoVenta,
   type Facturacion,
   facturacionSchema,
   montoPos,
@@ -19,6 +22,7 @@ import {
   tasaIva,
 } from "@/lib/validation/punto-de-venta";
 import { ClientesPendientes } from "./clientes-pendientes";
+import { FefoConfirmation } from "./fefo-confirmation";
 
 const facturacionVacia: Facturacion = {
   rut: "",
@@ -30,9 +34,13 @@ const facturacionVacia: Facturacion = {
   email: "",
 };
 
-type VentaConfirmada = { id: number; total: number; vuelto: number | null };
-
 export function PuntoDeVenta() {
+  const [branch, setBranch] = useState(0);
+  const [branches, setBranches] = useState<{ id: number; nombre: string }[]>(
+    [],
+  );
+  const [preparing, setPreparing] = useState<DocumentoVenta | null>(null);
+  const [operation, setOperation] = useState<"VENTA" | "DISPENSACION">("VENTA");
   const [productos, setProductos] = useState<Producto[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [busqueda, setBusqueda] = useState("");
@@ -48,9 +56,7 @@ export function PuntoDeVenta() {
   const [mensaje, setMensaje] = useState("");
   const [cargando, setCargando] = useState(true);
   const [cobrando, setCobrando] = useState(false);
-  const cobro = useRef<string | null>(null);
-  const enCurso = useRef(false);
-  const bloqueado = cobrando || reintentar;
+  const bloqueado = cobrando || preparing !== null;
   const lector = useRef<HTMLInputElement>(null);
   const confirmacion = useRef<HTMLAnchorElement>(null);
   useEffect(() => {
@@ -60,7 +66,9 @@ export function PuntoDeVenta() {
     setCargando(true);
     setPagoVerificado(false);
     try {
-      const r = await fetch("/api/privada/catalogo", { cache: "no-store" });
+      const r = await fetch(`/api/privada/catalogo?sucursalId=${branch}`, {
+        cache: "no-store",
+      });
       if (!r.ok) throw new Error("No se pudo cargar el catálogo privado.");
       setProductos(await r.json());
     } catch (e) {
@@ -70,17 +78,36 @@ export function PuntoDeVenta() {
     }
   }
   useEffect(() => {
-    fetch("/api/privada/catalogo", { cache: "no-store" })
+    fetch("/api/privada/fefo?meta=1")
+      .then(async (r) => {
+        if (!r.ok) throw new Error("No se pudieron cargar las sucursales.");
+        return r.json();
+      })
+      .then((d) => setBranches(d.sucursales))
+      .catch((e) => setMensaje(e.message));
+  }, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(`/api/privada/catalogo?sucursalId=${branch}`, {
+      cache: "no-store",
+      signal: controller.signal,
+    })
       .then(async (r) => {
         if (!r.ok) throw new Error("No se pudo cargar el catálogo privado.");
         return (await r.json()) as Producto[];
       })
-      .then(setProductos)
-      .catch((e) =>
-        setMensaje(e instanceof Error ? e.message : "Error de conexión."),
-      )
-      .finally(() => setCargando(false));
-  }, []);
+      .then((catalogo) => {
+        if (!controller.signal.aborted) setProductos(catalogo);
+      })
+      .catch((e) => {
+        if (!controller.signal.aborted)
+          setMensaje(e instanceof Error ? e.message : "Error de conexión.");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setCargando(false);
+      });
+    return () => controller.abort();
+  }, [branch]);
   const filtrados = useMemo(
     () =>
       productos.filter((p) =>
@@ -150,114 +177,51 @@ export function PuntoDeVenta() {
       setMensaje("");
     } else setMensaje("La cantidad supera el stock disponible.");
   }
-  async function cobrar() {
-    if (enCurso.current) return;
-    if (!cobro.current) {
-      if (!lineas.length || lineas.length !== items.length) {
-        setMensaje(
-          "Quita del carrito los productos que ya no están disponibles.",
-        );
-        return;
-      }
-      if (!montoPos.safeParse(subtotal).success || !descuentoValido) {
-        setMensaje("Revisa el subtotal y el importe del descuento.");
-        return;
-      }
-      if (
-        pago === "EFECTIVO" &&
-        (!recibido ||
-          !montoPos.safeParse(Number(recibido)).success ||
-          Number(recibido) < total)
-      ) {
-        setMensaje("Ingresa un importe válido que cubra el total.");
-        return;
-      }
-      if (pago !== "EFECTIVO" && !pagoVerificado) {
-        setMensaje(
-          "Confirma que el pago fue recibido antes de registrar la venta.",
-        );
-        return;
-      }
-      const datos = facturacionSchema.safeParse(facturacion);
-      if (tipoDocumento === "FACTURA" && !datos.success) {
-        const problema = datos.error.issues[0];
-        const campo = camposFacturacion.find(
-          ({ nombre }) => nombre === problema?.path[0],
-        );
-        setMensaje(
-          campo
-            ? `Revisa el campo de facturación «${campo.etiqueta}».`
-            : "Revisa los datos de facturación.",
-        );
-        return;
-      }
-      cobro.current = JSON.stringify({
-        cobroId: crypto.randomUUID(),
-        metodoPago: pago,
-        recibido: pago === "EFECTIVO" ? Number(recibido) : undefined,
-        descuento: importeDescuento,
-        totalEsperado: total,
-        documento:
-          tipoDocumento === "FACTURA" && datos.success
-            ? { tipo: tipoDocumento, facturacion: datos.data }
-            : { tipo: "BOLETA" },
-        items: lineas.map(({ id, cantidad }) => ({
-          medicamentoId: id,
-          cantidad,
-        })),
-      });
-    }
-
-    enCurso.current = true;
-    setCobrando(true);
-    setMensaje("");
-    try {
-      const respuesta = await fetch("/api/privada/ventas", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: cobro.current,
-        signal: AbortSignal.timeout(15000),
-      });
-      const data = await respuesta.json();
-      if (!respuesta.ok) {
-        if (
-          [400, 409].includes(respuesta.status) ||
-          (respuesta.status === 401 && !reintentar)
-        ) {
-          cobro.current = null;
-          setReintentar(false);
-        }
-        if (respuesta.status === 401 && reintentar) {
-          setMensaje(
-            "Inicia sesión en otra pestaña y luego reintenta el mismo cobro.",
-          );
-          return;
-        }
-        throw new Error(data.error ?? "No se pudo confirmar el cobro.");
-      }
-      cobro.current = null;
-      setReintentar(false);
-      setUltimaVenta(data);
-      setItems([]);
-      setRecibido("");
-      setDescuento("");
-      setTipoDocumento("BOLETA");
-      setFacturacion(facturacionVacia);
-      setPagoVerificado(false);
-      await cargar();
-    } catch (error) {
-      setReintentar(!!cobro.current);
+  function cobrar() {
+    if (!branch || bloqueado) return;
+    if (!lineas.length || lineas.length !== items.length) {
       setMensaje(
-        cobro.current
-          ? "El registro del cobro está sin confirmar. Usa «Reintentar el mismo cobro»."
-          : error instanceof Error
-            ? error.message
-            : "No se pudo registrar la venta.",
+        "Quita del carrito los productos que ya no están disponibles.",
       );
-    } finally {
-      enCurso.current = false;
-      setCobrando(false);
+      return;
     }
+    if (!montoPos.safeParse(subtotal).success || !descuentoValido) {
+      setMensaje("Revisa el subtotal y el importe del descuento.");
+      return;
+    }
+    if (
+      pago === "EFECTIVO" &&
+      (!recibido ||
+        !montoPos.safeParse(Number(recibido)).success ||
+        Number(recibido) < total)
+    ) {
+      setMensaje("Ingresa un importe válido que cubra el total.");
+      return;
+    }
+    if (pago !== "EFECTIVO" && !pagoVerificado) {
+      setMensaje(
+        "Confirma que el pago fue recibido antes de registrar la venta.",
+      );
+      return;
+    }
+    const datos = facturacionSchema.safeParse(facturacion);
+    if (tipoDocumento === "FACTURA" && !datos.success) {
+      const problema = datos.error.issues[0];
+      const campo = camposFacturacion.find(
+        ({ nombre }) => nombre === problema?.path[0],
+      );
+      setMensaje(
+        campo
+          ? `Revisa el campo de facturación «${campo.etiqueta}».`
+          : "Revisa los datos de facturación.",
+      );
+      return;
+    }
+    setPreparing(
+      tipoDocumento === "FACTURA" && datos.success
+        ? { tipo: tipoDocumento, facturacion: datos.data }
+        : { tipo: "BOLETA" },
+    );
   }
   return (
     <section className="pos-shell">
@@ -324,6 +288,32 @@ export function PuntoDeVenta() {
           </div>
         </div>
       )}
+      <label>
+        Sucursal que entrega
+        <select
+          value={branch}
+          disabled={bloqueado || cargando}
+          onChange={(e) => {
+            setCargando(true);
+            setPagoVerificado(false);
+            setBranch(Number(e.target.value));
+            setItems([]);
+          }}
+        >
+          <option value={0}>Selecciona una sucursal</option>
+          {branches.map((b) => (
+            <option value={b.id} key={b.id}>
+              {b.nombre}
+            </option>
+          ))}
+        </select>
+      </label>
+      {!branches.length && (
+        <p>
+          Configura las sucursales y concilia el inventario en Stock y lotes
+          antes de operar.
+        </p>
+      )}
       <div className="pos-grid">
         <section className="pos-panel">
           <div className="pos-title">
@@ -372,7 +362,10 @@ export function PuntoDeVenta() {
                     </small>
                     <h3>{p.nombre}</h3>
                     <span>
-                      {p.concentracion ?? "Medicamento"} ·{" "}
+                      {[p.concentracion, p.formaFarmaceutica]
+                        .filter(Boolean)
+                        .join(" · ") || "Medicamento"}{" "}
+                      ·{" "}
                       {(p.condicionVenta ?? "SIN_CLASIFICAR").replaceAll(
                         "_",
                         " ",
@@ -490,6 +483,22 @@ export function PuntoDeVenta() {
           <fieldset className="pos-controles" disabled={bloqueado}>
             <legend>Descuento, documento y pago</legend>
             <div className="pos-pay">
+              <label>
+                Tipo de operación
+                <select
+                  value={operation}
+                  onChange={(event) =>
+                    setOperation(
+                      event.target.value === "DISPENSACION"
+                        ? "DISPENSACION"
+                        : "VENTA",
+                    )
+                  }
+                >
+                  <option value="VENTA">Venta</option>
+                  <option value="DISPENSACION">Dispensación</option>
+                </select>
+              </label>
               <label>
                 Descuento (CLP)
                 <input
@@ -625,20 +634,16 @@ export function PuntoDeVenta() {
           <button
             className="pos-charge"
             disabled={
-              cobrando ||
-              (!reintentar &&
-                (cargando ||
-                  !lineas.length ||
-                  lineas.length !== items.length ||
-                  !descuentoValido))
+              bloqueado ||
+              cargando ||
+              !branch ||
+              !lineas.length ||
+              lineas.length !== items.length ||
+              !descuentoValido
             }
-            onClick={() => void cobrar()}
+            onClick={cobrar}
           >
-            {cobrando
-              ? "Registrando…"
-              : reintentar
-                ? "Reintentar el mismo cobro"
-                : `Confirmar cobro de ${pesos(total)}`}
+            Preparar lotes · {pesos(total)}
           </button>
           <p className="pos-footnote">
             Se descuentan primero los lotes vigentes más próximos a vencer.
@@ -646,6 +651,42 @@ export function PuntoDeVenta() {
         </aside>
       </div>
       <ClientesPendientes />
+      <Modal
+        open={preparing !== null}
+        onOpenChange={(open) => {
+          if (!open && !cobrando && !reintentar) setPreparing(null);
+        }}
+        title="Confirmar entrega física"
+        description="Verifica el número de lote y la cantidad de cada envase antes de confirmar."
+      >
+        {preparing && (
+          <FefoConfirmation
+            sucursalId={branch}
+            items={lineas.map(({ id, cantidad }) => ({
+              medicamentoId: id,
+              cantidad,
+            }))}
+            metodoPago={pago}
+            recibido={pago === "EFECTIVO" ? Number(recibido) : undefined}
+            tipoOperacion={operation}
+            documento={preparing}
+            descuento={importeDescuento}
+            totalEsperado={total}
+            onBusy={setCobrando}
+            onRetry={setReintentar}
+            onSuccess={(venta) => {
+              setPreparing(null);
+              setUltimaVenta(venta);
+              setItems([]);
+              setRecibido("");
+              setDescuento("");
+              setTipoDocumento("BOLETA");
+              setFacturacion(facturacionVacia);
+              void cargar();
+            }}
+          />
+        )}
+      </Modal>
     </section>
   );
 }

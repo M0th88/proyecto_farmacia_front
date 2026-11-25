@@ -35,6 +35,12 @@ export const facturacionSchema = z.object({
 
 export type Facturacion = z.infer<typeof facturacionSchema>;
 
+export const documentoVentaSchema = z.discriminatedUnion("tipo", [
+  z.object({ tipo: z.literal("BOLETA") }),
+  z.object({ tipo: z.literal("FACTURA"), facturacion: facturacionSchema }),
+]);
+export type DocumentoVenta = z.infer<typeof documentoVentaSchema>;
+
 export const camposFacturacion = [
   { nombre: "rut", etiqueta: "RUT", maximo: 16 },
   { nombre: "razonSocial", etiqueta: "Razón social", maximo: 100 },

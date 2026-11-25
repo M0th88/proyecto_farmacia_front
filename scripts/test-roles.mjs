@@ -15,7 +15,11 @@ function load(path, dependencies = {}) {
   });
   const loadedModule = { exports: {} };
   new Function("require", "module", "exports", outputText)(
-    (name) => dependencies[name] ?? require(name),
+    (name) =>
+      dependencies[name] ??
+      (name.startsWith("@/lib/")
+        ? load(`../src/${name.slice(2)}.ts`)
+        : require(name)),
     loadedModule,
     loadedModule.exports,
   );

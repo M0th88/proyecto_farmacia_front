@@ -235,7 +235,7 @@ Selecciona boleta o factura antes de confirmar. Para factura, completa los datos
 
 La apertura, los movimientos, el cierre de caja, el directorio de clientes, las anulaciones y las devoluciones tienen controles deshabilitados hasta que se implemente su registro. La consulta de stock usa la sección Stock y lotes existente.
 
-La base privada requiere la migración `202611240001_documentos_pos`. En la base de destino autorizada, aplica `npm run prisma:deploy:privada` y ejecuta `npm run prisma:generate:privada` si aún falta regenerar el cliente.
+La base privada requiere las migraciones de FEFO y documentos POS. Aplica `npm run prisma:deploy:privada` y regenera el cliente con `npm run prisma:generate:privada`. El orden de actualización para bases existentes está documentado en [FEFO](docs/FEFO.md).
 
 
 ### Etiquetas de productos

@@ -1,6 +1,7 @@
 import "server-only";
 import { panelDay } from "@/lib/dashboard-summary";
 import { prismaPrivada } from "@/lib/db/prisma-privada";
+import { aptStock } from "@/lib/fefo";
 import {
   stockDate,
   stockDaysRemaining,
@@ -14,7 +15,7 @@ export async function dashboardSnapshot(): Promise<DashboardData> {
   const start = new Date(stockExpiry(panelDay(today, -60)).getTime() + 1);
   const [sales, products] = await Promise.all([
     prismaPrivada.venta.findMany({
-      where: { creadaEn: { gte: start, lte: now } },
+      where: { estado: "CONFIRMADA", creadaEn: { gte: start, lte: now } },
       orderBy: { creadaEn: "desc" },
       select: {
         id: true,
@@ -42,7 +43,16 @@ export async function dashboardSnapshot(): Promise<DashboardData> {
             id: true,
             numeroLote: true,
             fechaVencimiento: true,
-            stocks: { select: { cantidad: true } },
+            estado: true,
+            precisionVencimiento: true,
+            rotuloVencimiento: true,
+            stocks: {
+              select: {
+                cantidad: true,
+                fechaRecepcion: true,
+                ubicacion: { select: { sucursalId: true } },
+              },
+            },
           },
         },
       },
@@ -62,7 +72,13 @@ export async function dashboardSnapshot(): Promise<DashboardData> {
       const days = stockDaysRemaining(lot.fechaVencimiento, now);
       if (lot.fechaVencimiento <= now) inventory.vencido += quantity;
       else {
-        available += quantity;
+        available += lot.stocks
+          .filter(
+            (stock) =>
+              !!stock.ubicacion.sucursalId &&
+              aptStock({ ...stock, lote: lot }, now),
+          )
+          .reduce((sum, stock) => sum + stock.cantidad, 0);
         if (days <= 30) inventory.proximo += quantity;
         else inventory.vigente += quantity;
       }

@@ -1,3 +1,4 @@
+import { operationalPermissions } from "@/lib/types/fefo";
 export const PRIVATE_SECTIONS = [
   { key: "inicio", label: "Panel", href: "/privada/panel" },
   { key: "pos", label: "POS", href: "/privada/punto-de-venta" },
@@ -28,7 +29,10 @@ export const PRIVATE_SECTIONS = [
   { key: "roles", label: "Roles", href: "/privada/roles" },
 ] as const;
 export type PrivatePermission = (typeof PRIVATE_SECTIONS)[number]["key"];
-export const ALL_PRIVATE_PERMISSIONS = PRIVATE_SECTIONS.map((s) => s.key);
+export const ALL_PRIVATE_PERMISSIONS = [
+  ...PRIVATE_SECTIONS.map((s) => s.key),
+  ...operationalPermissions.map((p) => p.key),
+];
 export function hasPrivatePermission(
   permisos: string[],
   permiso: PrivatePermission,

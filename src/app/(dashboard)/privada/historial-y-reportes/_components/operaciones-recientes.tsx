@@ -26,11 +26,18 @@ export async function getRecentOperations(busqueda: string) {
       creadaEn: true,
       metodoPago: true,
       total: true,
+      tipoOperacion: true,
+      estado: true,
+      usuarioId: true,
+      sucursalId: true,
+      anuladaPor: true,
+      motivoAnulacion: true,
       detalles: {
         select: {
           id: true,
           cantidad: true,
           nombreProducto: true,
+          ubicacionId: true,
           subtotal: true,
           medicamento: { select: { nombre: true } },
           lote: { select: { numeroLote: true } },
@@ -48,7 +55,9 @@ export function OperacionesRecientes({
   resultado: Awaited<ReturnType<typeof getRecentOperations>>;
   busqueda: string;
 }) {
-  const total = ventas.reduce((n, v) => n + Number(v.total), 0);
+  const total = ventas
+    .filter((v) => v.estado === "CONFIRMADA")
+    .reduce((n, v) => n + Number(v.total), 0);
   return (
     <div className={`pos-grid ${styles.operations}`} id="operaciones-recientes">
       <section className="pos-panel">
@@ -80,16 +89,30 @@ export function OperacionesRecientes({
           ventas.map((v) => (
             <details className="pos-sale" key={v.id}>
               <summary>
-                <b>Venta #{v.id}</b>
+                <b>
+                  {v.tipoOperacion} #{v.id} · {v.estado}
+                </b>
                 <span>{fechaVenta(v.creadaEn)}</span>
                 <span>{mediosPago[v.metodoPago]}</span>
                 <strong>{pesos(Number(v.total))}</strong>
               </summary>
               <div>
+                <p>
+                  Operador #{v.usuarioId ?? "histórico"} · Sucursal #
+                  {v.sucursalId ?? "sin dato"}
+                </p>
+                {v.estado === "ANULADA" && (
+                  <p>
+                    Anulada por #{v.anuladaPor}: {v.motivoAnulacion}. No implica
+                    devolución física.
+                  </p>
+                )}
                 {v.detalles.map((d) => (
                   <p key={d.id}>
                     {d.cantidad} × {d.nombreProducto ?? d.medicamento.nombre} ·
                     Lote {d.lote.numeroLote} · {pesos(Number(d.subtotal))}
+                    {" · "}Detalle #{d.id} · Ubicación #
+                    {d.ubicacionId ?? "histórica"}
                   </p>
                 ))}
                 <Link
