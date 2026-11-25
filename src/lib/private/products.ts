@@ -2,6 +2,7 @@ import "server-only";
 import { randomInt } from "node:crypto";
 import { z } from "zod";
 import { Prisma } from "@/generated/privada/client";
+import type { PharmacyDb } from "@/lib/db/pharmacy-db";
 import { prismaPrivada } from "@/lib/db/prisma-privada";
 import type { PaginationResponse } from "@/lib/types/pagination";
 import type {
@@ -41,8 +42,10 @@ export const productListSchema = z.object({
     .default("nombre"),
   direction: z.enum(["asc", "desc"]).default("asc"),
 });
-export async function productSnapshot() {
-  const products = await prismaPrivada.medicamento.findMany({
+export async function productSnapshot(
+  db: PharmacyDb = prismaPrivada as unknown as PharmacyDb,
+) {
+  const products = await db.medicamento.findMany({
     orderBy: { nombre: "asc" },
     include: { categoria: true, lotes: { include: { stocks: true } } },
   });
@@ -121,8 +124,12 @@ export function paginateProducts(
     nextPage: start + pageSize < filtered.length ? page + 1 : null,
   };
 }
-export async function createProduct(input: ProductProfile, id?: number) {
-  return prismaPrivada.$transaction(async (tx) => {
+export async function createProduct(
+  input: ProductProfile,
+  id?: number,
+  db: PharmacyDb = prismaPrivada as unknown as PharmacyDb,
+) {
+  return db.$transaction(async (tx) => {
     if (id && !(await tx.medicamento.findUnique({ where: { id } })))
       throw new Error("El producto ya no existe.");
     let categoryId = input.categoriaId > 0 ? input.categoriaId : null;
@@ -188,8 +195,11 @@ export async function createProduct(input: ProductProfile, id?: number) {
   });
 }
 
-export async function productDetail(id: number): Promise<ProductDetail | null> {
-  const product = await prismaPrivada.medicamento.findUnique({
+export async function productDetail(
+  id: number,
+  db: PharmacyDb = prismaPrivada as unknown as PharmacyDb,
+): Promise<ProductDetail | null> {
+  const product = await db.medicamento.findUnique({
     where: { id },
     include: { fichaChile: true },
   });
@@ -224,8 +234,11 @@ export async function productDetail(id: number): Promise<ProductDetail | null> {
   };
 }
 
-export async function deleteProduct(id: number) {
-  return prismaPrivada.$transaction(
+export async function deleteProduct(
+  id: number,
+  db: PharmacyDb = prismaPrivada as unknown as PharmacyDb,
+) {
+  return db.$transaction(
     async (tx) => {
       const product = await tx.medicamento.findUnique({
         where: { id },
@@ -245,8 +258,11 @@ export async function deleteProduct(id: number) {
   );
 }
 
-export async function productLabel(id: number): Promise<ProductLabel | null> {
-  const product = await prismaPrivada.medicamento.findUnique({
+export async function productLabel(
+  id: number,
+  db: PharmacyDb = prismaPrivada as unknown as PharmacyDb,
+): Promise<ProductLabel | null> {
+  const product = await db.medicamento.findUnique({
     where: { id },
     select: {
       id: true,
@@ -281,18 +297,21 @@ export async function productLabel(id: number): Promise<ProductLabel | null> {
   };
 }
 
-export async function assignProductBarcode(id: number) {
-  const product = await productLabel(id);
+export async function assignProductBarcode(
+  id: number,
+  db: PharmacyDb = prismaPrivada as unknown as PharmacyDb,
+) {
+  const product = await productLabel(id, db);
   if (!product || product.codigoBarra) return product;
 
   for (let attempt = 0; attempt < 3; attempt++) {
     const digits = String(randomInt(10_000_000_000)).padStart(10, "0");
     try {
-      await prismaPrivada.medicamento.updateMany({
+      await db.medicamento.updateMany({
         where: { id, OR: [{ codigoBarra: null }, { codigoBarra: "" }] },
         data: { codigoBarra: `FP${digits}` },
       });
-      return productLabel(id);
+      return productLabel(id, db);
     } catch (error) {
       if (
         !(

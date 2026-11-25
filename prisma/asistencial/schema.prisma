@@ -20,9 +20,10 @@ enum TipoMovimientoStock {
 }
 
 model Rol {
-  id          Int     @id @default(autoincrement())
-  nombre      String  @unique
+  id          Int      @id @default(autoincrement())
+  nombre      String   @unique
   descripcion String?
+  permisos    String[] @default([])
 
   usuarios Usuario[]
 
@@ -60,26 +61,61 @@ model CategoriaMedicamento {
 model Medicamento {
   id Int @id @default(autoincrement())
 
-  codigoBarra String? @unique
-  nombre      String
+  codigoCatalogo String? @unique
+  codigoAtc      String?
+  fuenteCatalogo String?
+
+  codigoBarra   String? @unique
+  datosCatalogo Json?
+  nombre        String
 
   principioActivo   String?
   concentracion     String?
   formaFarmaceutica String?
 
+  precioVenta    Decimal?       @db.Decimal(12, 2)
+  condicionVenta CondicionVenta @default(SIN_CLASIFICAR)
+  stockMinimo    Int            @default(0)
+
   activo Boolean @default(true)
 
   categoriaId Int?
 
-  categoria CategoriaMedicamento? @relation(fields: [categoriaId], references: [id])
+  categoria  CategoriaMedicamento?  @relation(fields: [categoriaId], references: [id])
+  fichaChile FichaMedicamentoChile?
 
-  lotes Lote[]
+  lotes         Lote[]
+  detallesVenta DetalleVenta[]
 
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
 
   @@index([nombre])
   @@index([categoriaId])
+}
+
+model FichaMedicamentoChile {
+  id                       Int         @id @default(autoincrement())
+  medicamentoId            Int         @unique
+  medicamento              Medicamento @relation(fields: [medicamentoId], references: [id])
+  grupoGeneral             String?
+  subgrupoFarmacologico    String?
+  mecanismoResumido        String?
+  atcArchivo               String?
+  productoIspEjemplo       String?
+  nombreFantasia           String?
+  laboratorioTitular       String?
+  registroIsp              String?
+  estadoIsp                String?
+  fuenteIsp                String?
+  observaciones            String?
+  condicionVentaIsp        String?
+  concentracionEjemplo     String?
+  formaFarmaceuticaEjemplo String?
+  viaAdministracion        String?
+  tipoAlmacenamiento       String?
+  condicionAlmacenamiento  String?
+  actualizadoEn            DateTime    @updatedAt
 }
 
 model Lote {
@@ -94,14 +130,72 @@ model Lote {
 
   medicamento Medicamento @relation(fields: [medicamentoId], references: [id])
 
-  stocks      Stock[]
-  movimientos MovimientoStock[]
+  stocks        Stock[]
+  movimientos   MovimientoStock[]
+  detallesVenta DetalleVenta[]
 
   creadoEn DateTime @default(now())
 
   @@unique([medicamentoId, numeroLote])
   @@index([fechaVencimiento])
   @@index([medicamentoId])
+}
+
+enum MetodoPago {
+  EFECTIVO
+  DEBITO
+  CREDITO
+  TRANSFERENCIA
+}
+
+enum CondicionVenta {
+  SIN_CLASIFICAR
+  VENTA_DIRECTA
+  RECETA_SIMPLE
+  RECETA_RETENIDA
+  RECETA_CHEQUE
+}
+
+enum TipoDocumentoVenta {
+  BOLETA
+  FACTURA
+}
+
+model Venta {
+  id               Int                 @id @default(autoincrement())
+  creadaEn         DateTime            @default(now())
+  metodoPago       MetodoPago
+  total            Decimal             @db.Decimal(12, 2)
+  recibido         Decimal?            @db.Decimal(12, 2)
+  vuelto           Decimal?            @db.Decimal(12, 2)
+  claveOperacion   String?             @unique
+  subtotal         Decimal             @default(0) @db.Decimal(12, 2)
+  descuento        Decimal             @default(0) @db.Decimal(12, 2)
+  neto             Decimal?            @db.Decimal(12, 2)
+  iva              Decimal?            @db.Decimal(12, 2)
+  tipoDocumento    TipoDocumentoVenta?
+  datosFacturacion Json?
+  detalles         DetalleVenta[]
+
+  @@index([creadaEn])
+}
+
+model DetalleVenta {
+  id             Int         @id @default(autoincrement())
+  ventaId        Int
+  medicamentoId  Int
+  loteId         Int
+  cantidad       Int
+  precioUnitario Decimal     @db.Decimal(12, 2)
+  nombreProducto String?
+  subtotal       Decimal     @db.Decimal(12, 2)
+  venta          Venta       @relation(fields: [ventaId], references: [id])
+  medicamento    Medicamento @relation(fields: [medicamentoId], references: [id])
+  lote           Lote        @relation(fields: [loteId], references: [id])
+
+  @@index([ventaId])
+  @@index([medicamentoId])
+  @@index([loteId])
 }
 
 model UbicacionInventario {

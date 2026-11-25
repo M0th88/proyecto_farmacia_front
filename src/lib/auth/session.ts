@@ -4,8 +4,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { cache } from "react";
-import { prismaAsistencial } from "@/lib/db/prisma-asistencial";
-import { prismaPrivada } from "@/lib/db/prisma-privada";
+import { pharmacyDb } from "@/lib/db/pharmacy-db";
+import { canAccessPharmacy } from "./identity";
 import { type Pharmacy, pharmacies } from "./pharmacies";
 
 export function sessionSecret() {
@@ -49,34 +49,26 @@ const userFields = {
   nombre: true,
   apellido: true,
   email: true,
+  rut: true,
   activo: true,
   rolId: true,
   rol: true,
 } as const;
 
-export const getPrivateUser = cache(async () => {
-  const id = await sessionUserId("privada");
+export const getPharmacyUser = cache(async (pharmacy: Pharmacy) => {
+  const id = await sessionUserId(pharmacy);
   if (!id) return null;
-  const user = await prismaPrivada.usuario.findUnique({
+  const user = await pharmacyDb(pharmacy).usuario.findUnique({
     where: { id },
     select: userFields,
   });
-  return user?.activo ? user : null;
+  return user?.activo && (await canAccessPharmacy(pharmacy, user))
+    ? user
+    : null;
 });
 
-export const getAsistencialUser = cache(async () => {
-  const id = await sessionUserId("asistencial");
-  if (!id) return null;
-  const user = await prismaAsistencial.usuario.findUnique({
-    where: { id },
-    select: userFields,
-  });
-  return user?.activo ? user : null;
-});
-
-export async function getPharmacyUser(pharmacy: Pharmacy) {
-  return pharmacy === "privada" ? getPrivateUser() : getAsistencialUser();
-}
+export const getPrivateUser = () => getPharmacyUser("privada");
+export const getAsistencialUser = () => getPharmacyUser("asistencial");
 
 export async function requirePharmacyUser(pharmacy: Pharmacy) {
   const user = await getPharmacyUser(pharmacy);

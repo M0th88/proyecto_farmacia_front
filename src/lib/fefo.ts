@@ -38,6 +38,39 @@ export function aptStock(
     new Date(stock.lote.fechaVencimiento) > now
   );
 }
+
+export function stockDisponibleFefo(
+  stock: {
+    cantidad: number;
+    fechaRecepcion?: Date | null;
+    ubicacion: { id?: number; sucursalId?: number | null };
+  },
+  lote: {
+    numeroLote: string;
+    fechaVencimiento: Date;
+    estado?: string;
+    precisionVencimiento?: string;
+    rotuloVencimiento?: string | null;
+  },
+  now: Date,
+) {
+  return (
+    !!stock.ubicacion.sucursalId &&
+    aptStock(
+      {
+        cantidad: stock.cantidad,
+        fechaRecepcion: stock.fechaRecepcion ?? null,
+        lote: {
+          ...lote,
+          estado: lote.estado ?? "",
+          precisionVencimiento: lote.precisionVencimiento ?? "",
+          rotuloVencimiento: lote.rotuloVencimiento ?? null,
+        },
+      },
+      now,
+    )
+  );
+}
 export function allocateFefo(
   candidates: PreparedLot[],
   items: { medicamentoId: number; cantidad: number }[],

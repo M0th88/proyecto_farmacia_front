@@ -1,7 +1,8 @@
 import "server-only";
 import { panelDay } from "@/lib/dashboard-summary";
+import type { PharmacyDb } from "@/lib/db/pharmacy-db";
 import { prismaPrivada } from "@/lib/db/prisma-privada";
-import { aptStock } from "@/lib/fefo";
+import { stockDisponibleFefo } from "@/lib/fefo";
 import {
   stockDate,
   stockDaysRemaining,
@@ -9,54 +10,55 @@ import {
 } from "@/lib/private/stock-dates";
 import type { DashboardData } from "@/lib/types/panel";
 
-export async function dashboardSnapshot(): Promise<DashboardData> {
+export async function dashboardSnapshot(
+  db?: PharmacyDb,
+): Promise<DashboardData> {
   const now = new Date();
   const today = stockDate(now);
   const start = new Date(stockExpiry(panelDay(today, -60)).getTime() + 1);
+  const salesQuery = {
+    where: { creadaEn: { gte: start, lte: now } },
+    orderBy: { creadaEn: "desc" },
+    select: {
+      id: true,
+      creadaEn: true,
+      total: true,
+      metodoPago: true,
+      detalles: {
+        select: {
+          medicamentoId: true,
+          cantidad: true,
+          subtotal: true,
+          medicamento: { select: { nombre: true } },
+        },
+      },
+    },
+  } as const;
+  const productsQuery = {
+    select: {
+      id: true,
+      nombre: true,
+      activo: true,
+      stockMinimo: true,
+      lotes: {
+        include: {
+          stocks: {
+            include: { ubicacion: true },
+          },
+        },
+      },
+    },
+  } as const;
   const [sales, products] = await Promise.all([
-    prismaPrivada.venta.findMany({
-      where: { estado: "CONFIRMADA", creadaEn: { gte: start, lte: now } },
-      orderBy: { creadaEn: "desc" },
-      select: {
-        id: true,
-        creadaEn: true,
-        total: true,
-        metodoPago: true,
-        detalles: {
-          select: {
-            medicamentoId: true,
-            cantidad: true,
-            subtotal: true,
-            medicamento: { select: { nombre: true } },
-          },
-        },
-      },
-    }),
-    prismaPrivada.medicamento.findMany({
-      select: {
-        id: true,
-        nombre: true,
-        activo: true,
-        stockMinimo: true,
-        lotes: {
-          select: {
-            id: true,
-            numeroLote: true,
-            fechaVencimiento: true,
-            estado: true,
-            precisionVencimiento: true,
-            rotuloVencimiento: true,
-            stocks: {
-              select: {
-                cantidad: true,
-                fechaRecepcion: true,
-                ubicacion: { select: { sucursalId: true } },
-              },
-            },
-          },
-        },
-      },
-    }),
+    db
+      ? db.venta.findMany(salesQuery)
+      : prismaPrivada.venta.findMany({
+          ...salesQuery,
+          where: { ...salesQuery.where, estado: "CONFIRMADA" },
+        }),
+    db
+      ? db.medicamento.findMany(productsQuery)
+      : prismaPrivada.medicamento.findMany(productsQuery),
   ]);
   const inventory = { vigente: 0, proximo: 0, vencido: 0 };
   const lows: DashboardData["bajos"] = [];
@@ -73,11 +75,7 @@ export async function dashboardSnapshot(): Promise<DashboardData> {
       if (lot.fechaVencimiento <= now) inventory.vencido += quantity;
       else {
         available += lot.stocks
-          .filter(
-            (stock) =>
-              !!stock.ubicacion.sucursalId &&
-              aptStock({ ...stock, lote: lot }, now),
-          )
+          .filter((stock) => db || stockDisponibleFefo(stock, lot, now))
           .reduce((sum, stock) => sum + stock.cantidad, 0);
         if (days <= 30) inventory.proximo += quantity;
         else inventory.vigente += quantity;

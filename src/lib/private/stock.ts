@@ -1,7 +1,8 @@
 import "server-only";
 import { z } from "zod";
+import type { PharmacyDb } from "@/lib/db/pharmacy-db";
 import { prismaPrivada } from "@/lib/db/prisma-privada";
-import { aptStock } from "@/lib/fefo";
+import { stockDisponibleFefo } from "@/lib/fefo";
 import type { PaginationResponse } from "@/lib/types/pagination";
 import type { StockMetrics, StockRow } from "@/lib/types/stock-y-lotes";
 import { stockDaysRemaining } from "./stock-dates";
@@ -28,8 +29,8 @@ export const stockListSchema = z.object({
   direction: z.enum(["asc", "desc"]).default("asc"),
 });
 
-export async function stockSnapshot() {
-  const products = await prismaPrivada.medicamento.findMany({
+export async function stockSnapshot(db?: PharmacyDb) {
+  const query = {
     orderBy: { nombre: "asc" },
     include: {
       lotes: {
@@ -37,7 +38,10 @@ export async function stockSnapshot() {
         include: { stocks: { include: { ubicacion: true } } },
       },
     },
-  });
+  } as const;
+  const products = db
+    ? await db.medicamento.findMany(query)
+    : await prismaPrivada.medicamento.findMany(query);
   const now = new Date();
   const metrics: StockMetrics = {
     productos: products.length,
@@ -53,11 +57,7 @@ export async function stockSnapshot() {
         (sum, lot) =>
           sum +
           lot.stocks
-            .filter(
-              (stock) =>
-                !!stock.ubicacion.sucursalId &&
-                aptStock({ ...stock, lote: lot }),
-            )
+            .filter((stock) => db || stockDisponibleFefo(stock, lot, now))
             .reduce((n, stock) => n + stock.cantidad, 0),
         0,
       );
@@ -121,13 +121,20 @@ export async function stockSnapshot() {
       for (const stock of lot.stocks)
         rows.push({
           ...common,
-          estado: expired
-            ? common.estado
-            : lot.estado !== "APTO"
-              ? lot.estado.replaceAll("_", " ")
-              : !stock.fechaRecepcion || !stock.ubicacion.sucursalId
-                ? "Pendiente de conciliación"
-                : common.estado,
+          estado:
+            expired ||
+            db ||
+            !("estado" in lot) ||
+            typeof lot.estado !== "string"
+              ? common.estado
+              : lot.estado !== "APTO"
+                ? lot.estado.replaceAll("_", " ")
+                : !("fechaRecepcion" in stock) ||
+                    !stock.fechaRecepcion ||
+                    !("sucursalId" in stock.ubicacion) ||
+                    !stock.ubicacion.sucursalId
+                  ? "Pendiente de conciliación"
+                  : common.estado,
           id: `stock-${stock.id}`,
           stockId: stock.id,
           ubicacion: stock.ubicacion.nombre,

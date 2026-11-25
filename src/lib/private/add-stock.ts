@@ -1,16 +1,21 @@
 import "server-only";
 import { Prisma } from "@/generated/privada/client";
+import type { PharmacyDb } from "@/lib/db/pharmacy-db";
 import { prismaPrivada } from "@/lib/db/prisma-privada";
 import type { StockEntry } from "@/lib/types/stock-y-lotes";
 import { stockDate, stockExpiry } from "./stock-dates";
 
-export async function addStock(input: StockEntry, userId: number) {
+export async function addStock(
+  input: StockEntry,
+  userId: number,
+  db: PharmacyDb = prismaPrivada as unknown as PharmacyDb,
+) {
   const expires = stockExpiry(input.fechaVencimiento);
   if (expires <= new Date())
     throw new Error("No se puede añadir stock a un lote vencido.");
   if (input.fechaFabricacion && input.fechaFabricacion > stockDate(new Date()))
     throw new Error("La fecha de fabricación no puede estar en el futuro.");
-  return prismaPrivada.$transaction(
+  return db.$transaction(
     async (tx) => {
       const product = await tx.medicamento.findUnique({
         where: { id: input.medicamentoId },

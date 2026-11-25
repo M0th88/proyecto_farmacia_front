@@ -72,7 +72,7 @@ src/
         app-sidebar-trigger.tsx  # Botón para abrir y cerrar
         sidebar-nav.tsx          # Enlaces y selección activa
         app-shell.module.css
-      privada/
+      [farmacia]/                  # Rutas compartidas de Privada y Asistencial
         layout.tsx               # Sesión y marco compartido
         page.tsx                 # Redirige al Panel
         privada.css              # Estilos limitados a .private-module
@@ -80,23 +80,18 @@ src/
         punto-de-venta/
           _components/
             punto-de-venta.tsx
-        productos/
-        stock-y-lotes/
-        historial/
-        caja/
+        productos-y-empaques/
+          etiquetas/
+        stocks-y-lotes/
+        historial-y-reportes/
+          [id]/
+        caja-del-dia/
         compras/
         proveedores/
-        reportes/
         usuarios/
           _components/
             users-table.tsx
         sin-acceso/
-      asistencial/
-        layout.tsx               # Sesión, navbar y lateral compartidos
-        page.tsx                 # Área de trabajo vacía
-        _components/
-          example-dashboard.tsx
-          example-dashboard.module.css
     api/
       auth/[pharmacy]/route.ts   # Inicio y cierre de sesión
       health/route.ts            # Estado de ambas bases
@@ -112,13 +107,13 @@ src/
 
 Los componentes exclusivos de una página van en su carpeta `_components`; los compartidos entre farmacias van en `(dashboard)/_components`. Los estilos visuales propios se mantienen en archivos `.module.css`, junto al componente. `globals.css` contiene solo estilos base. Los futuros endpoints se agregan en `app/api` y las funciones de servidor compartidas en `lib`.
 
-Ambas farmacias usan el marco de navegación compartido. Los módulos privados mantienen su funcionalidad, con sus opciones en el lateral. Farmacia Asistencial conserva el área de trabajo vacía. El panel anterior sigue disponible como código de ejemplo en `asistencial/_components`, pero no se monta sobre el nuevo diseño.
+Privada y Asistencial usan el mismo panel, menú y módulos. Cada ruta lee y escribe en la base de su farmacia, con sesión y caché de consultas independientes. Las pantallas pendientes se muestran en ambas.
 
-Los estilos de Farmacia Privada están delimitados por `.private-module`; el marco compartido y el login usan CSS Modules. Así, navegar entre ambas secciones no mezcla sus diseños.
+Los estilos de los módulos están delimitados por `.private-module`; el marco compartido y el login usan CSS Modules.
 
 El navbar ocupa todo el ancho y queda fuera del contenedor que desplaza el sidebar. El logo INACAP y el botón del menú conservan su posición al abrir o cerrar la barra lateral. El lateral comienza debajo del navbar y no muestra el título Farmacia Privada. En móvil, el panel y su fondo se abren por debajo del navbar, manteniendo disponible el mismo botón para cerrarlo.
 
-El lateral abre sus grupos por defecto. Cada grupo se puede plegar y el enlace de la página activa queda resaltado. Las carpetas de las páginas están dentro de `src/app/(dashboard)/privada`.
+El lateral abre sus grupos por defecto. Cada grupo se puede plegar y el enlace de la página activa queda resaltado. Las carpetas de las páginas están dentro de `src/app/(dashboard)/[farmacia]`. Las rutas de la tabla también existen bajo `/asistencial`.
 
 | Grupo | Opción | URL |
 | --- | --- | --- |
@@ -243,3 +238,12 @@ La base privada requiere las migraciones de FEFO y documentos POS. Aplica `npm r
 En Productos y Empaques, abre **Generador de etiquetas** o elige **Etiqueta de código de barras** desde las acciones de un artículo. Para vender unidades de un envase por separado, usa una ficha con el precio y stock de la unidad. **Generar y guardar código** asigna un código interno Code 128 al producto sin código. El POS lo reconoce a través del campo de código de barras habitual. Los códigos ya guardados se conservan.
 
 La pantalla permite seleccionar varios productos, asociar lote y ubicación existentes, completar datos opcionales del envase y elegir copias y orientación por fila. **Imprimir** abre el diálogo del navegador con las etiquetas preparadas.
+
+
+### Aislamiento y superadministración
+
+Las rutas `/privada` y `/api/privada` usan `DATABASE_URL_PRIVADA`. Las de Asistencial usan `DATABASE_URL_ASISTENCIAL`. Ejecuta `npm run prisma:deploy:asistencial` para instalar la estructura equivalente en Asistencial. La migración conserva sus cuentas, productos y existencias.
+
+Configura `SUPERADMIN_EMAIL` y `SUPERADMIN_RUT` con la identidad autorizada. El correo y el RUT deben coincidir con una cuenta activa con rol Administrador en cada base. Cada acceso valida la contraseña registrada en esa farmacia. Solo esa identidad puede mantener acceso a las dos. El alta y los cambios de identidad rechazan correos o RUT asociados a la otra farmacia. Para duplicados anteriores a este cambio conserva el acceso la cuenta de Privada.
+
+`node scripts/test-pharmacy-isolation.mjs` verifica el acceso, la separación de sesiones y la selección de base con datos ficticios.

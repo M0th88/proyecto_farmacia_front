@@ -1,0 +1,2 @@
+ALTER TABLE "Medicamento"
+  ADD COLUMN IF NOT EXISTS "precioVenta" DECIMAL(12,2);

@@ -11,8 +11,9 @@ import {
   saveOwnProfile,
   saveUser,
   usersQueryKey,
-} from "@/app/(dashboard)/privada/usuarios/actions";
+} from "@/app/(dashboard)/[farmacia]/usuarios/actions";
 import styles from "@/components/admin-table.module.css";
+import { usePharmacy } from "@/components/pharmacy-provider";
 import { Button } from "@/components/ui/button";
 import {
   type Role,
@@ -42,6 +43,7 @@ export function UserProfileForm({
   onCancel,
   selfService = false,
 }: Props) {
+  const pharmacy = usePharmacy();
   const id = useId();
   const [showPassword, setShowPassword] = useState(false);
   const queryClient = useQueryClient();
@@ -66,7 +68,7 @@ export function UserProfileForm({
   const mutation = useMutation({
     mutationFn: (values: UserProfile) =>
       selfService
-        ? saveOwnProfile({
+        ? saveOwnProfile(pharmacy, {
             nombre: values.nombre,
             apellido: values.apellido,
             rut: values.rut,
@@ -74,7 +76,7 @@ export function UserProfileForm({
             telefono: values.telefono,
             password: values.password,
           })
-        : saveUser({
+        : saveUser(pharmacy, {
             ...values,
             ...(user ? { id: user.id } : {}),
             ...(self ? { activo: user.activo, rolId: user.rolId } : {}),

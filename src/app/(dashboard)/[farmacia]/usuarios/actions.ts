@@ -1,0 +1,76 @@
+import type { SortingState } from "@tanstack/react-table";
+import type { Pharmacy } from "@/lib/auth/pharmacies";
+import type { PaginationResponse } from "@/lib/types/pagination";
+import type { Role, User, UserProfile } from "@/lib/types/usuarios-y-roles";
+
+export const usersQueryKey = ["private-users"] as const;
+export const rolesQueryKey = ["private-roles"] as const;
+async function request<T>(url: string, options?: RequestInit): Promise<T> {
+  const response = await fetch(url, { cache: "no-store", ...options });
+  const data = await response.json();
+  if (!response.ok)
+    throw new Error(data.error ?? "No se pudo completar la solicitud.");
+  return data;
+}
+export function listUsers(
+  pharmacy: Pharmacy,
+  {
+    pageParam,
+    search,
+    sorting,
+    signal,
+  }: {
+    pageParam: number;
+    search: string;
+    sorting: SortingState;
+    signal?: AbortSignal;
+  },
+) {
+  const params = new URLSearchParams({
+    page: String(pageParam),
+    pageSize: "30",
+    search,
+    sort: sorting[0]?.id ?? "nombre",
+    direction: sorting[0]?.desc ? "desc" : "asc",
+  });
+  return request<PaginationResponse<User>>(
+    `/api/${pharmacy}/admin/usuarios?${params}`,
+    { signal },
+  );
+}
+export const listRoles = (pharmacy: Pharmacy) =>
+  request<Role[]>(`/api/${pharmacy}/admin/roles`);
+export function saveUser(
+  pharmacy: Pharmacy,
+  profile: Partial<UserProfile> & { id?: number },
+) {
+  return request<User>(`/api/${pharmacy}/admin/usuarios`, {
+    method: profile.id ? "PATCH" : "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(profile),
+  });
+}
+export function deleteUser(pharmacy: Pharmacy, id: number) {
+  return request<{ success: boolean }>(`/api/${pharmacy}/admin/usuarios`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id }),
+  });
+}
+export function saveOwnProfile(
+  pharmacy: Pharmacy,
+  profile: {
+    nombre: string;
+    apellido: string;
+    rut: string;
+    email: string;
+    telefono: string;
+    password: string;
+  },
+) {
+  return request<User>(`/api/${pharmacy}/perfil`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(profile),
+  });
+}

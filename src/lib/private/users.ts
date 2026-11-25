@@ -2,6 +2,7 @@ import "server-only";
 import { rankItem } from "@tanstack/match-sorter-utils";
 import { z } from "zod";
 import type { Prisma } from "@/generated/privada/client";
+import type { PharmacyDb } from "@/lib/db/pharmacy-db";
 import { prismaPrivada } from "@/lib/db/prisma-privada";
 import type { PaginationResponse } from "@/lib/types/pagination";
 import type { User } from "@/lib/types/usuarios-y-roles";
@@ -48,6 +49,7 @@ export const userListSchema = z.object({
 export type UserListOptions = z.infer<typeof userListSchema>;
 export async function listUsersPage(
   options: UserListOptions,
+  db: PharmacyDb = prismaPrivada as unknown as PharmacyDb,
 ): Promise<PaginationResponse<User>> {
   const { page, pageSize, search, sort, direction } = options;
   const orderBy: Prisma.UsuarioOrderByWithRelationInput[] = [
@@ -63,7 +65,7 @@ export async function listUsersPage(
         .replace(/\p{M}/gu, "")
         .toLowerCase()
         .replace(/[.\-]/g, "");
-    const all = await prismaPrivada.usuario.findMany({
+    const all = await db.usuario.findMany({
       select: userSelect,
       orderBy,
     });
@@ -88,14 +90,14 @@ export async function listUsersPage(
     totalRows = matched.length;
     users = matched.slice(page * pageSize, (page + 1) * pageSize);
   } else {
-    [users, totalRows] = await prismaPrivada.$transaction([
-      prismaPrivada.usuario.findMany({
+    [users, totalRows] = await db.$transaction([
+      db.usuario.findMany({
         select: userSelect,
         orderBy,
         skip: page * pageSize,
         take: pageSize,
       }),
-      prismaPrivada.usuario.count(),
+      db.usuario.count(),
     ]);
   }
   return {

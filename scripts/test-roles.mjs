@@ -94,10 +94,14 @@ const db = {
     );
   },
 };
-const route = load("../src/app/api/privada/admin/roles/route.ts", {
+const route = load("../src/app/api/[farmacia]/admin/roles/route.ts", {
+  "@/lib/auth/pharmacy-route": {
+    pharmacyRoute: (handler) => (request) =>
+      handler(request, "privada", { rol: db }),
+  },
   "@/lib/db/prisma-privada": { prismaPrivada: { rol: db } },
   "@/lib/private/admin": {
-    privateAdmin: async () => admin,
+    pharmacyAdmin: async () => admin,
     noAdmin: () => Response.json({ error: "Forbidden" }, { status: 403 }),
   },
   "@/lib/private/permissions": permissions,

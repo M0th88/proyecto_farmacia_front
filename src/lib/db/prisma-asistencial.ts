@@ -6,12 +6,12 @@ if (!connectionString)
   throw new Error("Falta DATABASE_URL_ASISTENCIAL en .env.");
 
 const globalForPrisma = globalThis as unknown as {
-  prismaAsistencial?: PrismaClient;
+  prismaAsistencialOperativa?: PrismaClient;
 };
 export const prismaAsistencial =
-  globalForPrisma.prismaAsistencial ??
+  globalForPrisma.prismaAsistencialOperativa ??
   new PrismaClient({
     adapter: new PrismaPg({ connectionString, connectionTimeoutMillis: 3000 }),
   });
 if (process.env.NODE_ENV !== "production")
-  globalForPrisma.prismaAsistencial = prismaAsistencial;
+  globalForPrisma.prismaAsistencialOperativa = prismaAsistencial;
