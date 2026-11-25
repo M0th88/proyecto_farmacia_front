@@ -1,14 +1,14 @@
 import "server-only";
 import bcrypt from "bcrypt";
-import { prismaAsistencial } from "@/lib/db/prisma-asistencial";
-import { prismaPrivada } from "@/lib/db/prisma-privada";
+import { pharmacyDb } from "@/lib/db/pharmacy-db";
+import { canAccessPharmacy, normalizeRut, rutAliases } from "./identity";
 import type { Pharmacy } from "./pharmacies";
 
 // Iguala correo sin distinguir mayúsculas y RUT con o sin puntos y guion.
 export function normalizeIdentifier(identifier: string) {
   return identifier.includes("@")
     ? identifier.trim().toLowerCase()
-    : identifier.replace(/[.\s-]/g, "").toUpperCase();
+    : normalizeRut(identifier);
 }
 
 const attempts = new Map<string, { failures: number; expires: number }>();
@@ -32,23 +32,26 @@ export async function checkCredentials(
     } as const;
   if (attempts.size >= 10000 && !previous)
     return { error: "Intenta nuevamente más tarde." } as const;
-  const digits = normalized.slice(0, -1);
-  const rut = `${digits}-${normalized.slice(-1)}`;
-  const formattedRut = `${digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}-${normalized.slice(-1)}`;
   const where = normalized.includes("@")
     ? { email: { equals: normalized, mode: "insensitive" as const } }
     : {
-        OR: [normalized, rut, formattedRut].map((value) => ({
+        OR: rutAliases(normalized).map((value) => ({
           rut: { equals: value, mode: "insensitive" as const },
         })),
       };
-  const select = { id: true, activo: true, password: true } as const;
-  const user =
-    pharmacy === "privada"
-      ? await prismaPrivada.usuario.findFirst({ where, select })
-      : await prismaAsistencial.usuario.findFirst({ where, select });
+  const user = await pharmacyDb(pharmacy).usuario.findFirst({
+    where,
+    select: {
+      id: true,
+      activo: true,
+      password: true,
+      email: true,
+      rut: true,
+      rol: { select: { nombre: true } },
+    },
+  });
   const valid = await bcrypt.compare(password, user?.password ?? dummyHash);
-  if (!user?.activo || !valid) {
+  if (!user?.activo || !valid || !(await canAccessPharmacy(pharmacy, user))) {
     attempts.set(key, {
       failures: (previous?.failures ?? 0) + 1,
       expires: previous?.expires ?? now + windowMs,

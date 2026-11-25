@@ -1,3 +1,9 @@
+const identity = {
+  changedIdentity: () => ({}),
+  isReservedIdentity: () => false,
+  identityExistsInOtherPharmacy: async () => false,
+};
+
 // Validation and API tests with simulated users; no real accounts are changed.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -113,7 +119,7 @@ assert.equal(
 let hashes = 0;
 let admin = true;
 const users = [];
-const api = load("../src/app/api/privada/admin/usuarios/route.ts", {
+const apiDeps = {
   bcrypt: {
     default: {
       hash: async () => {
@@ -146,7 +152,7 @@ const api = load("../src/app/api/privada/admin/usuarios/route.ts", {
     },
   },
   "@/lib/private/admin": {
-    privateAdmin: async () => (admin ? { id: 1, rolId: 1 } : null),
+    pharmacyAdmin: async () => (admin ? { id: 1, rolId: 1 } : null),
     noAdmin: () => Response.json({ error: "Acceso denegado" }, { status: 403 }),
   },
   "@/lib/private/users": {
@@ -158,6 +164,18 @@ const api = load("../src/app/api/privada/admin/usuarios/route.ts", {
     },
   },
   "@/lib/types/usuarios-y-roles": schemas,
+};
+const api = load("../src/app/api/[farmacia]/admin/usuarios/route.ts", {
+  ...apiDeps,
+  "@/lib/auth/identity": identity,
+  "@/lib/auth/pharmacy-route": {
+    pharmacyRoute: (handler) => (request) =>
+      handler(
+        request,
+        "privada",
+        apiDeps["@/lib/db/prisma-privada"].prismaPrivada,
+      ),
+  },
 });
 const request = (method, data) =>
   new Request("http://localhost:3000/api/privada/admin/usuarios", {
@@ -203,7 +221,7 @@ admin = false;
 assert.equal((await api.POST(request("POST", profile))).status, 403);
 let ownSession = { id: 10 };
 let ownWrites = 0;
-const ownApi = load("../src/app/api/privada/perfil/route.ts", {
+const ownApiDeps = {
   bcrypt: {
     default: {
       hash: async () => {
@@ -212,7 +230,7 @@ const ownApi = load("../src/app/api/privada/perfil/route.ts", {
       },
     },
   },
-  "@/lib/auth/session": { getPrivateUser: async () => ownSession },
+  "@/lib/auth/session": { getPharmacyUser: async () => ownSession },
   "@/lib/db/prisma-privada": {
     prismaPrivada: {
       usuario: {
@@ -238,6 +256,18 @@ const ownApi = load("../src/app/api/privada/perfil/route.ts", {
     },
   },
   "@/lib/types/usuarios-y-roles": schemas,
+};
+const ownApi = load("../src/app/api/[farmacia]/perfil/route.ts", {
+  ...ownApiDeps,
+  "@/lib/auth/identity": identity,
+  "@/lib/auth/pharmacy-route": {
+    pharmacyRoute: (handler) => (request) =>
+      handler(
+        request,
+        "privada",
+        ownApiDeps["@/lib/db/prisma-privada"].prismaPrivada,
+      ),
+  },
 });
 for (const change of [
   { id: 99, nombre: "Ajeno" },

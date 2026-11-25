@@ -4,10 +4,14 @@ import { prismaPrivada } from "@/lib/db/prisma-privada";
 import type { StockEdit } from "@/lib/types/stock-y-lotes";
 import { stockDate, stockExpiry } from "./stock-dates";
 
-export async function editStock(input: StockEdit, userId: number) {
+export async function editStock(
+  input: StockEdit,
+  userId: number,
+  db = prismaPrivada,
+) {
   if (input.fechaFabricacion > stockDate(new Date()))
     throw new Error("La fecha de fabricación no puede estar en el futuro.");
-  return prismaPrivada.$transaction(
+  return db.$transaction(
     async (tx) => {
       const lot = await tx.lote.findUnique({ where: { id: input.loteId } });
       if (!lot) throw new Error("El lote ya no existe.");

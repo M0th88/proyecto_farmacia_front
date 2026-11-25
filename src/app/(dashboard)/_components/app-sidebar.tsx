@@ -43,7 +43,7 @@ export function AppSidebar({
         inert={!sidebarOpen}
       >
         <div className={styles.sidebarBody}>
-          {selected === "privada" && <SidebarNav />}
+          <SidebarNav pharmacy={selected} />
         </div>
       </aside>
       {mobileOpen && (
@@ -98,9 +98,10 @@ export function AppSidebar({
           </button>
         </div>
         <div className={styles.sidebarBody}>
-          {selected === "privada" && (
-            <SidebarNav onNavigate={() => setMobileOpen(false)} />
-          )}
+          <SidebarNav
+            pharmacy={selected}
+            onNavigate={() => setMobileOpen(false)}
+          />
         </div>
       </dialog>
     </>

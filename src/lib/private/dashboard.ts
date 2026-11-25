@@ -8,12 +8,14 @@ import {
 } from "@/lib/private/stock-dates";
 import type { DashboardData } from "@/lib/types/panel";
 
-export async function dashboardSnapshot(): Promise<DashboardData> {
+export async function dashboardSnapshot(
+  db = prismaPrivada,
+): Promise<DashboardData> {
   const now = new Date();
   const today = stockDate(now);
   const start = new Date(stockExpiry(panelDay(today, -60)).getTime() + 1);
   const [sales, products] = await Promise.all([
-    prismaPrivada.venta.findMany({
+    db.venta.findMany({
       where: { creadaEn: { gte: start, lte: now } },
       orderBy: { creadaEn: "desc" },
       select: {
@@ -31,7 +33,7 @@ export async function dashboardSnapshot(): Promise<DashboardData> {
         },
       },
     }),
-    prismaPrivada.medicamento.findMany({
+    db.medicamento.findMany({
       select: {
         id: true,
         nombre: true,

@@ -459,9 +459,12 @@ const editService = load("../src/lib/private/edit-stock.ts", {
   "./stock-dates": dates,
 });
 const stockTypes = load("../src/lib/types/stock-y-lotes.ts");
-const route = load("../src/app/api/privada/stock-y-lotes/route.ts", {
+const route = load("../src/app/api/[farmacia]/stock-y-lotes/route.ts", {
+  "@/lib/auth/pharmacy-route": {
+    pharmacyRoute: (handler) => (request) => handler(request, "privada", db),
+  },
   ...deps,
-  "@/lib/private/auth": { currentPrivateUser: async () => user },
+  "@/lib/auth/session": { getPharmacyUser: async () => user },
   "@/lib/private/add-stock": service,
   "@/lib/private/stock": listing,
   "@/lib/private/stock-dates": dates,

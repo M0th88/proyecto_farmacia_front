@@ -1,5 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../../generated/asistencial/client";
+// Both operational schemas match. Use one generated type with a separate adapter.
+import { PrismaClient } from "../../generated/privada/client";
 
 const connectionString = process.env.DATABASE_URL_ASISTENCIAL;
 if (!connectionString)

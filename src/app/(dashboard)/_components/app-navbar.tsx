@@ -5,11 +5,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { type Pharmacy, pharmacies } from "@/lib/auth/pharmacies";
-import { PRIVATE_SECTIONS } from "@/lib/private/permissions";
 import styles from "./app-shell.module.css";
 import { AppSidebarTrigger } from "./app-sidebar-trigger";
 import { LogoutButton } from "./logout-button";
-export type DashboardUser = { name: string; role: string };
+export type DashboardUser = {
+  name: string;
+  role: string;
+  canSwitchPharmacy?: boolean;
+};
 
 type Props = {
   selected: Pharmacy;
@@ -27,9 +30,7 @@ export function AppNavbar({
 }: Props) {
   const pharmacy = pharmacies[selected];
   const pathname = usePathname();
-  const puntoDeVenta = PRIVATE_SECTIONS.find(
-    (section) => section.key === "pos",
-  );
+  const puntoDeVenta = `/${selected}/punto-de-venta`;
   const [navOpen, setNavOpen] = useState(false);
   const navTrigger = useRef<HTMLButtonElement>(null);
   const navMenu = useRef<HTMLDivElement>(null);
@@ -75,16 +76,16 @@ export function AppNavbar({
         />
       </div>
       <div className={styles.navbarEnd}>
-        {selected === "privada" && puntoDeVenta && (
+        {
           <Link
-            href={puntoDeVenta.href}
+            href={puntoDeVenta}
             className={styles.posLink}
-            aria-current={pathname === puntoDeVenta.href ? "page" : undefined}
+            aria-current={pathname === puntoDeVenta ? "page" : undefined}
           >
             <ShoppingCart size={18} aria-hidden="true" />
             <span>POS</span>
           </Link>
-        )}
+        }
         <div
           ref={navMenu}
           className={styles.navMenu}
@@ -145,19 +146,24 @@ export function AppNavbar({
                 {user?.name ?? pharmacy.name}
                 <small>{user?.role ?? pharmacy.name}</small>
               </p>
-              <Link href="/" onClick={() => setNavOpen(false)}>
-                Cambiar de farmacia
-              </Link>
-              {selected === "privada" && (
+              {user?.canSwitchPharmacy && (
                 <Link
-                  href="/privada/configuracion"
+                  href={`/${selected === "privada" ? "asistencial" : "privada"}`}
+                  onClick={() => setNavOpen(false)}
+                >
+                  Cambiar de farmacia
+                </Link>
+              )}
+              {
+                <Link
+                  href={`/${selected}/configuracion`}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setNavOpen(false)}
                 >
                   Configuración
                 </Link>
-              )}
+              }
               <LogoutButton pharmacy={selected} />
             </nav>
           )}

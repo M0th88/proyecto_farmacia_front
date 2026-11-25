@@ -27,8 +27,8 @@ export const stockListSchema = z.object({
   direction: z.enum(["asc", "desc"]).default("asc"),
 });
 
-export async function stockSnapshot() {
-  const products = await prismaPrivada.medicamento.findMany({
+export async function stockSnapshot(db = prismaPrivada) {
+  const products = await db.medicamento.findMany({
     orderBy: { nombre: "asc" },
     include: {
       lotes: {

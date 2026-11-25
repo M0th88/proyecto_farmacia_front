@@ -322,9 +322,12 @@ const page = service.paginateProducts(
 assert.equal(page.data[0].stock, 7);
 assert.equal(page.nextPage, 1);
 let user = null;
-const route = load("../src/app/api/privada/productos/route.ts", {
+const route = load("../src/app/api/[farmacia]/productos/route.ts", {
+  "@/lib/auth/pharmacy-route": {
+    pharmacyRoute: (handler) => (request) => handler(request, "privada", db),
+  },
   ...deps,
-  "@/lib/private/auth": { currentPrivateUser: async () => user },
+  "@/lib/auth/session": { getPharmacyUser: async () => user },
   "@/lib/private/products": service,
   "@/lib/types/productos": types,
 });

@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   async redirects() {
-    return [
+    const redirects = [
       {
         source: "/privada/pos",
         destination: "/privada/punto-de-venta",
@@ -62,6 +62,13 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
     ];
+    return ["privada", "asistencial"].flatMap((farmacia) =>
+      redirects.map(({ source, destination, permanent }) => ({
+        source: source.replace("/privada", `/${farmacia}`),
+        destination: destination.replace("/privada", `/${farmacia}`),
+        permanent,
+      })),
+    );
   },
   turbopack: {
     rules: {
