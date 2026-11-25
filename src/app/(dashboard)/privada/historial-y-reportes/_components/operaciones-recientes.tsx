@@ -29,7 +29,9 @@ export function OperacionesRecientes({
 }: {
   ventas: Awaited<ReturnType<typeof getRecentOperations>>;
 }) {
-  const total = ventas.reduce((n, v) => n + Number(v.total), 0);
+  const total = ventas
+    .filter((v) => v.estado === "CONFIRMADA")
+    .reduce((n, v) => n + Number(v.total), 0);
   return (
     <div className={`pos-grid ${styles.operations}`} id="operaciones-recientes">
       <section className="pos-panel">
@@ -45,16 +47,30 @@ export function OperacionesRecientes({
           ventas.map((v) => (
             <details className="pos-sale" key={v.id}>
               <summary>
-                <b>Venta #{v.id}</b>
+                <b>
+                  {v.tipoOperacion} #{v.id} · {v.estado}
+                </b>
                 <span>{fechaOperacion.format(v.creadaEn)}</span>
                 <span>{v.metodoPago.replaceAll("_", " ")}</span>
                 <strong>{pesos(Number(v.total))}</strong>
               </summary>
               <div>
+                <p>
+                  Operador #{v.usuarioId ?? "histórico"} · Sucursal #
+                  {v.sucursalId ?? "sin dato"}
+                </p>
+                {v.estado === "ANULADA" && (
+                  <p>
+                    Anulada por #{v.anuladaPor}: {v.motivoAnulacion}. No implica
+                    devolución física.
+                  </p>
+                )}
                 {v.detalles.map((d) => (
                   <p key={d.id}>
                     {d.cantidad} × {d.medicamento.nombre} · Lote{" "}
                     {d.lote.numeroLote} · {pesos(Number(d.subtotal))}
+                    {" · "}Detalle #{d.id} · Ubicación #
+                    {d.ubicacionId ?? "histórica"}
                   </p>
                 ))}
               </div>

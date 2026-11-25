@@ -1,5 +1,4 @@
 import { prismaPrivada } from "@/lib/db/prisma-privada";
-import { addStock } from "@/lib/private/add-stock";
 import { currentPrivateUser } from "@/lib/private/auth";
 import { editStock } from "@/lib/private/edit-stock";
 import {
@@ -8,7 +7,7 @@ import {
   stockSnapshot,
 } from "@/lib/private/stock";
 import { stockDate } from "@/lib/private/stock-dates";
-import { stockEditSchema, stockEntrySchema } from "@/lib/types/stock-y-lotes";
+import { stockEditSchema } from "@/lib/types/stock-y-lotes";
 
 async function inventoryUser() {
   const user = await currentPrivateUser();
@@ -36,6 +35,8 @@ export async function GET(request: Request) {
           select: {
             id: true,
             nombre: true,
+            concentracion: true,
+            formaFarmaceutica: true,
             codigoBarra: true,
             lotes: {
               select: {
@@ -48,12 +49,15 @@ export async function GET(request: Request) {
         }),
         prismaPrivada.ubicacionInventario.findMany({
           orderBy: { nombre: "asc" },
-          select: { id: true, nombre: true, tipo: true },
+          select: { id: true, nombre: true, tipo: true, sucursalId: true },
         }),
       ]);
       return Response.json({
         productos: products.map((p) => ({
           ...p,
+          nombre: [p.nombre, p.concentracion, p.formaFarmaceutica]
+            .filter(Boolean)
+            .join(" · "),
           lotes: p.lotes.map((l) => ({
             ...l,
             fechaFabricacion: l.fechaFabricacion
@@ -81,26 +85,15 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
-  const user = await inventoryUser();
-  if (!user) return denied();
-  const parsed = stockEntrySchema.safeParse(
-    await request.json().catch(() => null),
+export async function POST() {
+  if (!(await inventoryUser())) return denied();
+  return Response.json(
+    {
+      error:
+        "Registra las recepciones mediante el formulario actualizado de Añadir stock.",
+    },
+    { status: 410 },
   );
-  if (!parsed.success)
-    return Response.json(
-      { error: parsed.error.issues[0]?.message ?? "Datos de stock inválidos." },
-      { status: 400 },
-    );
-  try {
-    return Response.json(await addStock(parsed.data, user.id), { status: 201 });
-  } catch (error) {
-    const message =
-      error instanceof Error && !("code" in error)
-        ? error.message
-        : "No se pudo registrar la entrada. El inventario pudo cambiar; actualiza e intenta nuevamente.";
-    return Response.json({ error: message }, { status: 409 });
-  }
 }
 export async function PATCH(request: Request) {
   const user = await inventoryUser();

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import styles from "@/components/admin-table.module.css";
 import { Button } from "@/components/ui/button";
 import { PRIVATE_SECTIONS } from "@/lib/private/permissions";
+import { operationalPermissions } from "@/lib/types/fefo";
 import { type RoleProfile, roleProfileSchema } from "@/lib/types/roles";
 import type { Role } from "@/lib/types/usuarios-y-roles";
 import { rolesQueryKey, usersQueryKey } from "../../usuarios/actions";
@@ -130,9 +131,13 @@ export function RoleProfileForm({
       >
         <legend>Vistas permitidas</legend>
         <div className={roleStyles.permissionGrid}>
-          {PRIVATE_SECTIONS.filter(
-            (section) => section.key !== "usuarios" && section.key !== "roles",
-          ).map((section) => (
+          {[
+            ...PRIVATE_SECTIONS.filter(
+              (section) =>
+                section.key !== "usuarios" && section.key !== "roles",
+            ),
+            ...operationalPermissions,
+          ].map((section) => (
             <label className={styles.inline} key={section.key}>
               <input
                 type="checkbox"

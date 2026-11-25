@@ -1,7 +1,9 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Modal } from "@/components/ui/modal";
 import type { Item, Producto } from "@/lib/types/punto-de-venta";
+import { FefoConfirmation } from "./fefo-confirmation";
 
 const pesos = (n: number) =>
   new Intl.NumberFormat("es-CL", {
@@ -11,6 +13,12 @@ const pesos = (n: number) =>
   }).format(n);
 
 export function PuntoDeVenta() {
+  const [branch, setBranch] = useState(0);
+  const [branches, setBranches] = useState<{ id: number; nombre: string }[]>(
+    [],
+  );
+  const [preparing, setPreparing] = useState(false);
+  const [operation, setOperation] = useState<"VENTA" | "DISPENSACION">("VENTA");
   const [productos, setProductos] = useState<Producto[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [busqueda, setBusqueda] = useState("");
@@ -26,7 +34,9 @@ export function PuntoDeVenta() {
   async function cargar() {
     setCargando(true);
     try {
-      const r = await fetch("/api/privada/catalogo", { cache: "no-store" });
+      const r = await fetch(`/api/privada/catalogo?sucursalId=${branch}`, {
+        cache: "no-store",
+      });
       if (!r.ok) throw new Error("No se pudo cargar el catálogo privado.");
       setProductos(await r.json());
     } catch (e) {
@@ -36,7 +46,16 @@ export function PuntoDeVenta() {
     }
   }
   useEffect(() => {
-    fetch("/api/privada/catalogo", { cache: "no-store" })
+    fetch("/api/privada/fefo?meta=1")
+      .then(async (r) => {
+        if (!r.ok) throw new Error("No se pudieron cargar las sucursales.");
+        return r.json();
+      })
+      .then((d) => setBranches(d.sucursales))
+      .catch((e) => setMensaje(e.message));
+  }, []);
+  useEffect(() => {
+    fetch(`/api/privada/catalogo?sucursalId=${branch}`, { cache: "no-store" })
       .then(async (r) => {
         if (!r.ok) throw new Error("No se pudo cargar el catálogo privado.");
         return (await r.json()) as Producto[];
@@ -46,7 +65,7 @@ export function PuntoDeVenta() {
         setMensaje(e instanceof Error ? e.message : "Error de conexión."),
       )
       .finally(() => setCargando(false));
-  }, []);
+  }, [branch]);
   const filtrados = useMemo(
     () =>
       productos.filter((p) =>
@@ -103,42 +122,13 @@ export function PuntoDeVenta() {
       setItems((v) => v.map((x) => (x.id === id ? { ...x, cantidad: n } : x)));
     else setMensaje("La cantidad supera el stock disponible.");
   }
-  async function cobrar() {
-    if (!items.length || cobrando) return;
+  function cobrar() {
+    if (!branch || !items.length || cobrando) return;
     if (pago === "EFECTIVO" && (!recibido || Number(recibido) < total)) {
       setMensaje("El efectivo recibido no cubre el total.");
       return;
     }
-    setCobrando(true);
-    setMensaje("");
-    try {
-      const r = await fetch("/api/privada/ventas", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          metodoPago: pago,
-          recibido: pago === "EFECTIVO" ? Number(recibido) : undefined,
-          items: items.map((i) => ({
-            medicamentoId: i.id,
-            cantidad: i.cantidad,
-          })),
-        }),
-      });
-      const data = await r.json();
-      if (!r.ok)
-        throw new Error(data.error ?? "No se pudo registrar la venta.");
-      setItems([]);
-      setRecibido("");
-      await cargar();
-      setMensaje(
-        `Venta #${data.id} registrada. Total ${pesos(data.total)}${data.vuelto !== null ? ` · Vuelto ${pesos(data.vuelto)}` : ""}.`,
-      );
-    } catch (e) {
-      setMensaje(e instanceof Error ? e.message : "Error de conexión.");
-    } finally {
-      setCobrando(false);
-      lector.current?.focus();
-    }
+    setPreparing(true);
   }
   return (
     <section className="pos-shell">
@@ -164,6 +154,30 @@ export function PuntoDeVenta() {
             ×
           </button>
         </div>
+      )}
+      <label>
+        Sucursal que entrega
+        <select
+          value={branch}
+          disabled={cobrando}
+          onChange={(e) => {
+            setBranch(Number(e.target.value));
+            setItems([]);
+          }}
+        >
+          <option value={0}>Selecciona una sucursal</option>
+          {branches.map((b) => (
+            <option value={b.id} key={b.id}>
+              {b.nombre}
+            </option>
+          ))}
+        </select>
+      </label>
+      {!branches.length && (
+        <p>
+          Configura las sucursales y concilia el inventario en Stock y lotes
+          antes de operar.
+        </p>
       )}
       <div className="pos-grid">
         <section className="pos-panel">
@@ -211,7 +225,10 @@ export function PuntoDeVenta() {
                     </small>
                     <h3>{p.nombre}</h3>
                     <span>
-                      {p.concentracion ?? "Medicamento"} ·{" "}
+                      {[p.concentracion, p.formaFarmaceutica]
+                        .filter(Boolean)
+                        .join(" · ") || "Medicamento"}{" "}
+                      ·{" "}
                       {(p.condicionVenta ?? "SIN_CLASIFICAR").replaceAll(
                         "_",
                         " ",
@@ -282,6 +299,16 @@ export function PuntoDeVenta() {
           </div>
           <div className="pos-pay">
             <label>
+              Tipo de operación
+              <select
+                value={operation}
+                onChange={(e) =>
+                  setOperation(e.target.value as typeof operation)
+                }
+              >
+                <option value="VENTA">Venta</option>
+                <option value="DISPENSACION">Dispensación</option>
+              </select>
               Medio de pago
               <select
                 value={pago}
@@ -318,16 +345,45 @@ export function PuntoDeVenta() {
           )}
           <button
             className="pos-charge"
-            disabled={!items.length || cobrando}
+            disabled={!branch || !items.length || cobrando}
             onClick={() => void cobrar()}
           >
-            {cobrando ? "Registrando…" : `Cobrar ${pesos(total)} →`}
+            {cobrando ? "Registrando…" : `Preparar lotes · ${pesos(total)}`}
           </button>
           <p className="pos-footnote">
             Se descuentan primero los lotes vigentes más próximos a vencer.
           </p>
         </aside>
       </div>
+      <Modal
+        open={preparing}
+        onOpenChange={(open) => {
+          if (!cobrando) setPreparing(open);
+        }}
+        title="Confirmar entrega física"
+        description="Verifica el número de lote y la cantidad de cada envase antes de confirmar."
+      >
+        {preparing && (
+          <FefoConfirmation
+            sucursalId={branch}
+            items={items.map((i) => ({
+              medicamentoId: i.id,
+              cantidad: i.cantidad,
+            }))}
+            metodoPago={pago}
+            recibido={pago === "EFECTIVO" ? Number(recibido) : undefined}
+            tipoOperacion={operation}
+            onBusy={setCobrando}
+            onSuccess={(id) => {
+              setPreparing(false);
+              setItems([]);
+              setRecibido("");
+              void cargar();
+              setMensaje(`Operación #${id} registrada.`);
+            }}
+          />
+        )}
+      </Modal>
     </section>
   );
 }

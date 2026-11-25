@@ -1,4 +1,5 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { getPrivateUser } from "@/lib/auth/session";
@@ -34,6 +35,9 @@ async function StockContent() {
   });
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
+      <Link href="/privada/stocks-y-lotes/control-fefo">
+        Control FEFO: conciliación, alertas y devoluciones →
+      </Link>
       <StockTable currentUserId={user.id} initialMetrics={snapshot.metrics} />
     </HydrationBoundary>
   );

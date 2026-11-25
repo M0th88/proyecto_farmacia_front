@@ -17,7 +17,13 @@ function load(path, dependencies = {}) {
   );
   const result = { exports: {} };
   new Function("require", "module", "exports", outputText)(
-    (name) => dependencies[name] ?? require(name),
+    (name) =>
+      dependencies[name] ??
+      (name === "@/lib/fefo"
+        ? load("../src/lib/fefo.ts")
+        : name === "@/lib/types/fefo"
+          ? load("../src/lib/types/fefo.ts")
+          : require(name)),
     result,
     result.exports,
   );
@@ -112,7 +118,13 @@ const tx = {
           p.numeroLote === key.numeroLote,
       );
       if (!row) {
-        row = { id: state.lots.length + 1, ...create };
+        row = {
+          id: state.lots.length + 1,
+          estado: "PENDIENTE_REVISION",
+          precisionVencimiento: "DIA",
+          rotuloVencimiento: null,
+          ...create,
+        };
         state.lots.push(row);
       }
       return row;
@@ -340,6 +352,21 @@ assert.deepEqual(
   "A failed entry must roll back lot, location, quantity and movement.",
 );
 snapshot = await listing.stockSnapshot();
+assert.equal(
+  snapshot.metrics.bajo,
+  1,
+  "Unverified legacy receipts are unavailable.",
+);
+// Simulate the explicit physical reconciliation performed by the FEFO workflow.
+for (const location of state.locations) location.sucursalId = 1;
+for (const lot of state.lots)
+  Object.assign(lot, {
+    estado: "APTO",
+    precisionVencimiento: "DIA",
+    rotuloVencimiento: dates.stockDate(lot.fechaVencimiento),
+  });
+for (const stock of state.stocks) stock.fechaRecepcion = new Date("2025-02-01");
+snapshot = await listing.stockSnapshot();
 assert.equal(snapshot.metrics.bajo, 0);
 assert.equal(snapshot.rows.filter((r) => r.nombre === "Paracetamol").length, 2);
 const near = new Date(Date.now() + 5 * 86400000);
@@ -347,6 +374,9 @@ state.lots.push(
   {
     id: 2,
     medicamentoId: 2,
+    estado: "APTO",
+    precisionVencimiento: "DIA",
+    rotuloVencimiento: dates.stockDate(near),
     numeroLote: "CERCANO",
     fechaFabricacion: null,
     fechaVencimiento: near,
@@ -354,6 +384,9 @@ state.lots.push(
   {
     id: 3,
     medicamentoId: 2,
+    estado: "APTO",
+    precisionVencimiento: "DIA",
+    rotuloVencimiento: "2000-01-01",
     numeroLote: "VENCIDO",
     fechaFabricacion: null,
     fechaVencimiento: new Date("2000-01-01"),
@@ -364,6 +397,7 @@ state.stocks.push(
   { id: 4, loteId: 2, ubicacionId: 2, cantidad: 3 },
   { id: 5, loteId: 3, ubicacionId: 1, cantidad: 2 },
 );
+for (const stock of state.stocks) stock.fechaRecepcion = new Date("2025-02-01");
 snapshot = await listing.stockSnapshot();
 assert.equal(snapshot.metrics.proximos, 1, "Count lots, not locations.");
 assert.equal(snapshot.metrics.vencidos, 1);
@@ -484,9 +518,9 @@ assert.equal((await route.POST(request("POST", entry))).status, 403);
 user = { id: 7, rol: { nombre: "Bodega", permisos: ["inventario"] } };
 assert.equal(
   (await route.POST(request("POST", { ...entry, cantidad: -1 }))).status,
-  400,
+  410,
 );
-assert.equal((await route.POST(request("POST", entry))).status, 201);
+assert.equal((await route.POST(request("POST", entry))).status, 410);
 assert.equal(
   (await route.GET(request("GET", undefined, "?page=-1"))).status,
   400,

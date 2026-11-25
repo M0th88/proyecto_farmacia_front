@@ -24,6 +24,7 @@ export default async function HistorialYReportesPage() {
   const [ventas, operacionesRecientes] = await Promise.all([
     prismaPrivada.venta.findMany({
       where: {
+        estado: "CONFIRMADA",
         creadaEn: { gte: new Date(ahora.getTime() - 15 * 24 * 60 * 60 * 1000) },
       },
       select: { creadaEn: true, total: true },

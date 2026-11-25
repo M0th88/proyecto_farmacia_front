@@ -127,6 +127,9 @@ model Lote {
 
   fechaFabricacion DateTime?
   fechaVencimiento DateTime
+  rotuloVencimiento String?
+  precisionVencimiento String @default("DIA")
+  estado String @default("PENDIENTE_REVISION")
 
   medicamento Medicamento @relation(fields: [medicamentoId], references: [id])
 
@@ -164,6 +167,15 @@ model Venta {
   recibido   Decimal?       @db.Decimal(12, 2)
   vuelto     Decimal?       @db.Decimal(12, 2)
   detalles   DetalleVenta[]
+  sucursalId Int?
+  usuarioId Int?
+  tipoOperacion String @default("VENTA")
+  estado String @default("CONFIRMADA")
+  anuladaPor Int?
+  anuladaEn DateTime?
+  motivoAnulacion String?
+  motivoExcepcion String?
+  claveOperacion String? @unique
 
   @@index([creadaEn])
 }
@@ -176,6 +188,8 @@ model DetalleVenta {
   cantidad       Int
   precioUnitario Decimal     @db.Decimal(12, 2)
   subtotal       Decimal     @db.Decimal(12, 2)
+  stockId Int?
+  ubicacionId Int?
   venta          Venta       @relation(fields: [ventaId], references: [id])
   medicamento    Medicamento @relation(fields: [medicamentoId], references: [id])
   lote           Lote        @relation(fields: [loteId], references: [id])
@@ -191,6 +205,8 @@ model UbicacionInventario {
   nombre String
 
   tipo TipoUbicacion
+  sucursalId Int?
+  sucursal Sucursal? @relation(fields: [sucursalId], references: [id])
 
   stocks Stock[]
 
@@ -201,6 +217,7 @@ model Stock {
   id Int @id @default(autoincrement())
 
   cantidad Int @default(0)
+  fechaRecepcion DateTime?
 
   loteId      Int
   ubicacionId Int
@@ -220,6 +237,10 @@ model MovimientoStock {
   tipo     TipoMovimientoStock
   cantidad Int
   motivo   String?
+  usuarioId Int?
+  ubicacionId Int?
+  ventaId Int?
+  origen String?
 
   loteId Int
 
@@ -229,4 +250,41 @@ model MovimientoStock {
 
   @@index([loteId])
   @@index([creadoEn])
+}
+
+model Sucursal {
+  id Int @id @default(autoincrement())
+  nombre String @unique
+  alertasDias Int[] @default([7,30])
+  corteMes String @default("PENDIENTE")
+  procedimiento String?
+  permiteExcepcion Boolean @default(false)
+  permiteReingreso Boolean @default(false)
+  configuradaPor Int?
+  configuradaEn DateTime?
+  ubicaciones UbicacionInventario[]
+}
+
+model RevisionInventario {
+  id Int @id @default(autoincrement())
+  medicamentoId Int
+  ubicacionId Int
+  cantidad Int
+  numeroLote String?
+  rotuloVencimiento String?
+  precisionVencimiento String @default("NO_VERIFICADO")
+  fechaFabricacion DateTime?
+  fechaRecepcion DateTime
+  detalleVentaId Int?
+  origen String @default("RECEPCION")
+  estado String @default("PENDIENTE")
+  motivo String
+  registradoPor Int
+  revisadoPor Int?
+  revisadoEn DateTime?
+  resolucion String?
+  stockDestinoId Int?
+  creadoEn DateTime @default(now())
+  @@index([estado])
+  @@index([detalleVentaId])
 }

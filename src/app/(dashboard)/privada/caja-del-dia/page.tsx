@@ -26,6 +26,7 @@ export default async function CajaDelDiaPage() {
   const ventas = (
     await prismaPrivada.venta.findMany({
       where: {
+        estado: "CONFIRMADA",
         creadaEn: { gte: new Date(ahora.getTime() - 48 * 60 * 60 * 1000) },
       },
       orderBy: { creadaEn: "desc" },

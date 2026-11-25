@@ -1,0 +1,24 @@
+.table {
+  width: 100%;
+  min-width: 570px;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+.table th,
+.table td {
+  padding: 12px 10px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #e5e5e5;
+}
+.table th {
+  background: #f5f6f8;
+  color: #4c637e;
+  font-weight: 600;
+}
+.table input {
+  width: 66px;
+  padding: 6px;
+  border: 1px solid #d8d8d8;
+  border-radius: 6px;
+}

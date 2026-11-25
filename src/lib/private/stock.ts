@@ -1,6 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { prismaPrivada } from "@/lib/db/prisma-privada";
+import { aptStock } from "@/lib/fefo";
 import type { PaginationResponse } from "@/lib/types/pagination";
 import type { StockMetrics, StockRow } from "@/lib/types/stock-y-lotes";
 import { stockDaysRemaining } from "./stock-dates";
@@ -50,7 +51,14 @@ export async function stockSnapshot() {
       .filter((lot) => lot.fechaVencimiento > now)
       .reduce(
         (sum, lot) =>
-          sum + lot.stocks.reduce((n, stock) => n + stock.cantidad, 0),
+          sum +
+          lot.stocks
+            .filter(
+              (stock) =>
+                !!stock.ubicacion.sucursalId &&
+                aptStock({ ...stock, lote: lot }),
+            )
+            .reduce((n, stock) => n + stock.cantidad, 0),
         0,
       );
     if (product.stockMinimo > 0 && available <= product.stockMinimo)
@@ -113,6 +121,13 @@ export async function stockSnapshot() {
       for (const stock of lot.stocks)
         rows.push({
           ...common,
+          estado: expired
+            ? common.estado
+            : lot.estado !== "APTO"
+              ? lot.estado.replaceAll("_", " ")
+              : !stock.fechaRecepcion || !stock.ubicacion.sucursalId
+                ? "Pendiente de conciliación"
+                : common.estado,
           id: `stock-${stock.id}`,
           stockId: stock.id,
           ubicacion: stock.ubicacion.nombre,

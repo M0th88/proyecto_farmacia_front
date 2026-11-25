@@ -17,7 +17,13 @@ function load(path, dependencies = {}) {
   );
   const result = { exports: {} };
   new Function("require", "module", "exports", outputText)(
-    (name) => dependencies[name] ?? require(name),
+    (name) =>
+      dependencies[name] ??
+      (name === "@/lib/fefo"
+        ? load("../src/lib/fefo.ts")
+        : name === "@/lib/types/fefo"
+          ? load("../src/lib/types/fefo.ts")
+          : require(name)),
     result,
     result.exports,
   );
@@ -103,21 +109,53 @@ const db = {
         lotes: [
           {
             id: 1,
+            estado: "APTO",
+            precisionVencimiento: "DIA",
+            rotuloVencimiento: "verificado",
             numeroLote: "VIGENTE",
             fechaVencimiento: future(40),
-            stocks: [{ cantidad: 6 }],
+            stocks: [
+              {
+                cantidad: 6,
+                fechaRecepcion: future(-10),
+                ubicacion: { sucursalId: 1 },
+              },
+            ],
           },
           {
             id: 2,
+            estado: "APTO",
+            precisionVencimiento: "DIA",
+            rotuloVencimiento: "verificado",
             numeroLote: "CERCANO",
             fechaVencimiento: future(1),
-            stocks: [{ cantidad: 2 }, { cantidad: 2 }],
+            stocks: [
+              {
+                cantidad: 2,
+                fechaRecepcion: future(-10),
+                ubicacion: { sucursalId: 1 },
+              },
+              {
+                cantidad: 2,
+                fechaRecepcion: future(-10),
+                ubicacion: { sucursalId: 1 },
+              },
+            ],
           },
           {
             id: 3,
+            estado: "APTO",
+            precisionVencimiento: "DIA",
+            rotuloVencimiento: "verificado",
             numeroLote: "VENCIDO",
             fechaVencimiento: future(-1),
-            stocks: [{ cantidad: 3 }],
+            stocks: [
+              {
+                cantidad: 3,
+                fechaRecepcion: future(-10),
+                ubicacion: { sucursalId: 1 },
+              },
+            ],
           },
         ],
       },
@@ -129,9 +167,18 @@ const db = {
         lotes: [
           {
             id: 4,
+            estado: "APTO",
+            precisionVencimiento: "DIA",
+            rotuloVencimiento: "verificado",
             numeroLote: "INACTIVO",
             fechaVencimiento: future(40),
-            stocks: [{ cantidad: 100 }],
+            stocks: [
+              {
+                cantidad: 100,
+                fechaRecepcion: future(-10),
+                ubicacion: { sucursalId: 1 },
+              },
+            ],
           },
         ],
       },

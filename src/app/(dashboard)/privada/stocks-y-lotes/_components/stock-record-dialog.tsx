@@ -23,7 +23,7 @@ import {
   stockQueryKey,
   updateStock,
 } from "../actions";
-import { StockForm } from "./stock-form";
+import { ReceiptForm as StockForm } from "./receipt-form";
 
 export function StockRecordDialog({
   row,

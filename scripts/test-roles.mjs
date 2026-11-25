@@ -15,7 +15,13 @@ function load(path, dependencies = {}) {
   });
   const loadedModule = { exports: {} };
   new Function("require", "module", "exports", outputText)(
-    (name) => dependencies[name] ?? require(name),
+    (name) =>
+      dependencies[name] ??
+      (name === "@/lib/fefo"
+        ? load("../src/lib/fefo.ts")
+        : name === "@/lib/types/fefo"
+          ? load("../src/lib/types/fefo.ts")
+          : require(name)),
     loadedModule,
     loadedModule.exports,
   );

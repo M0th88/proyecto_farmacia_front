@@ -3,6 +3,7 @@ export type Producto = {
   nombre: string;
   codigoBarra: string | null;
   concentracion: string | null;
+  formaFarmaceutica?: string | null;
   categoria: string;
   precio: number | null;
   stock: number;
