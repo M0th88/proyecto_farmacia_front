@@ -1,15 +1,18 @@
 import "server-only";
+import { randomInt } from "node:crypto";
 import { z } from "zod";
 import { Prisma } from "@/generated/privada/client";
 import { prismaPrivada } from "@/lib/db/prisma-privada";
 import type { PaginationResponse } from "@/lib/types/pagination";
 import type {
   ProductDetail,
+  ProductLabel,
   ProductMetrics,
   ProductProfile,
   ProductRow,
 } from "@/lib/types/productos";
 import { emptyChileFields } from "@/lib/types/productos";
+import { stockDate } from "./stock-dates";
 
 export const productListSchema = z.object({
   page: z.coerce.number().int().min(0).default(0),
@@ -240,4 +243,65 @@ export async function deleteProduct(id: number) {
     },
     { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
   );
+}
+
+export async function productLabel(id: number): Promise<ProductLabel | null> {
+  const product = await prismaPrivada.medicamento.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      nombre: true,
+      codigoBarra: true,
+      lotes: {
+        orderBy: [{ fechaVencimiento: "asc" }, { id: "asc" }],
+        select: {
+          id: true,
+          numeroLote: true,
+          fechaVencimiento: true,
+          stocks: {
+            where: { cantidad: { gt: 0 } },
+            orderBy: { ubicacion: { nombre: "asc" } },
+            select: { ubicacion: { select: { id: true, nombre: true } } },
+          },
+        },
+      },
+    },
+  });
+  if (!product) return null;
+  return {
+    id: product.id,
+    nombre: product.nombre,
+    codigoBarra: product.codigoBarra || null,
+    lotes: product.lotes.map((lote) => ({
+      id: lote.id,
+      numero: lote.numeroLote,
+      vencimiento: stockDate(lote.fechaVencimiento),
+      ubicaciones: lote.stocks.map(({ ubicacion }) => ubicacion),
+    })),
+  };
+}
+
+export async function assignProductBarcode(id: number) {
+  const product = await productLabel(id);
+  if (!product || product.codigoBarra) return product;
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const digits = String(randomInt(10_000_000_000)).padStart(10, "0");
+    try {
+      await prismaPrivada.medicamento.updateMany({
+        where: { id, OR: [{ codigoBarra: null }, { codigoBarra: "" }] },
+        data: { codigoBarra: `FP${digits}` },
+      });
+      return productLabel(id);
+    } catch (error) {
+      if (
+        !(
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === "P2002"
+        )
+      )
+        throw error;
+    }
+  }
+  throw new Error("No se pudo asignar un código único. Intenta nuevamente.");
 }

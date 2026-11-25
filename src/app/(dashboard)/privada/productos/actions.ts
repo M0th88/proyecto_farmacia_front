@@ -2,6 +2,7 @@ import type { SortingState } from "@tanstack/react-table";
 import type { PaginationResponse } from "@/lib/types/pagination";
 import type {
   ProductDetail,
+  ProductLabel,
   ProductMetrics,
   ProductOptions,
   ProductProfile,
@@ -50,6 +51,15 @@ export const getProduct = (id: number) => request<ProductDetail>(`?id=${id}`);
 export const removeProduct = (id: number) =>
   request<{ success: boolean }>("", {
     method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id }),
+  });
+
+export const getProductLabel = (id: number) =>
+  request<ProductLabel>(`?id=${id}&etiqueta=1`);
+export const generateProductBarcode = (id: number) =>
+  request<ProductLabel>("?etiqueta=1", {
+    method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id }),
   });

@@ -124,6 +124,8 @@ Los nombres de las carpetas privadas coinciden con los del menú. Se usan minús
 | --- | --- | --- |
 | Panel | `panel` | `/privada/panel` |
 | POS (navbar) | `punto-de-venta` | `/privada/punto-de-venta` |
+| Etiquetas de productos | `productos/etiquetas` | `/privada/productos/etiquetas` |
+| Documento de venta | `historial/[id]` | `/privada/historial/<número de venta>` |
 | Productos | `productos` | `/privada/productos` |
 | Stock y lotes | `stock-y-lotes` | `/privada/stock-y-lotes` |
 | Proveedores | `proveedores` | `/privada/proveedores` |
@@ -212,3 +214,21 @@ La carga afecta únicamente a Farmacia Privada y puede repetirse sin duplicar lo
 
 No se generan precios, códigos de barras, lotes ni stock. Los cinco medicamentos sin presentación verificada conservan concentración y forma farmacéutica vacías. Cada carga usa una transacción; si falla una validación, se revierte esa carga sin eliminar registros existentes.
 
+
+
+### Cobro y documentos del POS privado
+
+El POS guarda la venta y las salidas de stock por lote vigente en una misma transacción. Usa precios de catálogo con IVA incluido y desglosa la tasa general del 19 % sobre el importe después del descuento. El efectivo muestra el vuelto. Los demás medios registran la confirmación realizada en el terminal o en la cuenta bancaria.
+
+Selecciona boleta o factura antes de confirmar. Para factura, completa los datos de facturación. Desde la confirmación o el historial se puede abrir la vista previa, imprimirla o guardarla como PDF. El folio tributario y la emisión electrónica quedan pendientes de integración con el SII. Las ventas anteriores conservan su comprobante interno.
+
+La apertura, los movimientos, el cierre de caja, el directorio de clientes, las anulaciones y las devoluciones tienen controles deshabilitados hasta que se implemente su registro. La consulta de stock usa la sección Stock y lotes existente.
+
+La base privada requiere la migración `202611240001_documentos_pos`. En la base de destino autorizada, aplica `npm run prisma:deploy:privada` y ejecuta `npm run prisma:generate:privada` si aún falta regenerar el cliente.
+
+
+### Etiquetas de productos
+
+En Productos, abre **Generador de etiquetas** o elige **Etiqueta de código de barras** desde las acciones de un artículo. Para vender unidades de un envase por separado, usa una ficha con el precio y stock de la unidad. **Generar y guardar código** asigna un código interno Code 128 al producto sin código. El POS lo reconoce a través del campo de código de barras habitual. Los códigos ya guardados se conservan.
+
+La pantalla permite seleccionar varios productos, asociar lote y ubicación existentes, completar datos opcionales del envase y elegir copias y orientación por fila. **Imprimir** abre el diálogo del navegador con las etiquetas preparadas.

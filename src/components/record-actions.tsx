@@ -1,6 +1,6 @@
 "use client";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { Barcode, Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import styles from "./admin-table.module.css";
 import { Button } from "./ui/button";
 
@@ -11,6 +11,7 @@ export function RecordActions({
   onView,
   onEdit,
   onDelete,
+  onLabel,
 }: {
   name: string;
   canDelete: boolean;
@@ -18,6 +19,7 @@ export function RecordActions({
   onView: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onLabel?: () => void;
 }) {
   return (
     <DropdownMenu.Root>
@@ -48,6 +50,12 @@ export function RecordActions({
             <Pencil size={16} />
             Editar
           </DropdownMenu.Item>
+          {onLabel && (
+            <DropdownMenu.Item className={styles.menuItem} onSelect={onLabel}>
+              <Barcode size={16} aria-hidden="true" />
+              Etiqueta de código de barras
+            </DropdownMenu.Item>
+          )}
           {canDelete && (
             <DropdownMenu.Item
               className={`${styles.menuItem} ${styles.delete}`}

@@ -119,3 +119,15 @@ export type ProductMetrics = {
   sinClasificar: number;
 };
 export type ProductOptions = { categorias: { id: number; nombre: string }[] };
+
+export type ProductLabel = {
+  id: number;
+  nombre: string;
+  codigoBarra: string | null;
+  lotes: {
+    id: number;
+    numero: string;
+    vencimiento: string;
+    ubicaciones: { id: number; nombre: string }[];
+  }[];
+};
