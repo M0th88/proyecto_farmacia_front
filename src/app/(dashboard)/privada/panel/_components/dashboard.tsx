@@ -401,7 +401,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
                 {summary.sales.slice(0, 5).map((sale) => (
                   <tr key={sale.id}>
                     <td>
-                      <Link href="/privada/historial-y-reportes#operaciones-recientes">
+                      <Link href={`/privada/historial-y-reportes/${sale.id}`}>
                         Venta #{sale.id}
                       </Link>
                     </td>

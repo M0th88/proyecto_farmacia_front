@@ -1,67 +1,114 @@
+import Link from "next/link";
 import { prismaPrivada } from "@/lib/db/prisma-privada";
-import { pesos } from "./format";
+import { mediosPago } from "@/lib/types/punto-de-venta";
+import { fechaVenta, pesos } from "@/lib/validation/punto-de-venta";
 import styles from "./operaciones-recientes.module.css";
 
 const maxOperaciones = 100;
-const fechaOperacion = new Intl.DateTimeFormat("es-CL", {
-  dateStyle: "short",
-  timeStyle: "short",
-  timeZone: "America/Santiago",
-});
+const historialHref = "/privada/historial-y-reportes";
+const operacionesHref = `${historialHref}#operaciones-recientes`;
 
-export function getRecentOperations() {
-  return prismaPrivada.venta.findMany({
+export async function getRecentOperations(busqueda: string) {
+  const id = Number(busqueda);
+  if (
+    busqueda &&
+    (!/^\d{1,10}$/.test(busqueda) || id < 1 || id > 2_147_483_647)
+  ) {
+    return { ventas: [], busquedaValida: false };
+  }
+
+  const ventas = await prismaPrivada.venta.findMany({
+    where: busqueda ? { id } : undefined,
     take: maxOperaciones,
     orderBy: [{ creadaEn: "desc" }, { id: "desc" }],
-    include: {
+    select: {
+      id: true,
+      creadaEn: true,
+      metodoPago: true,
+      total: true,
       detalles: {
-        include: {
+        select: {
+          id: true,
+          cantidad: true,
+          nombreProducto: true,
+          subtotal: true,
           medicamento: { select: { nombre: true } },
           lote: { select: { numeroLote: true } },
         },
       },
     },
   });
+  return { ventas, busquedaValida: true };
 }
 
 export function OperacionesRecientes({
-  ventas,
+  resultado: { ventas, busquedaValida },
+  busqueda,
 }: {
-  ventas: Awaited<ReturnType<typeof getRecentOperations>>;
+  resultado: Awaited<ReturnType<typeof getRecentOperations>>;
+  busqueda: string;
 }) {
   const total = ventas.reduce((n, v) => n + Number(v.total), 0);
   return (
     <div className={`pos-grid ${styles.operations}`} id="operaciones-recientes">
       <section className="pos-panel">
         <div className="pos-title">
-          <h2>Operaciones recientes</h2>
+          <h2>
+            {busqueda ? "Resultado de búsqueda" : "Operaciones recientes"}
+          </h2>
           <span>{ventas.length} ventas</span>
         </div>
-        <p className={styles.description}>
-          Últimas {maxOperaciones} operaciones registradas · Registro interno,
-          no boleta tributaria.
-        </p>
+        {!busqueda && (
+          <p className={styles.description}>
+            Últimas {maxOperaciones} operaciones registradas · Registro interno.
+          </p>
+        )}
+        <form className="pos-filters pos-buscar-venta" action={operacionesHref}>
+          <label>
+            Número de venta
+            <input
+              name="venta"
+              defaultValue={busqueda}
+              inputMode="numeric"
+              maxLength={10}
+            />
+          </label>
+          <button type="submit">Buscar</button>
+          {busqueda && <Link href={operacionesHref}>Limpiar búsqueda</Link>}
+        </form>
         {ventas.length ? (
           ventas.map((v) => (
             <details className="pos-sale" key={v.id}>
               <summary>
                 <b>Venta #{v.id}</b>
-                <span>{fechaOperacion.format(v.creadaEn)}</span>
-                <span>{v.metodoPago.replaceAll("_", " ")}</span>
+                <span>{fechaVenta(v.creadaEn)}</span>
+                <span>{mediosPago[v.metodoPago]}</span>
                 <strong>{pesos(Number(v.total))}</strong>
               </summary>
               <div>
                 {v.detalles.map((d) => (
                   <p key={d.id}>
-                    {d.cantidad} × {d.medicamento.nombre} · Lote{" "}
-                    {d.lote.numeroLote} · {pesos(Number(d.subtotal))}
+                    {d.cantidad} × {d.nombreProducto ?? d.medicamento.nombre} ·
+                    Lote {d.lote.numeroLote} · {pesos(Number(d.subtotal))}
                   </p>
                 ))}
+                <Link
+                  className="pos-action-link"
+                  href={`${historialHref}/${v.id}`}
+                >
+                  Ver venta e imprimir documento
+                </Link>
               </div>
             </details>
           ))
         ) : (
-          <p className="pos-empty">Todavía no hay ventas registradas.</p>
+          <p className="pos-empty" role="status">
+            {busqueda
+              ? busquedaValida
+                ? "Venta no encontrada."
+                : "Ingresa un número de venta válido."
+              : "Todavía no hay ventas registradas."}
+          </p>
         )}
       </section>
       <aside className="pos-panel">

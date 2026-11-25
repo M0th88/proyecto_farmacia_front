@@ -2,7 +2,7 @@ import { connection } from "next/server";
 import { requirePharmacyUser } from "@/lib/auth/session";
 import { panelDay } from "@/lib/dashboard-summary";
 import { prismaPrivada } from "@/lib/db/prisma-privada";
-import { pesos } from "./_components/format";
+import { pesos } from "@/lib/validation/punto-de-venta";
 import {
   getRecentOperations,
   OperacionesRecientes,
@@ -17,9 +17,15 @@ const diaChile = (d: Date) =>
     day: "2-digit",
   }).format(d);
 
-export default async function HistorialYReportesPage() {
+export default async function HistorialYReportesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ venta?: string | string[] }>;
+}) {
   await requirePharmacyUser("privada");
   await connection();
+  const { venta } = await searchParams;
+  const busqueda = typeof venta === "string" ? venta.trim() : "";
   const ahora = new Date();
   const [ventas, operacionesRecientes] = await Promise.all([
     prismaPrivada.venta.findMany({
@@ -28,7 +34,7 @@ export default async function HistorialYReportesPage() {
       },
       select: { creadaEn: true, total: true },
     }),
-    getRecentOperations(),
+    getRecentOperations(busqueda),
   ]);
   const hoy = diaChile(ahora);
   const dias = Array.from({ length: 14 }, (_, i) => {
@@ -69,7 +75,10 @@ export default async function HistorialYReportesPage() {
           <strong>{dias.filter((d) => d.tickets > 0).length}</strong>
         </div>
       </div>
-      <OperacionesRecientes ventas={operacionesRecientes} />
+      <OperacionesRecientes
+        resultado={operacionesRecientes}
+        busqueda={busqueda}
+      />
       <section className="pos-panel">
         <div className="pos-title">
           <div>

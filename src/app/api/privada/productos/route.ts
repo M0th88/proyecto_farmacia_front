@@ -2,10 +2,12 @@ import { z } from "zod";
 import { prismaPrivada } from "@/lib/db/prisma-privada";
 import { currentPrivateUser } from "@/lib/private/auth";
 import {
+  assignProductBarcode,
   createProduct,
   deleteProduct,
   paginateProducts,
   productDetail,
+  productLabel,
   productListSchema,
   productSnapshot,
 } from "@/lib/private/products";
@@ -32,7 +34,10 @@ export async function GET(request: Request) {
       const id = z.coerce.number().int().positive().safeParse(params.get("id"));
       if (!id.success)
         return Response.json({ error: "Producto inválido." }, { status: 400 });
-      const product = await productDetail(id.data);
+      const product =
+        params.get("etiqueta") === "1"
+          ? await productLabel(id.data)
+          : await productDetail(id.data);
       return product
         ? Response.json(product)
         : Response.json(
@@ -119,6 +124,33 @@ export async function DELETE(request: Request) {
 }
 export async function POST(request: Request) {
   if (!(await catalogUser())) return denied();
+  const params = new URL(request.url).searchParams;
+  if (params.get("etiqueta") === "1") {
+    if (!request.headers.get("content-type")?.startsWith("application/json"))
+      return Response.json(
+        { error: "Formato de solicitud inválido." },
+        { status: 415 },
+      );
+    const id = z
+      .object({ id: z.number().int().positive().max(2_147_483_647) })
+      .safeParse(await request.json().catch(() => null));
+    if (!id.success)
+      return Response.json({ error: "Producto inválido." }, { status: 400 });
+    try {
+      const product = await assignProductBarcode(id.data.id);
+      return product
+        ? Response.json(product)
+        : Response.json(
+            { error: "El producto ya no existe." },
+            { status: 404 },
+          );
+    } catch {
+      return Response.json(
+        { error: "No se pudo generar el código. Intenta nuevamente." },
+        { status: 503 },
+      );
+    }
+  }
   const parsed = productProfileSchema.safeParse(
     await request.json().catch(() => null),
   );

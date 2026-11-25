@@ -16,3 +16,13 @@ export type Producto = {
 };
 
 export type Item = { id: number; cantidad: number };
+
+export const mediosPago = {
+  EFECTIVO: "Efectivo",
+  DEBITO: "Tarjeta de débito",
+  CREDITO: "Tarjeta de crédito",
+  TRANSFERENCIA: "Transferencia",
+} as const;
+
+export type MedioPago = keyof typeof mediosPago;
+export type TipoDocumento = "BOLETA" | "FACTURA";

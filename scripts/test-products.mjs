@@ -27,6 +27,11 @@ const types = load("../src/lib/types/productos.ts");
 const { productProfileSchema, emptyChileFields } = types;
 let state = { products: [], categories: [], fichas: [] };
 let failProduct = false;
+class PrismaClientKnownRequestError extends Error {
+  code = "P2002";
+}
+let barcodeWrites = 0;
+let barcodeSequence = 0;
 const db = {
   categoriaMedicamento: {
     findMany: async () => state.categories,
@@ -57,6 +62,16 @@ const db = {
             },
           })
         : null;
+    },
+    updateMany: async ({ where, data }) => {
+      assert.deepEqual(where.OR, [{ codigoBarra: null }, { codigoBarra: "" }]);
+      const product = state.products.find((item) => item.id === where.id);
+      if (!product || product.codigoBarra) return { count: 0 };
+      barcodeWrites++;
+      if (state.products.some((item) => item.codigoBarra === data.codigoBarra))
+        throw new PrismaClientKnownRequestError();
+      product.codigoBarra = data.codigoBarra;
+      return { count: 1 };
     },
     update: async ({ where, data }) => {
       const product = state.products.find((item) => item.id === where.id);
@@ -138,10 +153,15 @@ const db = {
 };
 const deps = {
   "server-only": {},
+  "node:crypto": { randomInt: () => barcodeSequence++ },
+  "./stock-dates": load("../src/lib/private/stock-dates.ts"),
   "@/lib/db/prisma-privada": { prismaPrivada: db },
   "@/lib/types/productos": types,
   "@/generated/privada/client": {
-    Prisma: { TransactionIsolationLevel: { Serializable: "Serializable" } },
+    Prisma: {
+      TransactionIsolationLevel: { Serializable: "Serializable" },
+      PrismaClientKnownRequestError,
+    },
   },
 };
 const service = load("../src/lib/private/products.ts", deps);
@@ -322,6 +342,10 @@ assert.equal((await route.GET(request("GET"))).status, 403);
 user = { rol: { nombre: "Bodega", permisos: ["inventario"] } };
 assert.equal((await route.POST(request("POST", profile))).status, 403);
 assert.equal(
+  (await route.POST(request("POST", { id: 1 }, "?etiqueta=1"))).status,
+  403,
+);
+assert.equal(
   (await route.PATCH(request("PATCH", { ...profile, id: 1 }))).status,
   403,
 );
@@ -388,6 +412,46 @@ assert.equal(
   state.fichas.some((item) => item.medicamentoId === 2),
   false,
 );
+
+// Existing commercial codes are preserved and assigning twice is idempotent.
+state.products[0].lotes = [
+  {
+    id: 5,
+    numeroLote: "L-01",
+    fechaVencimiento: new Date("2030-03-30T12:00:00Z"),
+    stocks: [{ cantidad: 4, ubicacion: { id: 7, nombre: "Vitrina" } }],
+  },
+];
+const other = state.products.find(({ id }) => id === 3);
+other.codigoBarra = "FP0000000000";
+const label = await route.GET(request("GET", null, "?etiqueta=1&id=1"));
+assert.equal(label.status, 200);
+assert.deepEqual((await label.json()).lotes, [
+  {
+    id: 5,
+    numero: "L-01",
+    vencimiento: "2030-03-30",
+    ubicaciones: [{ id: 7, nombre: "Vitrina" }],
+  },
+]);
+const existing = await route.POST(request("POST", { id: 3 }, "?etiqueta=1"));
+assert.equal((await existing.json()).codigoBarra, "FP0000000000");
+assert.equal(barcodeWrites, 0);
+const assign = () => route.POST(request("POST", { id: 1 }, "?etiqueta=1"));
+const assigned = await assign();
+assert.equal(assigned.status, 200);
+assert.equal((await assigned.json()).codigoBarra, "FP0000000001");
+assert.equal((await (await assign()).json()).codigoBarra, "FP0000000001");
+assert.equal(barcodeWrites, 2);
+assert.equal(
+  (await route.POST(request("POST", { id: 999 }, "?etiqueta=1"))).status,
+  404,
+);
+assert.equal(
+  (await route.POST(request("POST", { id: 0 }, "?etiqueta=1"))).status,
+  400,
+);
+
 console.log(
-  "Productos: validación, permisos, campos, ficha, categorías, duplicados, rollback, métricas, búsqueda y paginación verificados.",
+  "Productos: validación, permisos, campos, ficha, categorías, duplicados, rollback, métricas, búsqueda, paginación y asignación de etiquetas verificados.",
 );

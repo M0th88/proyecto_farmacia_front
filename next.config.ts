@@ -17,8 +17,8 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
-        source: "/privada/productos",
-        destination: "/privada/productos-y-empaques",
+        source: "/privada/productos/:path*",
+        destination: "/privada/productos-y-empaques/:path*",
         permanent: true,
       },
       {
@@ -42,8 +42,8 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
-        source: "/privada/historial",
-        destination: "/privada/historial-y-reportes",
+        source: "/privada/historial/:path*",
+        destination: "/privada/historial-y-reportes/:path*",
         permanent: true,
       },
       {

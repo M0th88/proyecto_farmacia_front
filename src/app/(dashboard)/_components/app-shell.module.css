@@ -209,9 +209,11 @@
 .posLink:hover {
   background: #ffffff18;
 }
-.posLink[aria-current="page"] {
-  background: #fff;
-  color: #1e1e1e;
+.posLink[aria-current="page"],
+.posLink:active {
+  background: #b81926;
+  border-color: #e45a61;
+  color: #fff;
 }
 .posLink:focus-visible {
   outline: 2px solid #fff;

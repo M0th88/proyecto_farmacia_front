@@ -1,6 +1,8 @@
 "use client";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
+import { Barcode } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import styles from "@/components/admin-table.module.css";
@@ -140,13 +142,27 @@ export function ProductsTable({
           onView={() => setSelected({ id: row.original.id, editing: false })}
           onEdit={() => setSelected({ id: row.original.id, editing: true })}
           onDelete={() => setDeleted(row.original)}
+          onLabel={() =>
+            router.push(
+              `/privada/productos-y-empaques/etiquetas?producto=${row.original.id}`,
+            )
+          }
         />
       ),
     },
   ];
   return (
     <section className={styles.page}>
-      <h1 className={styles.title}>Productos y Empaques</h1>
+      <header className={styles.pageHeader}>
+        <h1 className={styles.title}>Productos y Empaques</h1>
+        <Link
+          className={styles.actionLink}
+          href="/privada/productos-y-empaques/etiquetas"
+        >
+          <Barcode size={18} aria-hidden="true" />
+          Generador de etiquetas
+        </Link>
+      </header>
       <DataTable<ProductRow>
         columns={actionColumns}
         queryKey={[...productsQueryKey, currentUserId]}
