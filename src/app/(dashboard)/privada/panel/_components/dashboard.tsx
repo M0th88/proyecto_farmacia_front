@@ -165,7 +165,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
           <SalesChart key={days} points={summary.daily} total={summary.total} />
           <div className={styles.chartFooter}>
             <span>Últimos {days} días</span>
-            <Link href="/privada/reportes">
+            <Link href="/privada/historial-y-reportes">
               Ver reportes
               <ArrowRight size={14} />
             </Link>
@@ -188,8 +188,11 @@ export function Dashboard({ data }: { data: DashboardData }) {
               <h2>Productos más vendidos</h2>
               <p>Por unidades · Últimos {days} días</p>
             </div>
-            <Link className={styles.subtleLink} href="/privada/productos">
-              Productos
+            <Link
+              className={styles.subtleLink}
+              href="/privada/productos-y-empaques"
+            >
+              Productos y Empaques
               <ArrowUpRight size={15} />
             </Link>
           </div>
@@ -232,7 +235,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
               <h2>Estado del inventario</h2>
               <p>Existencias actuales · {number(data.productos)} productos</p>
             </div>
-            <Link className={styles.subtleLink} href="/privada/stock-y-lotes">
+            <Link className={styles.subtleLink} href="/privada/stocks-y-lotes">
               Inventario
               <ArrowUpRight size={15} />
             </Link>
@@ -295,7 +298,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
           {data.bajos.length ? (
             <div className={styles.alertList}>
               {data.bajos.slice(0, 4).map((product) => (
-                <Link href="/privada/stock-y-lotes" key={product.id}>
+                <Link href="/privada/stocks-y-lotes" key={product.id}>
                   <span>
                     {product.nombre}
                     <small>Mínimo: {number(product.minimo)} unidades</small>
@@ -334,7 +337,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
           {data.vencimientos.length ? (
             <div className={styles.alertList}>
               {data.vencimientos.slice(0, 4).map((lot) => (
-                <Link href="/privada/stock-y-lotes" key={lot.id}>
+                <Link href="/privada/stocks-y-lotes" key={lot.id}>
                   <span>
                     {lot.nombre}
                     <small>
@@ -374,7 +377,10 @@ export function Dashboard({ data }: { data: DashboardData }) {
             <h2>Ventas recientes</h2>
             <p>Últimas operaciones del período seleccionado</p>
           </div>
-          <Link className={styles.subtleLink} href="/privada/historial">
+          <Link
+            className={styles.subtleLink}
+            href="/privada/historial-y-reportes#operaciones-recientes"
+          >
             Ver historial
             <ArrowRight size={15} />
           </Link>
@@ -395,7 +401,9 @@ export function Dashboard({ data }: { data: DashboardData }) {
                 {summary.sales.slice(0, 5).map((sale) => (
                   <tr key={sale.id}>
                     <td>
-                      <Link href="/privada/historial">Venta #{sale.id}</Link>
+                      <Link href="/privada/historial-y-reportes#operaciones-recientes">
+                        Venta #{sale.id}
+                      </Link>
                     </td>
                     <td>
                       {shortDay(sale.dia)} ·{" "}

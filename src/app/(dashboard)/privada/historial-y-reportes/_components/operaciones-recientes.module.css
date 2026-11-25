@@ -1,0 +1,10 @@
+.operations {
+  margin-bottom: 20px;
+  scroll-margin-top: 100px;
+}
+
+.description {
+  margin: 0 0 16px;
+  color: #4c637e;
+  font-size: var(--text-sm);
+}

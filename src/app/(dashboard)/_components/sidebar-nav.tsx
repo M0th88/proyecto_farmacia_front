@@ -1,71 +1,140 @@
 "use client";
 
+import {
+  ChartColumnIncreasing,
+  ChevronDown,
+  House,
+  PackageX,
+  Settings2,
+  ShoppingBag,
+  Warehouse,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  PRIVATE_SECTIONS,
-  type PrivatePermission,
-} from "@/lib/private/permissions";
+import { useEffect, useRef } from "react";
 import styles from "./app-shell.module.css";
 
-const icons: Record<PrivatePermission, string> = {
-  inicio: "m3 10 9-7 9 7v10H3Z M9 20v-7h6v7",
-  pos: "M3 4h2l3 12h11l2-8H6 M9 21h.01 M18 21h.01",
-  catalogo: "M9 3h6l6 6v6l-6 6H9l-6-6V9Z M8 12h8 M12 8v8",
-  inventario: "m3 7 9-4 9 4v10l-9 4-9-4Z M3 7l9 4 9-4 M12 11v10",
-  proveedores:
-    "M3 7h11v10H3Z M14 10h4l3 4v3h-7 M7 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4 M18 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4",
-  compras: "M5 7h14l2 14H3Z M8 7V5a4 4 0 0 1 8 0v2",
-  caja: "M4 3h16v18H4Z M8 7h8 M8 11h1 M15 11h1 M8 15h1 M15 15h1 M8 18h1 M15 18h1",
-  ventas: "M3 12a9 9 0 1 0 3-7 M3 3v6h6 M12 7v5l3 2",
-  indicadores: "M4 3v18h17 M8 16v-5 M13 16V7 M18 16v-9",
-  roles: "M12 3 3 7v5c0 5 9 9 9 9s9-4 9-9V7Z M9 12l2 2 4-4",
-  usuarios:
-    "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M17 4a4 4 0 0 1 0 7 M22 21v-2a4 4 0 0 0-3-4",
-};
+const shortcuts = [
+  { label: "Panel", href: "/privada/panel", icon: House },
+  { label: "Compras", href: "/privada/compras", icon: ShoppingBag },
+];
+
+const groups = [
+  {
+    label: "Almacén",
+    icon: Warehouse,
+    links: [
+      { label: "Stocks y Lotes", href: "/privada/stocks-y-lotes" },
+      { label: "Otros Productos", href: "/privada/otros-productos" },
+      { label: "Ubicaciones", href: "/privada/ubicaciones" },
+      { label: "Cuarentena Sanitaria", href: "/privada/cuarentena-sanitaria" },
+      {
+        label: "Cuarentena Transitoria",
+        href: "/privada/cuarentena-transitoria",
+      },
+    ],
+  },
+  {
+    label: "Segregación de Productos",
+    icon: PackageX,
+    links: [
+      { label: "Segregar Productos", href: "/privada/segregar-productos" },
+      { label: "Productos Vencidos", href: "/privada/productos-vencidos" },
+      { label: "Retiro de Mercado", href: "/privada/retiro-de-mercado" },
+      { label: "Productos Rechazados", href: "/privada/productos-rechazados" },
+      {
+        label: "Devoluciones a Proveedor",
+        href: "/privada/devoluciones-a-proveedor",
+      },
+    ],
+  },
+  {
+    label: "Administrador",
+    icon: Settings2,
+    links: [
+      { label: "Productos y Empaques", href: "/privada/productos-y-empaques" },
+      { label: "Proveedores", href: "/privada/proveedores" },
+      { label: "Usuarios", href: "/privada/usuarios" },
+      { label: "Roles", href: "/privada/roles" },
+      { label: "Marcas", href: "/privada/marcas" },
+    ],
+  },
+  {
+    label: "Reportes Generales",
+    icon: ChartColumnIncreasing,
+    links: [
+      { label: "Auditoría FEFO", href: "/privada/auditoria-fefo" },
+      { label: "Inventario Histórico", href: "/privada/inventario-historico" },
+      { label: "Historial y Reportes", href: "/privada/historial-y-reportes" },
+      { label: "Caja del Día", href: "/privada/caja-del-dia" },
+    ],
+  },
+];
 
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const nav = useRef<HTMLElement>(null);
+  const isActive = (href: string) =>
+    pathname === href || pathname.startsWith(`${href}/`);
+
+  useEffect(() => {
+    const activeLink = nav.current?.querySelector('[aria-current="page"]');
+    const group = activeLink?.closest("details");
+    if (group) group.open = true;
+  }, [pathname]);
+
   return (
     <nav
+      ref={nav}
       className={styles.sidebarNav}
       aria-label="Secciones de Farmacia Privada"
     >
       <ul className={styles.sidebarList}>
-        {PRIVATE_SECTIONS.filter((section) => section.key !== "pos").map(
-          (section) => {
-            const active =
-              section.href === "/privada/panel"
-                ? pathname === section.href
-                : pathname === section.href ||
-                  pathname.startsWith(`${section.href}/`);
-            return (
-              <li key={section.key}>
-                <Link
-                  href={section.href}
-                  className={styles.sidebarLink}
-                  aria-current={active ? "page" : undefined}
-                  onClick={onNavigate}
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.75"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d={icons[section.key]} />
-                  </svg>
-                  <span>{section.label}</span>
-                </Link>
-              </li>
-            );
-          },
-        )}
+        {shortcuts.map(({ label, href, icon: Icon }) => (
+          <li key={href}>
+            <Link
+              href={href}
+              className={styles.sidebarLink}
+              aria-current={isActive(href) ? "page" : undefined}
+              onNavigate={onNavigate}
+            >
+              <Icon size={18} aria-hidden="true" />
+              {label}
+            </Link>
+          </li>
+        ))}
+        {groups.map(({ label, icon: Icon, links }) => (
+          <li key={label} className={styles.sidebarGroup}>
+            <details open>
+              <summary
+                className={styles.sidebarGroupToggle}
+                data-active={links.some(({ href }) => isActive(href))}
+              >
+                <Icon size={18} aria-hidden="true" />
+                <span>{label}</span>
+                <ChevronDown
+                  size={15}
+                  className={styles.sidebarChevron}
+                  aria-hidden="true"
+                />
+              </summary>
+              <ul className={styles.sidebarGroupList}>
+                {links.map(({ href, label }) => (
+                  <li key={href}>
+                    <Link
+                      href={href}
+                      className={styles.sidebarLink}
+                      aria-current={isActive(href) ? "page" : undefined}
+                      onNavigate={onNavigate}
+                    >
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          </li>
+        ))}
       </ul>
     </nav>
   );

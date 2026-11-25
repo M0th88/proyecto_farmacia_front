@@ -1,13 +1,25 @@
 export const PRIVATE_SECTIONS = [
   { key: "inicio", label: "Panel", href: "/privada/panel" },
   { key: "pos", label: "POS", href: "/privada/punto-de-venta" },
-  { key: "catalogo", label: "Productos", href: "/privada/productos" },
-  { key: "inventario", label: "Stock y lotes", href: "/privada/stock-y-lotes" },
+  {
+    key: "catalogo",
+    label: "Productos y Empaques",
+    href: "/privada/productos-y-empaques",
+  },
+  {
+    key: "inventario",
+    label: "Stocks y Lotes",
+    href: "/privada/stocks-y-lotes",
+  },
   { key: "proveedores", label: "Proveedores", href: "/privada/proveedores" },
   { key: "compras", label: "Compras", href: "/privada/compras" },
-  { key: "caja", label: "Caja", href: "/privada/caja" },
-  { key: "ventas", label: "Historial", href: "/privada/historial" },
-  { key: "indicadores", label: "Reportes", href: "/privada/reportes" },
+  { key: "caja", label: "Caja del Día", href: "/privada/caja-del-dia" },
+  { key: "ventas", label: "Historial", href: "/privada/historial-y-reportes" },
+  {
+    key: "indicadores",
+    label: "Reportes",
+    href: "/privada/historial-y-reportes",
+  },
   {
     key: "usuarios",
     label: "Usuarios",

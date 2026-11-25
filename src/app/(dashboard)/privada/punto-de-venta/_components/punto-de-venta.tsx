@@ -266,9 +266,11 @@ export function PuntoDeVenta() {
           <h1>POS</h1>
           <span>Escanea, prepara el pedido y registra el cobro.</span>
           <nav className="pos-accesos" aria-label="Accesos del POS">
-            <Link href="/privada/historial">Historial de ventas</Link>
-            <Link href="/privada/stock-y-lotes">Stock y lotes</Link>
-            <Link href="/privada/caja">Caja</Link>
+            <Link href="/privada/historial-y-reportes#operaciones-recientes">
+              Historial de ventas
+            </Link>
+            <Link href="/privada/stocks-y-lotes">Stock y lotes</Link>
+            <Link href="/privada/caja-del-dia">Caja</Link>
           </nav>
         </div>
         <button disabled={cargando || bloqueado} onClick={() => void cargar()}>
@@ -297,14 +299,14 @@ export function PuntoDeVenta() {
           <div className="pos-confirmacion-acciones">
             <Link
               ref={confirmacion}
-              href={`/privada/historial/${ultimaVenta.id}`}
+              href={`/privada/historial-y-reportes/${ultimaVenta.id}`}
             >
               <FileText size={17} aria-hidden="true" />
               Ver documento
             </Link>
             <Link
               className="pos-imprimir"
-              href={`/privada/historial/${ultimaVenta.id}?imprimir=1`}
+              href={`/privada/historial-y-reportes/${ultimaVenta.id}?imprimir=1`}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Imprimir (abre en otra pestaña)"
