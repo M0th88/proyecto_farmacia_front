@@ -2,6 +2,7 @@
 import { FileText, Printer, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { LoadingLines } from "@/components/section-loading";
 import { Modal } from "@/components/ui/modal";
 import {
   type Item,
@@ -54,7 +55,8 @@ export function PuntoDeVentaPrivada() {
   const [reintentar, setReintentar] = useState(false);
   const [recibido, setRecibido] = useState("");
   const [mensaje, setMensaje] = useState("");
-  const [cargando, setCargando] = useState(true);
+  const [cargando, setCargando] = useState(false);
+  const [cargandoSucursales, setCargandoSucursales] = useState(true);
   const [cobrando, setCobrando] = useState(false);
   const bloqueado = cobrando || preparing !== null;
   const lector = useRef<HTMLInputElement>(null);
@@ -63,6 +65,7 @@ export function PuntoDeVentaPrivada() {
     if (ultimaVenta) confirmacion.current?.focus();
   }, [ultimaVenta]);
   async function cargar() {
+    if (!branch) return;
     setCargando(true);
     setPagoVerificado(false);
     try {
@@ -78,15 +81,33 @@ export function PuntoDeVentaPrivada() {
     }
   }
   useEffect(() => {
-    fetch("/api/privada/fefo?meta=1")
+    const controller = new AbortController();
+    fetch("/api/privada/fefo?meta=1", {
+      cache: "no-store",
+      signal: controller.signal,
+    })
       .then(async (r) => {
         if (!r.ok) throw new Error("No se pudieron cargar las sucursales.");
-        return r.json();
+        return (await r.json()) as { sucursales: typeof branches };
       })
-      .then((d) => setBranches(d.sucursales))
-      .catch((e) => setMensaje(e.message));
+      .then(({ sucursales }) => {
+        if (controller.signal.aborted) return;
+        setBranches(sucursales);
+        if (sucursales.length === 1) {
+          setCargando(true);
+          setBranch(sucursales[0].id);
+        }
+      })
+      .catch((e) => {
+        if (!controller.signal.aborted) setMensaje(e.message);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setCargandoSucursales(false);
+      });
+    return () => controller.abort();
   }, []);
   useEffect(() => {
+    if (!branch) return;
     const controller = new AbortController();
     fetch(`/api/privada/catalogo?sucursalId=${branch}`, {
       cache: "no-store",
@@ -134,7 +155,7 @@ export function PuntoDeVentaPrivada() {
     descuentoValido ? importeDescuento : 0,
   );
   function agregar(p: Producto) {
-    if (bloqueado) return;
+    if (bloqueado || cargando || !branch) return;
     const actual = items.find((i) => i.id === p.id)?.cantidad ?? 0;
     if (p.condicionVenta !== "VENTA_DIRECTA") {
       setMensaje(
@@ -237,7 +258,10 @@ export function PuntoDeVentaPrivada() {
             <Link href="/privada/caja-del-dia">Caja del Día</Link>
           </nav>
         </div>
-        <button disabled={cargando || bloqueado} onClick={() => void cargar()}>
+        <button
+          disabled={!branch || cargando || bloqueado}
+          onClick={() => void cargar()}
+        >
           Actualizar catálogo
         </button>
       </header>
@@ -292,12 +316,15 @@ export function PuntoDeVentaPrivada() {
         Sucursal que entrega
         <select
           value={branch}
-          disabled={bloqueado || cargando}
+          disabled={bloqueado || cargando || cargandoSucursales}
           onChange={(e) => {
-            setCargando(true);
+            const id = Number(e.target.value);
+            setCargando(id > 0);
             setPagoVerificado(false);
-            setBranch(Number(e.target.value));
+            setBranch(id);
+            setProductos([]);
             setItems([]);
+            setMensaje("");
           }}
         >
           <option value={0}>Selecciona una sucursal</option>
@@ -308,7 +335,7 @@ export function PuntoDeVentaPrivada() {
           ))}
         </select>
       </label>
-      {!branches.length && (
+      {!cargandoSucursales && !branches.length && (
         <p>
           Configura las sucursales y concilia el inventario en Stock y lotes
           antes de operar.
@@ -328,7 +355,7 @@ export function PuntoDeVentaPrivada() {
               <input
                 ref={lector}
                 autoFocus
-                disabled={bloqueado || cargando}
+                disabled={bloqueado || cargando || !branch}
                 value={codigo}
                 onChange={(e) => setCodigo(e.target.value)}
                 onKeyDown={(e) => {
@@ -337,7 +364,10 @@ export function PuntoDeVentaPrivada() {
                 placeholder="Escanea y presiona Enter"
               />
             </label>
-            <button disabled={bloqueado || cargando} onClick={escanear}>
+            <button
+              disabled={bloqueado || cargando || !branch}
+              onClick={escanear}
+            >
               Agregar código
             </button>
             <label>
@@ -350,8 +380,12 @@ export function PuntoDeVentaPrivada() {
             </label>
           </div>
           <div className="pos-list">
-            {cargando ? (
-              <p>Cargando…</p>
+            {cargando || cargandoSucursales ? (
+              <div role="status" aria-label="Cargando catálogo">
+                <LoadingLines />
+              </div>
+            ) : !branch ? (
+              <p>Selecciona una sucursal para ver su stock disponible.</p>
             ) : filtrados.length ? (
               filtrados.map((p) => (
                 <article className="pos-product" key={p.id}>

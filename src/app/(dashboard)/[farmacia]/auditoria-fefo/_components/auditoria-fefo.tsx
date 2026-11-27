@@ -4,37 +4,28 @@ import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 import styles from "@/components/admin-table.module.css";
+import {
+  type Action,
+  type Field,
+  InventarioActionDialog,
+} from "@/components/inventario-action-dialog";
 import { Button } from "@/components/ui/button";
-import { Modal } from "@/components/ui/modal";
 import { stockDate, stockDaysRemaining } from "@/lib/private/stock-dates";
 import { lotStates } from "@/lib/types/fefo";
-import type {
-  Branch,
-  ControlData,
-  ControlStock,
-} from "@/lib/types/fefo-control";
-import { stockOptionsQueryKey, stockQueryKey } from "../actions";
-import local from "./fefo-control.module.css";
+import type { ControlData, ControlStock } from "@/lib/types/fefo-control";
+import {
+  stockOptionsQueryKey,
+  stockQueryKey,
+} from "../../stocks-y-lotes/actions";
+import local from "./auditoria-fefo.module.css";
+import { AuditoriaFefoLoading } from "./auditoria-fefo-loading";
 
-type Field = {
-  key: string;
-  label: string;
-  type?: string;
-  options?: { value: string | number; label: string }[];
-  optional?: boolean;
-};
-type Action = {
-  title: string;
-  body: Record<string, unknown>;
-  fields: Field[];
-  url?: string;
-};
 const reason: Field = {
   key: "motivo",
   label: "Motivo / evidencia del procedimiento",
 };
 const localToIso = (value: string) => new Date(value).toISOString();
-export function FefoControl() {
+export function AuditoriaFefo() {
   const [branchId, setBranchId] = useState(0);
   const [search, setSearch] = useState("");
   const [view, setView] = useState("TODOS");
@@ -77,7 +68,7 @@ export function FefoControl() {
     },
     onError: (error) => toast.error(error.message),
   });
-  if (query.isPending) return <p role="status">Cargando inventario FEFO…</p>;
+  if (query.isPending) return <AuditoriaFefoLoading />;
   if (query.isError)
     return (
       <div role="alert">
@@ -92,41 +83,6 @@ export function FefoControl() {
       value: location.id,
       label: `${location.nombre} · Sucursal #${location.sucursalId}`,
     }));
-  const newBranch = (branch?: Branch) =>
-    setAction({
-      title: branch ? "Configurar sucursal" : "Nueva sucursal",
-      body: {
-        accion: "SUCURSAL",
-        ...(branch ? { id: branch.id } : {}),
-        nombre: branch?.nombre ?? "",
-        alertasDias: branch?.alertasDias.join(", ") ?? "7, 30",
-        permiteExcepcion: branch?.permiteExcepcion ?? false,
-        permiteReingreso: branch?.permiteReingreso ?? false,
-        procedimiento: branch?.procedimiento ?? "",
-      },
-      fields: [
-        { key: "nombre", label: "Nombre real de la sucursal" },
-        {
-          key: "alertasDias",
-          label: "Umbrales de alerta en días, separados por comas",
-        },
-        {
-          key: "procedimiento",
-          label: "Referencia de procedimiento validado por director técnico",
-          optional: true,
-        },
-        {
-          key: "permiteExcepcion",
-          label: "El procedimiento permite excepciones FEFO",
-          type: "checkbox",
-        },
-        {
-          key: "permiteReingreso",
-          label: "El procedimiento permite reincorporar devoluciones revisadas",
-          type: "checkbox",
-        },
-      ],
-    });
   const matching = data.stocks.filter(
     (stock) =>
       (!branchId || stock.ubicacion.sucursalId === branchId) &&
@@ -141,7 +97,8 @@ export function FefoControl() {
   const pending = matching.filter(
     (stock) =>
       stock.cantidad > 0 &&
-      (stock.lote.estado !== "APTO" ||
+      (stock.cantidadBloqueada > 0 ||
+        stock.lote.estado !== "APTO" ||
         !stock.fechaRecepcion ||
         !stock.ubicacion.sucursalId),
   );
@@ -200,13 +157,17 @@ export function FefoControl() {
     <section className={styles.page}>
       <div className={styles.pageHeader}>
         <div>
-          <h1 className={styles.title}>Control FEFO</h1>
+          <h1 className={styles.title}>Auditoría FEFO</h1>
           <p className={styles.note}>
             Recepciones, conciliación, retiros y trazabilidad. Los rótulos
             mes/año permanecen pendientes.
           </p>
         </div>
-        <Link href="/privada/stocks-y-lotes">Stocks y Lotes →</Link>
+        <div className={styles.footer}>
+          <Link href="/privada/stocks-y-lotes">Stocks y Lotes</Link>
+          <Link href="/privada/sucursales">Sucursales</Link>
+          <Link href="/privada/ubicaciones">Ubicaciones</Link>
+        </div>
       </div>
       <div className="pos-metrics">
         <div>
@@ -223,114 +184,6 @@ export function FefoControl() {
           <strong>{data.revisiones.length}</strong>
         </div>
       </div>
-      <section className={styles.card}>
-        <div className={styles.pageHeader}>
-          <h2>Sucursales y ubicaciones</h2>
-          {data.permisos.configurar && (
-            <div className={styles.inline}>
-              <Button onClick={() => newBranch()}>Nueva sucursal</Button>
-              <Button
-                variant="outline"
-                onClick={() =>
-                  setAction({
-                    title: "Nueva ubicación",
-                    body: {
-                      accion: "CREAR_UBICACION",
-                      nombre: "",
-                      tipo: "BODEGA",
-                      sucursalId: 0,
-                    },
-                    fields: [
-                      { key: "nombre", label: "Nombre" },
-                      {
-                        key: "tipo",
-                        label: "Tipo",
-                        options: [
-                          { value: "BODEGA", label: "Bodega" },
-                          { value: "VITRINA", label: "Vitrina" },
-                        ],
-                      },
-                      {
-                        key: "sucursalId",
-                        label: "Sucursal",
-                        type: "number",
-                        options: data.sucursales.map((branch) => ({
-                          value: branch.id,
-                          label: branch.nombre,
-                        })),
-                      },
-                    ],
-                  })
-                }
-              >
-                Nueva ubicación
-              </Button>
-            </div>
-          )}
-        </div>
-        {!data.sucursales.length && (
-          <p>
-            Registra las sucursales reales y asigna las ubicaciones antes de
-            habilitar stock para caja.
-          </p>
-        )}
-        <div className={local.rows}>
-          {data.sucursales.map((branch) => (
-            <div key={branch.id}>
-              <span>
-                <b>{branch.nombre}</b> · Alertas:{" "}
-                {branch.alertasDias.join(", ")} días
-                <small>
-                  Excepciones:{" "}
-                  {branch.permiteExcepcion ? "Con permiso y motivo" : "No"} ·
-                  Reingreso:{" "}
-                  {branch.permiteReingreso ? "Tras revisión" : "No autorizado"}
-                </small>
-              </span>
-              {data.permisos.configurar && (
-                <Button variant="outline" onClick={() => newBranch(branch)}>
-                  Configurar
-                </Button>
-              )}
-            </div>
-          ))}
-          {data.ubicaciones
-            .filter((location) => !location.sucursalId)
-            .map((location) => (
-              <div key={`location-${location.id}`}>
-                <span>{location.nombre} · Sin sucursal asignada</span>
-                {data.permisos.configurar && (
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      setAction({
-                        title: "Asignar sucursal a ubicación histórica",
-                        body: {
-                          accion: "UBICACION",
-                          ubicacionId: location.id,
-                          sucursalId: 0,
-                        },
-                        fields: [
-                          {
-                            key: "sucursalId",
-                            label: "Sucursal verificada",
-                            type: "number",
-                            options: data.sucursales.map((branch) => ({
-                              value: branch.id,
-                              label: branch.nombre,
-                            })),
-                          },
-                        ],
-                      })
-                    }
-                  >
-                    Asignar
-                  </Button>
-                )}
-              </div>
-            ))}
-        </div>
-      </section>
       <section className={styles.card}>
         <h2>Existencias y lista de retiro físico</h2>
         <label className={styles.field}>
@@ -405,7 +258,12 @@ export function FefoControl() {
                       {stock.ubicacion.sucursal?.nombre ?? "Sin sucursal"}
                     </small>
                   </td>
-                  <td>{stock.cantidad}</td>
+                  <td>
+                    {stock.cantidad}
+                    {stock.cantidadBloqueada > 0 && (
+                      <small> · {stock.cantidadBloqueada} en cuarentena</small>
+                    )}
+                  </td>
                   <td>
                     {stock.lote.estado}
                     <small
@@ -511,33 +369,40 @@ export function FefoControl() {
                       >
                         Traspasar
                       </Button>
-                      {new Date(stock.lote.fechaVencimiento) <= new Date() && (
-                        <Button
-                          variant="danger"
-                          onClick={() =>
-                            setAction({
-                              title: "Confirmar retiro físico de vencidos",
-                              body: {
-                                accion: "RETIRAR",
-                                stockId: stock.id,
-                                cantidadAnterior: stock.cantidad,
-                                confirmado: false,
-                                motivo: "",
-                              },
-                              fields: [
-                                reason,
-                                {
-                                  key: "confirmado",
-                                  label: `Confirmo que retiré físicamente ${stock.cantidad} unidades`,
-                                  type: "checkbox",
+                      {new Date(stock.lote.fechaVencimiento) <= new Date() &&
+                        stock.cantidadBloqueada > 0 && (
+                          <Link href="/privada/productos-vencidos">
+                            Gestionar retiro
+                          </Link>
+                        )}
+                      {new Date(stock.lote.fechaVencimiento) <= new Date() &&
+                        !stock.cantidadBloqueada && (
+                          <Button
+                            variant="danger"
+                            onClick={() =>
+                              setAction({
+                                title: "Confirmar retiro físico de vencidos",
+                                body: {
+                                  accion: "RETIRAR",
+                                  stockId: stock.id,
+                                  cantidadAnterior: stock.cantidad,
+                                  confirmado: false,
+                                  motivo: "",
                                 },
-                              ],
-                            })
-                          }
-                        >
-                          Retiro físico
-                        </Button>
-                      )}
+                                fields: [
+                                  reason,
+                                  {
+                                    key: "confirmado",
+                                    label: `Confirmo que retiré físicamente ${stock.cantidad} unidades`,
+                                    type: "checkbox",
+                                  },
+                                ],
+                              })
+                            }
+                          >
+                            Retiro físico
+                          </Button>
+                        )}
                     </div>
                   </td>
                 </tr>
@@ -726,118 +591,20 @@ export function FefoControl() {
         </section>
       )}
       {action && (
-        <Modal
-          open
-          onOpenChange={(open) => {
-            if (!open && !mutation.isPending) setAction(null);
+        <InventarioActionDialog
+          key={action.title}
+          action={action}
+          onChange={setAction}
+          pending={mutation.isPending}
+          error={mutation.error?.message}
+          description="Verifica los datos antes de confirmar."
+          onSubmit={(values) => {
+            const body = { ...values };
+            if (typeof body.fechaRecepcion === "string" && body.fechaRecepcion)
+              body.fechaRecepcion = localToIso(body.fechaRecepcion);
+            mutation.mutate(body);
           }}
-          title={action.title}
-          description="Los cambios quedan registrados con el usuario de la sesión."
-        >
-          <form
-            className={styles.form}
-            onSubmit={(event) => {
-              event.preventDefault();
-              const body = { ...action.body };
-              if (typeof body.alertasDias === "string")
-                body.alertasDias = body.alertasDias
-                  .split(",")
-                  .map((value) => Number(value.trim()));
-              if (
-                typeof body.fechaRecepcion === "string" &&
-                body.fechaRecepcion
-              )
-                body.fechaRecepcion = localToIso(body.fechaRecepcion);
-              mutation.mutate(body);
-            }}
-          >
-            {action.fields.map((field) => (
-              <label
-                key={field.key}
-                className={
-                  field.type === "checkbox" ? styles.inline : styles.field
-                }
-              >
-                {field.label}
-                {field.options ? (
-                  <select
-                    value={String(action.body[field.key] ?? "")}
-                    onChange={(event) =>
-                      setAction({
-                        ...action,
-                        body: {
-                          ...action.body,
-                          [field.key]:
-                            field.type === "number"
-                              ? Number(event.target.value)
-                              : event.target.value,
-                        },
-                      })
-                    }
-                    required
-                  >
-                    <option value="">Selecciona una opción</option>
-                    {field.options.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type={field.type ?? "text"}
-                    required={
-                      field.type === "checkbox"
-                        ? field.key === "confirmado"
-                        : !field.optional
-                    }
-                    checked={
-                      field.type === "checkbox"
-                        ? Boolean(action.body[field.key])
-                        : undefined
-                    }
-                    value={
-                      field.type === "checkbox"
-                        ? undefined
-                        : String(action.body[field.key] ?? "")
-                    }
-                    onChange={(event) =>
-                      setAction({
-                        ...action,
-                        body: {
-                          ...action.body,
-                          [field.key]:
-                            field.type === "checkbox"
-                              ? event.target.checked
-                              : field.type === "number"
-                                ? Number(event.target.value)
-                                : event.target.value,
-                        },
-                      })
-                    }
-                  />
-                )}
-              </label>
-            ))}
-            {mutation.isError && (
-              <p className={styles.error} role="alert">
-                {mutation.error.message}
-              </p>
-            )}
-            <div className={styles.footer}>
-              <Button
-                variant="outline"
-                onClick={() => setAction(null)}
-                disabled={mutation.isPending}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={mutation.isPending}>
-                {mutation.isPending ? "Registrando…" : "Confirmar"}
-              </Button>
-            </div>
-          </form>
-        </Modal>
+        />
       )}
     </section>
   );

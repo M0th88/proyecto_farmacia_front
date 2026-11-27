@@ -9,7 +9,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { productOptions, productOptionsQueryKey } from "../actions";
 import { ProductForm } from "./product-form";
 
-export function NewProductDialog({ currentUserId }: { currentUserId: number }) {
+export function NewProductDialog({
+  currentUserId,
+  otros = false,
+}: {
+  currentUserId: number;
+  otros?: boolean;
+}) {
   const pharmacy = usePharmacy();
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -44,6 +50,7 @@ export function NewProductDialog({ currentUserId }: { currentUserId: number }) {
         ) : (
           <ProductForm
             options={options.data}
+            otros={otros}
             onSaved={() => setOpen(false)}
             onCancel={() => setOpen(false)}
             onSavingChange={setSaving}

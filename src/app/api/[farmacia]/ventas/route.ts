@@ -148,10 +148,18 @@ export const POST = pharmacyRoute(async (request, pharmacy, db) => {
           for (const lote of medicamento.lotes) {
             for (const stock of lote.stocks) {
               if (pendiente === 0) break;
-              const cantidad = Math.min(pendiente, stock.cantidad);
+              const cantidad = Math.min(
+                pendiente,
+                stock.cantidad - stock.cantidadBloqueada,
+              );
               if (cantidad <= 0) continue;
               const actualizado = await tx.stock.updateMany({
-                where: { id: stock.id, cantidad: { gte: cantidad } },
+                where: {
+                  id: stock.id,
+                  cantidad: { gte: cantidad + stock.cantidadBloqueada },
+                  cantidadBloqueada: stock.cantidadBloqueada,
+                  lote: { fechaVencimiento: { gt: new Date() } },
+                },
                 data: { cantidad: { decrement: cantidad } },
               });
               if (actualizado.count !== 1)

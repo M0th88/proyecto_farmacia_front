@@ -25,7 +25,13 @@ export default function ProductsLoading() {
           <span>Filtrar</span>
           <Skeleton style={{ height: 36 }} />
         </div>
-        <Button disabled>Añadir productos +</Button>
+        <div className={styles.skeletonActions}>
+          <Button variant="outline" disabled>
+            <Barcode size={18} aria-hidden="true" />
+            Generador de etiquetas
+          </Button>
+          <Button disabled>Añadir productos +</Button>
+        </div>
       </div>
       <TableSkeleton
         headers={[
@@ -48,3 +54,5 @@ export default function ProductsLoading() {
     </section>
   );
 }
+
+import { Barcode } from "lucide-react";

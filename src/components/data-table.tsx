@@ -44,6 +44,13 @@ type Props<T> = {
   }) => Promise<PaginationResponse<T>>;
   placeholder: string;
   createButton?: ReactNode;
+  renderSearch?: (options: {
+    id: string;
+    value: string;
+    onChange: (value: string) => void;
+    placeholder: string;
+  }) => ReactNode;
+  showRefresh?: boolean;
   emptyTitle: string;
   getRowId: (row: T) => string;
 };
@@ -56,6 +63,8 @@ export function DataTable<T>({
   queryFn,
   placeholder,
   createButton,
+  renderSearch,
+  showRefresh = true,
   emptyTitle,
   getRowId,
 }: Props<T>) {
@@ -114,32 +123,44 @@ export function DataTable<T>({
   const resetScroll = () => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
   };
+  const changeSearch = (value: string) => {
+    resetScroll();
+    setSearch(value);
+  };
   return (
     <div className={styles.container}>
       {renderSummary?.(query.data?.pages[0])}
       <div className={styles.toolbar}>
         <div className={styles.search}>
           <label htmlFor={id}>Filtrar</label>
-          <input
-            id={id}
-            value={search}
-            placeholder={placeholder}
-            onChange={(event) => {
-              resetScroll();
-              setSearch(event.target.value);
-            }}
-          />
+          {renderSearch ? (
+            renderSearch({
+              id,
+              value: search,
+              onChange: changeSearch,
+              placeholder,
+            })
+          ) : (
+            <input
+              id={id}
+              value={search}
+              placeholder={placeholder}
+              onChange={(event) => changeSearch(event.target.value)}
+            />
+          )}
         </div>
         <div className={styles.toolbarActions}>
-          <Button
-            variant="outline"
-            aria-label={`Actualizar ${entityLabel}`}
-            title={`Actualizar ${entityLabel}`}
-            disabled={query.isFetching}
-            onClick={() => void query.refetch()}
-          >
-            <RefreshCw size={16} />
-          </Button>
+          {showRefresh && (
+            <Button
+              variant="outline"
+              aria-label={`Actualizar ${entityLabel}`}
+              title={`Actualizar ${entityLabel}`}
+              disabled={query.isFetching}
+              onClick={() => void query.refetch()}
+            >
+              <RefreshCw size={16} />
+            </Button>
+          )}
           {createButton}
         </div>
       </div>

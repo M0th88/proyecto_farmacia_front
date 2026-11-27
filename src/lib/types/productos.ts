@@ -128,6 +128,7 @@ export type ProductLabel = {
     id: number;
     numero: string;
     vencimiento: string;
+    rotuloPendiente?: string;
     ubicaciones: { id: number; nombre: string }[];
   }[];
 };

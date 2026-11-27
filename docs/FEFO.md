@@ -4,8 +4,10 @@
 
 - `/privada/punto-de-venta`: seleccionar sucursal, presentación, cantidades y pago; **Preparar lotes** muestra la asignación FEFO y los faltantes. Confirmar físicamente número de lote y cantidad de cada fila antes de registrar. Venta y dispensación conservan los mismos controles de condición de venta.
 - `/privada/stocks-y-lotes`: se conserva la tabla existente con búsqueda, ordenación, carga progresiva, virtualización, acciones y métricas. **Añadir stock** abre el modal de recepción con producto/presentación, ubicación/sucursal, lote, rótulo de vencimiento, precisión, fabricación, recepción y cantidad.
-- `/privada/stocks-y-lotes/control-fefo`: sucursales, ubicaciones, conciliación histórica, bloqueos, umbrales, próximos vencimientos, lista de retiro físico, traspasos, revisiones y trazabilidad por lote. Acceso desde Stocks y Lotes.
-- `/privada/historial-y-reportes#operaciones-recientes`: estado de la operación, operador, sucursal, lote e ID de detalle necesario para registrar una devolución. Anular se realiza desde Control FEFO y **no** reincorpora unidades.
+- `/privada/sucursales`: alta y configuración de sucursales, umbrales de alerta y procedimientos FEFO. Acceso desde Almacén.
+- `/privada/ubicaciones`: alta y listado de ubicaciones, con asignación de ubicaciones existentes sin sucursal. Acceso desde Almacén y el formulario de recepción.
+- `/privada/auditoria-fefo`: conciliación histórica, bloqueos, próximos vencimientos, lista de retiro físico, traspasos, revisiones y trazabilidad por lote. Acceso desde Reportes Generales y Stocks y Lotes. La ruta anterior `/privada/stocks-y-lotes/control-fefo` redirige a Auditoría FEFO.
+- `/privada/historial-y-reportes#operaciones-recientes`: estado de la operación, operador, sucursal, lote e ID de detalle necesario para registrar una devolución. Anular se realiza desde Auditoría FEFO y **no** reincorpora unidades.
 
 ## Datos y migración
 
@@ -54,7 +56,7 @@ Solo el administrador administra roles. Deterioro y retiro por alerta no se pued
 
 ## Alertas, devoluciones y retiros
 
-Umbrales iniciales: 7 y 30 días; se configuran por sucursal. Control FEFO permite filtrar próximos vencimientos y vencidos para su retiro físico. El retiro verifica el saldo, lo deja en cero y crea una salida con usuario, fecha, ubicación y motivo. No elimina el lote. El bloqueo por alerta se aplica al lote en todas sus ubicaciones.
+Umbrales iniciales: 7 y 30 días; se configuran por sucursal. Auditoría FEFO permite filtrar próximos vencimientos y vencidos para su retiro físico. El retiro verifica el saldo, lo deja en cero y crea una salida con usuario, fecha, ubicación y motivo. No elimina el lote. El bloqueo por alerta se aplica al lote en todas sus ubicaciones.
 
 La anulación cambia el estado de la venta y la excluye de totales de caja, reportes y panel. No modifica inventario ni ejecuta reembolsos bancarios. Registrar por separado las unidades efectivamente devueltas usando el ID de detalle del historial; no se admite devolver más de lo entregado. Esas unidades quedan pendientes, aun si la venta está anulada. La reincorporación exige permiso de liberación, revisión, lote apto y procedimiento de sucursal que autorice el reingreso. Dicha opción está deshabilitada inicialmente; no se reincorpora automáticamente por anular o recibir.
 

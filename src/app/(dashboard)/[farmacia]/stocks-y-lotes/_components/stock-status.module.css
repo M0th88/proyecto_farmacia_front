@@ -9,3 +9,8 @@
   background: #d42d10;
   color: #fff;
 }
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

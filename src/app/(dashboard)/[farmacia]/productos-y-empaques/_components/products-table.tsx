@@ -113,14 +113,30 @@ const columns: ColumnDef<ProductRow>[] = [
     cell: ({ getValue }) => getValue<string>() || "—",
   },
 ];
+const otrosColumns: ColumnDef<ProductRow>[] = [
+  ...columns.filter((column) =>
+    [
+      "activo",
+      "nombre",
+      "codigoBarra",
+      "codigoCatalogo",
+      "categoria",
+      "precioVenta",
+    ].some((key) => "accessorKey" in column && column.accessorKey === key),
+  ),
+  { accessorKey: "stock", header: "Stock físico", size: 125 },
+];
+
 export function ProductsTable({
   currentUserId,
   initialMetrics,
   isAdmin,
+  otros = false,
 }: {
   currentUserId: number;
   initialMetrics: Metrics;
   isAdmin: boolean;
+  otros?: boolean;
 }) {
   const pharmacy = usePharmacy();
   const [selected, setSelected] = useState<{
@@ -131,7 +147,7 @@ export function ProductsTable({
   const client = useQueryClient();
   const router = useRouter();
   const actionColumns: ColumnDef<ProductRow>[] = [
-    ...columns,
+    ...(otros ? otrosColumns : columns),
     {
       id: "acciones",
       header: "Acciones",
@@ -155,24 +171,36 @@ export function ProductsTable({
   ];
   return (
     <section className={styles.page}>
-      <header className={styles.pageHeader}>
-        <h1 className={styles.title}>Productos y Empaques</h1>
-        <Link
-          className={styles.actionLink}
-          href={`/${pharmacy}/productos-y-empaques/etiquetas`}
-        >
-          <Barcode size={18} aria-hidden="true" />
-          Generador de etiquetas
-        </Link>
-      </header>
+      <h1 className={styles.title}>
+        {otros ? "Otros Productos" : "Productos y Empaques"}
+      </h1>
       <DataTable<ProductRow>
         columns={actionColumns}
-        queryKey={[...productsQueryKey, currentUserId]}
-        queryFn={listProducts.bind(null, pharmacy)}
+        queryKey={
+          otros
+            ? [...productsQueryKey, "otros", pharmacy, currentUserId]
+            : [...productsQueryKey, currentUserId]
+        }
+        queryFn={(options) => listProducts(pharmacy, options, otros)}
         entityLabel="productos"
-        placeholder="Filtrar por nombre, código, categoría o principio activo"
+        placeholder={
+          otros
+            ? "Filtrar por nombre, código o categoría"
+            : "Filtrar por nombre, código, categoría o principio activo"
+        }
         emptyTitle="No hay productos registrados. Añade un producto para comenzar."
-        createButton={<NewProductDialog currentUserId={currentUserId} />}
+        createButton={
+          <>
+            <Link
+              className={styles.actionLink}
+              href={`/${pharmacy}/productos-y-empaques/etiquetas`}
+            >
+              <Barcode size={18} aria-hidden="true" />
+              Generador de etiquetas
+            </Link>
+            <NewProductDialog currentUserId={currentUserId} otros={otros} />
+          </>
+        }
         getRowId={(product) => String(product.id)}
         renderSummary={(page) => (
           <ProductMetrics

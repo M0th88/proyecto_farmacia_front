@@ -41,6 +41,7 @@
   align-items: center;
   gap: 8px;
 }
+
 .scroll {
   height: min(600px, 65svh);
   min-height: 240px;
@@ -220,6 +221,7 @@
     font-size: var(--text-base);
   }
   .toolbarActions {
+    flex-wrap: wrap;
     justify-content: flex-end;
   }
 }

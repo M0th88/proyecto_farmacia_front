@@ -213,6 +213,9 @@ model UbicacionInventario {
 model Stock {
   id Int @id @default(autoincrement())
 
+  cantidadBloqueada Int @default(0)
+  cuarentenas CasoCuarentena[]
+
   cantidad Int @default(0)
 
   loteId      Int
@@ -225,6 +228,24 @@ model Stock {
   @@unique([loteId, ubicacionId])
   @@index([loteId])
   @@index([ubicacionId])
+}
+
+model CasoCuarentena {
+  id Int @id @default(autoincrement())
+  stockId Int
+  stock Stock @relation(fields: [stockId], references: [id])
+  tipo String
+  cantidad Int
+  motivo String
+  registradoPor Int
+  creadoEn DateTime @default(now())
+  resolucion String?
+  motivoResolucion String?
+  resueltoPor Int?
+  resueltoEn DateTime?
+
+  @@index([tipo, resueltoEn])
+  @@index([stockId])
 }
 
 model MovimientoStock {

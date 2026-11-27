@@ -30,6 +30,10 @@ export async function editStock(input: StockEdit, userId: number) {
         throw new Error(
           "El stock cambió o ya no existe. Actualiza la tabla antes de editar.",
         );
+      if (stock && input.cantidad < (stock.cantidadBloqueada ?? 0))
+        throw new Error(
+          "La cantidad no puede quedar por debajo de las unidades en cuarentena.",
+        );
       await tx.lote.update({
         where: { id: lot.id },
         data: {

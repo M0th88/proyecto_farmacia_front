@@ -35,12 +35,14 @@ export function ProductForm({
   onCancel,
   onSavingChange,
   product,
+  otros = false,
 }: {
   options: ProductOptions;
   onSaved: () => void;
   onCancel: () => void;
   onSavingChange: (saving: boolean) => void;
   product?: { id: number; profile: ProductProfile };
+  otros?: boolean;
 }) {
   const pharmacy = usePharmacy();
   const id = useId();
@@ -59,7 +61,7 @@ export function ProductForm({
       concentracion: "",
       formaFarmaceutica: "",
       precioVenta: "",
-      condicionVenta: "SIN_CLASIFICAR",
+      condicionVenta: otros ? "VENTA_DIRECTA" : "SIN_CLASIFICAR",
       stockMinimo: 0,
       activo: true,
       categoriaId: 0,
@@ -71,10 +73,14 @@ export function ProductForm({
   const categoryId = useWatch({ control: form.control, name: "categoriaId" });
   const mutation = useMutation({
     mutationFn: (values: ProductProfile) =>
-      saveProduct(pharmacy, {
-        ...values,
-        ...(product ? { id: product.id } : {}),
-      }),
+      saveProduct(
+        pharmacy,
+        {
+          ...values,
+          ...(product ? { id: product.id } : {}),
+        },
+        otros,
+      ),
     onMutate: () => onSavingChange(true),
     onSuccess: async () => {
       await Promise.all(

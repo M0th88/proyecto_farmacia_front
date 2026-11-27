@@ -58,7 +58,10 @@ export async function stockSnapshot(db?: PharmacyDb) {
           sum +
           lot.stocks
             .filter((stock) => db || stockDisponibleFefo(stock, lot, now))
-            .reduce((n, stock) => n + stock.cantidad, 0),
+            .reduce(
+              (n, stock) => n + stock.cantidad - (stock.cantidadBloqueada ?? 0),
+              0,
+            ),
         0,
       );
     if (product.stockMinimo > 0 && available <= product.stockMinimo)

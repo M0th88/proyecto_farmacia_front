@@ -44,10 +44,17 @@ export const productListSchema = z.object({
 });
 export async function productSnapshot(
   db: PharmacyDb = prismaPrivada as unknown as PharmacyDb,
+  otros = false,
 ) {
   const products = await db.medicamento.findMany({
+    ...(otros && {
+      where: { datosCatalogo: { path: ["tipoProducto"], equals: "OTRO" } },
+    }),
     orderBy: { nombre: "asc" },
-    include: { categoria: true, lotes: { include: { stocks: true } } },
+    include: {
+      categoria: true,
+      lotes: { select: { stocks: { select: { cantidad: true } } } },
+    },
   });
   const rows: ProductRow[] = products.map((product) => ({
     id: product.id,
@@ -128,6 +135,7 @@ export async function createProduct(
   input: ProductProfile,
   id?: number,
   db: PharmacyDb = prismaPrivada as unknown as PharmacyDb,
+  otros = false,
 ) {
   return db.$transaction(async (tx) => {
     if (id && !(await tx.medicamento.findUnique({ where: { id } })))
@@ -186,6 +194,7 @@ export async function createProduct(
       : tx.medicamento.create({
           data: {
             ...data,
+            ...(otros && { datosCatalogo: { tipoProducto: "OTRO" } }),
             ...(Object.values(input.fichaChile).some(Boolean)
               ? { fichaChile: { create: ficha } }
               : {}),
@@ -274,6 +283,10 @@ export async function productLabel(
           id: true,
           numeroLote: true,
           fechaVencimiento: true,
+          ...(db === (prismaPrivada as unknown as PharmacyDb) && {
+            precisionVencimiento: true,
+            rotuloVencimiento: true,
+          }),
           stocks: {
             where: { cantidad: { gt: 0 } },
             orderBy: { ubicacion: { nombre: "asc" } },
@@ -292,6 +305,15 @@ export async function productLabel(
       id: lote.id,
       numero: lote.numeroLote,
       vencimiento: stockDate(lote.fechaVencimiento),
+      ...("precisionVencimiento" in lote &&
+        (lote.precisionVencimiento !== "DIA" ||
+          !("rotuloVencimiento" in lote && lote.rotuloVencimiento)) && {
+          rotuloPendiente:
+            "rotuloVencimiento" in lote &&
+            typeof lote.rotuloVencimiento === "string"
+              ? lote.rotuloVencimiento
+              : "Sin confirmar",
+        }),
       ubicaciones: lote.stocks.map(({ ubicacion }) => ubicacion),
     })),
   };

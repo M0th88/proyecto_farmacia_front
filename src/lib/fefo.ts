@@ -17,6 +17,7 @@ export const canOperate = (
 export function aptStock(
   stock: {
     cantidad: number;
+    cantidadBloqueada?: number;
     fechaRecepcion: Date | string | null;
     lote: {
       numeroLote: string;
@@ -29,7 +30,7 @@ export function aptStock(
   now = new Date(),
 ) {
   return (
-    stock.cantidad > 0 &&
+    stock.cantidad > (stock.cantidadBloqueada ?? 0) &&
     !!stock.fechaRecepcion &&
     !!stock.lote.numeroLote.trim() &&
     !!stock.lote.rotuloVencimiento &&
@@ -42,6 +43,7 @@ export function aptStock(
 export function stockDisponibleFefo(
   stock: {
     cantidad: number;
+    cantidadBloqueada?: number;
     fechaRecepcion?: Date | null;
     ubicacion: { id?: number; sucursalId?: number | null };
   },
@@ -59,6 +61,7 @@ export function stockDisponibleFefo(
     aptStock(
       {
         cantidad: stock.cantidad,
+        cantidadBloqueada: stock.cantidadBloqueada,
         fechaRecepcion: stock.fechaRecepcion ?? null,
         lote: {
           ...lote,

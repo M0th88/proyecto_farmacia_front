@@ -62,13 +62,21 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
     ];
-    return ["privada", "asistencial"].flatMap((farmacia) =>
+    const pharmacyRedirects = ["privada", "asistencial"].flatMap((farmacia) =>
       redirects.map(({ source, destination, permanent }) => ({
         source: source.replace("/privada", `/${farmacia}`),
         destination: destination.replace("/privada", `/${farmacia}`),
         permanent,
       })),
     );
+    return [
+      {
+        source: "/privada/stocks-y-lotes/control-fefo",
+        destination: "/privada/auditoria-fefo",
+        permanent: true,
+      },
+      ...pharmacyRedirects,
+    ];
   },
   turbopack: {
     rules: {

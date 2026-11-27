@@ -1,0 +1,53 @@
+.control {
+  position: relative;
+}
+
+.control input[role="combobox"] {
+  padding-right: 36px;
+}
+
+.flecha {
+  position: absolute;
+  inset: 1px 1px 1px auto;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  border: 0;
+  border-radius: 5px;
+  background: #fff;
+  color: #171b1e;
+  cursor: pointer;
+}
+
+.menu {
+  position: absolute;
+  z-index: 4;
+  inset: calc(100% + 4px) 0 auto;
+  padding: 4px;
+  border: 1px solid #d8d8d8;
+  border-radius: 6px;
+  background: #fff;
+  color: #171b1e;
+  box-shadow: 0 4px 12px #0002;
+}
+
+.menu ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menu li {
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.menu li[aria-selected="true"] {
+  font-weight: 700;
+}
+
+.menu li:is(:hover, [data-activo="true"]) {
+  background: #edf1f5;
+}

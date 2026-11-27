@@ -90,6 +90,20 @@ export async function GET(request: Request) {
       { error: "Sin permiso de inventario." },
       { status: 403 },
     );
+  if (params.get("configuracion") === "1") {
+    const [sucursales, ubicaciones] = await Promise.all([
+      prismaPrivada.sucursal.findMany({ orderBy: { nombre: "asc" } }),
+      prismaPrivada.ubicacionInventario.findMany({
+        orderBy: [{ nombre: "asc" }, { id: "asc" }],
+        select: { id: true, nombre: true, tipo: true, sucursalId: true },
+      }),
+    ]);
+    return Response.json({
+      sucursales,
+      ubicaciones,
+      puedeConfigurar: canOperate(user, "inventario_configurar"),
+    });
+  }
   const [sucursales, ubicaciones, revisiones, stocks] = await Promise.all([
     prismaPrivada.sucursal.findMany({ orderBy: { nombre: "asc" } }),
     prismaPrivada.ubicacionInventario.findMany({ include: { sucursal: true } }),
@@ -331,10 +345,20 @@ export async function PATCH(request: Request) {
             stock.cantidad <= 0
           )
             throw new Error("El lote no está vencido o su saldo cambió.");
-          await tx.stock.update({
-            where: { id: stock.id },
+          if (stock.cantidadBloqueada > 0)
+            throw new Error(
+              "Registra el retiro desde Productos vencidos y resuelve por separado los casos de cuarentena.",
+            );
+          const retirado = await tx.stock.updateMany({
+            where: {
+              id: stock.id,
+              cantidad: stock.cantidad,
+              cantidadBloqueada: 0,
+            },
             data: { cantidad: 0 },
           });
+          if (!retirado.count)
+            throw new Error("El saldo cambió. Actualiza e intenta nuevamente.");
           await tx.movimientoStock.create({
             data: {
               loteId: stock.loteId,
@@ -357,7 +381,7 @@ export async function PATCH(request: Request) {
             !stock ||
             !target?.sucursalId ||
             stock.ubicacionId === target.id ||
-            stock.cantidad < input.cantidad
+            stock.cantidad - stock.cantidadBloqueada < input.cantidad
           )
             throw new Error("Saldo o ubicación de destino inválidos.");
           const dest = await tx.stock.findUnique({
@@ -376,10 +400,16 @@ export async function PATCH(request: Request) {
                   dest.fechaRecepcion < stock.fechaRecepcion
                 ? dest.fechaRecepcion
                 : stock.fechaRecepcion;
-          await tx.stock.update({
-            where: { id: stock.id },
+          const trasladado = await tx.stock.updateMany({
+            where: {
+              id: stock.id,
+              cantidad: { gte: input.cantidad + stock.cantidadBloqueada },
+              cantidadBloqueada: stock.cantidadBloqueada,
+            },
             data: { cantidad: { decrement: input.cantidad } },
           });
+          if (!trasladado.count)
+            throw new Error("El saldo cambió. Actualiza e intenta nuevamente.");
           await tx.stock.upsert({
             where: {
               loteId_ubicacionId: {

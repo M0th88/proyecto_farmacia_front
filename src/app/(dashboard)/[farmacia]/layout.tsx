@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { PharmacyProvider } from "@/components/pharmacy-provider";
+import { SectionLoading } from "@/components/section-loading";
 import { isSuperAdmin } from "@/lib/auth/identity";
 import {
   type PharmacyParams,
@@ -40,7 +41,13 @@ export default function PharmacyLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Suspense fallback={<p role="status">Cargando farmacia…</p>}>
+    <Suspense
+      fallback={
+        <div className="private-module">
+          <SectionLoading />
+        </div>
+      }
+    >
       <PharmacyContent params={params}>{children}</PharmacyContent>
     </Suspense>
   );

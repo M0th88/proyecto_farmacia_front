@@ -42,10 +42,11 @@ export function listProducts(
     sorting: SortingState;
     signal?: AbortSignal;
   },
+  otros = false,
 ) {
   return request<ProductPage>(
     pharmacy,
-    `?${new URLSearchParams({ page: String(pageParam), search, sort: sorting[0]?.id ?? "nombre", direction: sorting[0]?.desc ? "desc" : "asc" })}`,
+    `?${new URLSearchParams({ page: String(pageParam), search, sort: sorting[0]?.id ?? "nombre", direction: sorting[0]?.desc ? "desc" : "asc", ...(otros && { otros: "1" }) })}`,
     { signal },
   );
 }
@@ -54,8 +55,9 @@ export const productOptions = (pharmacy: Pharmacy) =>
 export const saveProduct = (
   pharmacy: Pharmacy,
   profile: ProductProfile & { id?: number },
+  otros = false,
 ) =>
-  request<{ id: number; nombre: string }>(pharmacy, "", {
+  request<{ id: number; nombre: string }>(pharmacy, otros ? "?otros=1" : "", {
     method: profile.id ? "PATCH" : "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(profile),

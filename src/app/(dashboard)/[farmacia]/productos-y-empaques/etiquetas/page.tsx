@@ -8,6 +8,7 @@ import {
 import { getPharmacyUser } from "@/lib/auth/session";
 import { pharmacyDb } from "@/lib/db/pharmacy-db";
 import { productLabel } from "@/lib/private/products";
+import { EtiquetasLoading } from "./_components/etiquetas-loading";
 import { EtiquetasProductos } from "./_components/etiquetas-productos";
 
 export const instant = false;
@@ -61,9 +62,7 @@ export default async function EtiquetasProductosPage({
           </span>
         </div>
       </header>
-      <Suspense
-        fallback={<p role="status">Cargando generador de etiquetas…</p>}
-      >
+      <Suspense fallback={<EtiquetasLoading />}>
         <ContenidoEtiquetas params={params} searchParams={searchParams} />
       </Suspense>
     </section>

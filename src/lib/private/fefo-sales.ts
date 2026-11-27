@@ -65,7 +65,7 @@ async function plan(
         vencimiento: stock.lote.fechaVencimiento.toISOString(),
         recepcion: stock.fechaRecepcion!.toISOString(),
         ubicacion: stock.ubicacion.nombre,
-        disponible: stock.cantidad,
+        disponible: stock.cantidad - stock.cantidadBloqueada,
         cantidad: 0,
       });
   }
@@ -199,7 +199,8 @@ export async function confirmSale(
         const updated = await tx.stock.updateMany({
           where: {
             id: candidate.stockId,
-            cantidad: { gte: chosen.cantidad },
+            cantidad: { gte: chosen.cantidad + stock.cantidadBloqueada },
+            cantidadBloqueada: stock.cantidadBloqueada,
             lote: { estado: "APTO", fechaVencimiento: { gt: new Date() } },
             ubicacion: { sucursalId: input.sucursalId },
           },

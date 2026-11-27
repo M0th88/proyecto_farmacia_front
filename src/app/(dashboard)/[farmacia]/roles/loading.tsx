@@ -8,7 +8,7 @@ export default function RolesLoading() {
       <TableSkeleton
         headers={[
           "ID",
-          "Nombre",
+          "Rol",
           "Descripción",
           "Vistas permitidas",
           "Usuarios",

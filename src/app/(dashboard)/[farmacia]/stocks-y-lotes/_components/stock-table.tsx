@@ -1,10 +1,13 @@
 "use client";
 import type { ColumnDef } from "@tanstack/react-table";
+import { ClipboardCheck, Tags } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import styles from "@/components/admin-table.module.css";
 import { DataTable } from "@/components/data-table";
 import { usePharmacy } from "@/components/pharmacy-provider";
 import { RecordActions } from "@/components/record-actions";
+import buttons from "@/components/ui/ui.module.css";
 import { stockDate } from "@/lib/private/stock-dates";
 import type {
   StockMetrics as Metrics,
@@ -125,9 +128,34 @@ export function StockTable({
         createButton={<NewStockDialog currentUserId={currentUserId} />}
         getRowId={(row) => row.id}
         renderSummary={(page) => (
-          <StockMetrics
-            metrics={(page as StockPage | undefined)?.metrics ?? initialMetrics}
-          />
+          <>
+            <StockMetrics
+              metrics={
+                (page as StockPage | undefined)?.metrics ?? initialMetrics
+              }
+            />
+            <nav
+              className={statusStyles.actions}
+              aria-label="Accesos de inventario"
+            >
+              <Link
+                className={`${buttons.button} ${buttons.outline}`}
+                href={`/${pharmacy}/segregar-productos`}
+              >
+                <Tags size={16} aria-hidden="true" />
+                Segregar productos y etiquetas
+              </Link>
+              {pharmacy === "privada" && (
+                <Link
+                  className={`${buttons.button} ${buttons.outline}`}
+                  href="/privada/auditoria-fefo"
+                >
+                  <ClipboardCheck size={16} aria-hidden="true" />
+                  Auditoría FEFO
+                </Link>
+              )}
+            </nav>
+          </>
         )}
       />
       {selected && (

@@ -182,6 +182,18 @@
   font-size: var(--text-xl);
   margin: 0 0 20px;
 }
+.configurationTable {
+  overflow-x: auto;
+}
+.configurationTable table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.configurationTable :is(th, td) {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e8e8e8;
+}
 .details {
   display: grid;
   grid-template-columns: 150px minmax(0, 1fr);
@@ -211,7 +223,20 @@
   display: grid;
   gap: 12px;
 }
+.skeletonActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
 @media (max-width: 639px) {
+  .skeletonToolbar:has(.skeletonActions) {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .skeletonToolbar:has(.skeletonActions) .skeletonSearch {
+    width: 100%;
+  }
   .fields {
     grid-template-columns: minmax(0, 1fr);
   }

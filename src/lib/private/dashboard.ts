@@ -76,7 +76,11 @@ export async function dashboardSnapshot(
       else {
         available += lot.stocks
           .filter((stock) => db || stockDisponibleFefo(stock, lot, now))
-          .reduce((sum, stock) => sum + stock.cantidad, 0);
+          .reduce(
+            (sum, stock) =>
+              sum + stock.cantidad - (stock.cantidadBloqueada ?? 0),
+            0,
+          );
         if (days <= 30) inventory.proximo += quantity;
         else inventory.vigente += quantity;
       }

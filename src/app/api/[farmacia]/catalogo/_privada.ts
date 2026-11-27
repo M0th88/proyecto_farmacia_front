@@ -13,7 +13,16 @@ export async function GET(request: Request) {
       include: {
         categoria: true,
         lotes: {
-          include: { stocks: { include: { ubicacion: true } } },
+          include: {
+            stocks: {
+              select: {
+                cantidad: true,
+                cantidadBloqueada: true,
+                fechaRecepcion: true,
+                ubicacion: { select: { sucursalId: true } },
+              },
+            },
+          },
           orderBy: { fechaVencimiento: "asc" },
         },
       },
@@ -40,7 +49,10 @@ export async function GET(request: Request) {
                   stock.ubicacion.sucursalId === branchId &&
                   aptStock({ ...stock, lote }),
               )
-              .reduce((n, stock) => n + stock.cantidad, 0),
+              .reduce(
+                (n, stock) => n + stock.cantidad - stock.cantidadBloqueada,
+                0,
+              ),
           0,
         ),
       })),

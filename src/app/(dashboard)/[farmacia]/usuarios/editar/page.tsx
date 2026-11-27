@@ -10,6 +10,7 @@ import {
 import { requirePharmacyUser } from "@/lib/auth/session";
 import { pharmacyDb } from "@/lib/db/pharmacy-db";
 import { serializeUser, userSelect } from "@/lib/private/users";
+import EditLoading from "./loading";
 
 export const instant = false;
 
@@ -82,7 +83,7 @@ export default function EditarUsuariosPage(
   },
 ) {
   return (
-    <Suspense fallback={<p role="status">Cargando edición de usuarios…</p>}>
+    <Suspense fallback={<EditLoading />}>
       <EditContent {...props} />
     </Suspense>
   );

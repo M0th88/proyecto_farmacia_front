@@ -3,6 +3,7 @@ import { FileText, Printer, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePharmacy } from "@/components/pharmacy-provider";
+import { LoadingLines } from "@/components/section-loading";
 import {
   type Item,
   type MedioPago,
@@ -365,7 +366,9 @@ export function PuntoDeVenta() {
           </div>
           <div className="pos-list">
             {cargando ? (
-              <p>Cargando…</p>
+              <div role="status" aria-label="Cargando catálogo">
+                <LoadingLines />
+              </div>
             ) : filtrados.length ? (
               filtrados.map((p) => (
                 <article className="pos-product" key={p.id}>

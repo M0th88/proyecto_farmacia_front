@@ -7,10 +7,16 @@ if (!connectionString) throw new Error("Falta DATABASE_URL_PRIVADA en .env.");
 const globalForPrisma = globalThis as unknown as {
   prismaPrivadaFefoDocumentos?: PrismaClient;
 };
+const cachedClient = globalForPrisma.prismaPrivadaFefoDocumentos;
+// During development, Fast Refresh can keep the client from before a migration.
 export const prismaPrivada =
-  globalForPrisma.prismaPrivadaFefoDocumentos ??
-  new PrismaClient({
-    adapter: new PrismaPg({ connectionString, connectionTimeoutMillis: 3000 }),
-  });
+  cachedClient && typeof cachedClient.casoCuarentena?.findMany === "function"
+    ? cachedClient
+    : new PrismaClient({
+        adapter: new PrismaPg({
+          connectionString,
+          connectionTimeoutMillis: 3000,
+        }),
+      });
 if (process.env.NODE_ENV !== "production")
   globalForPrisma.prismaPrivadaFefoDocumentos = prismaPrivada;

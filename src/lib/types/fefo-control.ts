@@ -9,6 +9,7 @@ export type Branch = {
 export type ControlStock = {
   id: number;
   cantidad: number;
+  cantidadBloqueada: number;
   fechaRecepcion: string | null;
   loteId: number;
   ubicacionId: number;

@@ -439,7 +439,7 @@ try {
   );
   for (const path of [
     "stocks-y-lotes",
-    "stocks-y-lotes/control-fefo",
+    "auditoria-fefo",
     "punto-de-venta",
     "historial-y-reportes",
     "caja-del-dia",

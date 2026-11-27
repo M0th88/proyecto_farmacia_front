@@ -29,7 +29,7 @@ export function RolesTable({ currentUserId }: { currentUserId: number }) {
       { accessorKey: "id", header: "ID", size: 75 },
       {
         accessorKey: "nombre",
-        header: "Nombre",
+        header: "Rol",
         size: 210,
         cell: ({ row }) => (
           <span
@@ -54,16 +54,22 @@ export function RolesTable({ currentUserId }: { currentUserId: number }) {
         accessorFn: (role) =>
           PRIVATE_SECTIONS.filter((section) =>
             role.permisos.includes(section.key),
-          )
-            .map((section) => section.label)
-            .join(", "),
+          ),
         header: "Vistas permitidas",
         size: 400,
-        cell: ({ getValue }) => (
-          <span className={roleStyles.permissionList}>
-            {getValue<string>() || "—"}
-          </span>
-        ),
+        cell: ({ getValue }) => {
+          const sections = getValue<(typeof PRIVATE_SECTIONS)[number][]>();
+          if (!sections.length) return "—";
+          return (
+            <ul className={roleStyles.permissionBadges}>
+              {sections.map(({ key, label }) => (
+                <li className={styles.badge} key={key}>
+                  {label}
+                </li>
+              ))}
+            </ul>
+          );
+        },
       },
       {
         id: "usuarios",
@@ -95,7 +101,7 @@ export function RolesTable({ currentUserId }: { currentUserId: number }) {
         columns={columns}
         queryKey={[...rolesTableQueryKey, currentUserId]}
         queryFn={listRolesPage.bind(null, pharmacy)}
-        placeholder="Filtrar por nombre, descripción o vista permitida"
+        placeholder="Filtrar por rol, descripción o vista permitida"
         emptyTitle="No hay roles registrados. Crea un rol para comenzar."
         createButton={
           <Button onClick={() => setCreating(true)}>

@@ -33,7 +33,12 @@ export const GET = pharmacyRoute(async (_request, pharmacy, db) => {
         stock: m.lotes
           .filter((l) => l.fechaVencimiento > ahora)
           .reduce(
-            (s, l) => s + l.stocks.reduce((n, x) => n + x.cantidad, 0),
+            (s, l) =>
+              s +
+              l.stocks.reduce(
+                (n, x) => n + x.cantidad - x.cantidadBloqueada,
+                0,
+              ),
             0,
           ),
       })),

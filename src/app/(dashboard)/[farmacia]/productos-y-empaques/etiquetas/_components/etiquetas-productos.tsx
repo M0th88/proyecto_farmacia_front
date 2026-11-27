@@ -3,9 +3,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Barcode, Plus, Printer, Trash2 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
+import etiquetaStyles from "@/components/etiqueta-inventario.module.css";
 import { usePharmacy } from "@/components/pharmacy-provider";
 import { Button } from "@/components/ui/button";
 import { useDebounce } from "@/hooks/use-debounce";
+import { etiquetaVencimiento } from "@/lib/etiqueta-vencimiento";
 import type { ProductLabel } from "@/lib/types/productos";
 import {
   generateProductBarcode,
@@ -334,7 +336,10 @@ export function EtiquetasProductos({
                 Vencimiento
                 <input
                   readOnly
-                  value={lote ? fecha(lote.vencimiento) : ""}
+                  value={
+                    lote?.rotuloPendiente ??
+                    (lote ? fecha(lote.vencimiento) : "")
+                  }
                   placeholder="Según el lote"
                 />
               </label>
@@ -438,14 +443,24 @@ export function EtiquetasProductos({
           <div id="etiquetas-productos" className={styles.hoja}>
             {etiquetas.map(({ fila, lote, ubicacion, codigo, cantidad }) => {
               if (!codigo) return null;
+              const estado = etiquetaVencimiento(
+                lote?.rotuloPendiente ? null : lote?.vencimiento,
+              );
               return Array.from(
                 { length: listoParaImprimir ? cantidad : 1 },
                 (_, copia) => (
                   <article
                     key={`${fila.id}-${copia}`}
-                    className={`${styles.etiqueta} ${styles[fila.orientacion]}`}
+                    className={`${styles.etiqueta} ${styles[fila.orientacion]} ${etiquetaStyles.etiqueta}`}
+                    data-color={estado.color}
                     data-copia={copia > 0 || undefined}
                   >
+                    <span
+                      className={etiquetaStyles.estado}
+                      data-color={estado.color}
+                    >
+                      {lote ? estado.texto : "Etiqueta de producto"}
+                    </span>
                     <strong className={styles.nombre}>
                       {fila.producto.nombre}
                     </strong>
@@ -455,7 +470,12 @@ export function EtiquetasProductos({
                           Lote <b>{lote.numero}</b>
                         </span>
                         <span>
-                          Vencimiento <b>{fecha(lote.vencimiento)}</b>
+                          Vencimiento{" "}
+                          <b>
+                            {lote.rotuloPendiente
+                              ? lote.rotuloPendiente
+                              : fecha(lote.vencimiento)}
+                          </b>
                         </span>
                       </div>
                     )}

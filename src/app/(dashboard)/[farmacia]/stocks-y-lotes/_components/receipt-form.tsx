@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 import styles from "@/components/admin-table.module.css";
@@ -51,12 +51,22 @@ export function ReceiptForm({
       motivo: "Recepción de productos",
     },
   });
+  const precision = useWatch({
+    control: form.control,
+    name: "precisionVencimiento",
+  });
   const mutation = useMutation({
     mutationFn: async (body: z.output<typeof receiptSchema>) => {
       const response = await fetch("/api/privada/fefo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          ...body,
+          rotuloVencimiento:
+            body.precisionVencimiento === "DIA"
+              ? body.rotuloVencimiento.split("-").reverse().join("/")
+              : body.rotuloVencimiento,
+        }),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
@@ -131,7 +141,7 @@ export function ReceiptForm({
               ))}
           </select>
           <Link
-            href="/privada/stocks-y-lotes/control-fefo"
+            href="/privada/ubicaciones"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -147,7 +157,14 @@ export function ReceiptForm({
         </label>
         <label className={styles.field}>
           Precisión del rótulo
-          <select {...form.register("precisionVencimiento")}>
+          <select
+            {...form.register("precisionVencimiento", {
+              onChange: () => {
+                form.resetField("rotuloVencimiento");
+                form.resetField("verificado");
+              },
+            })}
+          >
             <option value="DIA">Día, mes y año</option>
             <option value="MES_ANIO">Solo mes y año — pendiente</option>
             <option value="NO_VERIFICADO">No verificable — pendiente</option>
@@ -156,8 +173,16 @@ export function ReceiptForm({
         <label className={styles.field}>
           Vencimiento tal como aparece en el envase
           <input
+            key={precision}
+            type={precision === "DIA" ? "date" : "text"}
             {...form.register("rotuloVencimiento")}
-            placeholder="Ej. 25/12/2027 o 12/2027"
+            placeholder={
+              precision === "MES_ANIO"
+                ? "Ej. 12/2027"
+                : precision === "NO_VERIFICADO"
+                  ? "Deja vacío si no se puede verificar"
+                  : undefined
+            }
           />
         </label>
         <label className={styles.field}>

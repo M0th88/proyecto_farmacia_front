@@ -56,7 +56,7 @@ export const GET = pharmacyRoute(async (request, pharmacy, db) => {
     const options = productListSchema.safeParse(Object.fromEntries(params));
     if (!options.success)
       return Response.json({ error: "Filtros inválidos." }, { status: 400 });
-    const snapshot = await productSnapshot(db);
+    const snapshot = await productSnapshot(db, params.get("otros") === "1");
     return Response.json({
       ...paginateProducts(snapshot.rows, options.data),
       metrics: snapshot.metrics,
@@ -164,9 +164,17 @@ export const POST = pharmacyRoute(async (request, pharmacy, db) => {
       { status: 400 },
     );
   try {
-    return Response.json(await createProduct(parsed.data, undefined, db), {
-      status: 201,
-    });
+    return Response.json(
+      await createProduct(
+        parsed.data,
+        undefined,
+        db,
+        params.get("otros") === "1",
+      ),
+      {
+        status: 201,
+      },
+    );
   } catch (error) {
     const message =
       error instanceof Error && !("code" in error)

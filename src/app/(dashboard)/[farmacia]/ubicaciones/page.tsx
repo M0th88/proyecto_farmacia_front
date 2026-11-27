@@ -1,5 +1,8 @@
-import { EmptyPrivateSection } from "../_components/empty-private-section";
+import type { PharmacyParams } from "@/lib/auth/pharmacy-scope";
+import { ConfiguracionAlmacenPage } from "../_components/configuracion-almacen-page";
 
-export default function Page() {
-  return <EmptyPrivateSection title="Ubicaciones" />;
+export const instant = false;
+
+export default function Page(props: PharmacyParams) {
+  return <ConfiguracionAlmacenPage {...props} vista="Ubicaciones" />;
 }

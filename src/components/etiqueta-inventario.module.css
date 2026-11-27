@@ -1,0 +1,83 @@
+.etiqueta {
+  background: white;
+  color: #111;
+  border: 1px solid #8c949e;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.etiqueta[data-color="rojo"] {
+  background: #fee2e2;
+  border-color: #b91c1c;
+}
+
+.etiqueta[data-color="amarillo"] {
+  background: #fef9c3;
+  border-color: #a16207;
+}
+
+.etiqueta[data-color="verde"] {
+  background: #dcfce7;
+  border-color: #166534;
+}
+
+.etiqueta[data-color="gris"] {
+  background: #f3f4f6;
+  border-color: #6b7280;
+}
+
+.estado {
+  display: block;
+  font-weight: 700;
+  padding: 0.25em 0.5em;
+  background: #e5e7eb;
+  color: #1f2937;
+}
+
+.estado[data-color="rojo"] {
+  background: #b91c1c;
+  color: white;
+}
+
+.estado[data-color="amarillo"] {
+  background: #fde047;
+  color: #422006;
+}
+
+.estado[data-color="verde"] {
+  background: #166534;
+  color: white;
+}
+
+.tabla {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.tabla table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla :is(th, td) {
+  padding: 0.75rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border, #ddd);
+}
+
+.tabla form {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.tabla summary {
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.impresion .etiqueta {
+  width: 75mm;
+  padding: 3mm;
+}

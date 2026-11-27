@@ -27,6 +27,7 @@ const groups = [
     links: [
       { label: "Stocks y Lotes", href: "/stocks-y-lotes" },
       { label: "Otros Productos", href: "/otros-productos" },
+      { label: "Sucursales", href: "/sucursales" },
       { label: "Ubicaciones", href: "/ubicaciones" },
       { label: "Cuarentena Sanitaria", href: "/cuarentena-sanitaria" },
       {
