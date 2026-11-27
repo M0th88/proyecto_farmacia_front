@@ -247,3 +247,23 @@ Las rutas `/privada` y `/api/privada` usan `DATABASE_URL_PRIVADA`. Las de Asiste
 Configura `SUPERADMIN_EMAIL` y `SUPERADMIN_RUT` con la identidad autorizada. El correo y el RUT deben coincidir con una cuenta activa con rol Administrador en cada base. Cada acceso valida la contraseña registrada en esa farmacia. Solo esa identidad puede mantener acceso a las dos. El alta y los cambios de identidad rechazan correos o RUT asociados a la otra farmacia. Para duplicados anteriores a este cambio conserva el acceso la cuenta de Privada.
 
 `node scripts/test-pharmacy-isolation.mjs` verifica el acceso, la separación de sesiones y la selección de base con datos ficticios.
+
+### Recetas en el POS
+
+Los productos con condición `RECETA_SIMPLE`, `RECETA_RETENIDA` o `RECETA_CHEQUE` ya pueden venderse; solo `SIN_CLASIFICAR` sigue bloqueado. Al agregarlos, el POS muestra el formulario **Receta médica** con la receta más exigente del carrito (cheque cubre retenida y simple). Se registran tipo, formato (física/digital), folio, RUT y nombre de paciente y médico, emisión y vigencia.
+
+`POST /api/privada/ventas` acepta `receta` y la valida en la misma transacción de la venta (`src/lib/validation/recetas.ts`): RUT con módulo 11, receta vigente hoy en Chile, emisión no futura, vigencia máxima (simple 180 días, retenida y cheque 30 días; parámetros del simulador), folio obligatorio en retenida/cheque y no reutilizable porque la receta queda retenida, y en retenida/cheque el médico no puede ser el paciente. `POST /api/privada/ventas/preparar` informa `recetaRequerida`. Cada `DetalleVenta` de un producto con receta guarda su `recetaId`.
+
+`/privada/recetas` lista las recetas recibidas con búsqueda por RUT, nombre o folio y filtro por tipo. Permiso `recetas`, `controlados` o `pos`.
+
+### Libro de estupefacientes y psicotrópicos
+
+`/privada/libro-controlados` es el libro oficial digital para medicamentos con receta retenida (psicotrópicos) o cheque (estupefacientes). Cada venta anota automáticamente una salida con su saldo; el primer movimiento abre el libro con el stock previo. El resumen compara el saldo del libro con el stock físico y alerta los descuadres (stock movido fuera del libro). El Químico Farmacéutico (permiso operativo `controlados_firmar`) abre libros, registra entradas y ajustes con motivo y firma los registros reingresando su contraseña. El acceso de lectura usa el permiso `controlados`.
+
+APIs: `POST /api/privada/libro-controlados` (apertura, entrada o ajuste) y `POST /api/privada/libro-controlados/firmar`. Requiere la migración `202611260001_recetas_libro_controlados`, que solo agrega tablas, tipos y la columna opcional `DetalleVenta.recetaId`.
+
+### Reportes exportables
+
+Historial y Reportes incluye **Exportar reportes** en Excel (`exceljs`) y PDF (`jspdf`): ventas, productos vendidos, inventario por lote, stock por categoría y, en Privada, recetas recibidas y libro de controlados. `GET /api/[farmacia]/reportes/[tipo]?formato=xlsx|pdf&desde=AAAA-MM-DD&hasta=AAAA-MM-DD` aplica los permisos de cada reporte; las ventas antiguas sin desglose de IVA se recalculan con la fórmula del POS.
+
+`node scripts/test-recetas.mjs` verifica las reglas de recetas sin base de datos. `scripts/test-fefo-integration.mjs` cubre ahora la exigencia de receta en la venta.

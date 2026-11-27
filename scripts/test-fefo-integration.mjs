@@ -444,6 +444,8 @@ try {
     "historial-y-reportes",
     "caja-del-dia",
     "panel",
+    "recetas",
+    "libro-controlados",
   ]) {
     const response = await fetch(`http://localhost:3000/privada/${path}`, {
       headers: { cookie },
@@ -459,6 +461,24 @@ try {
     'UPDATE "Medicamento" SET "condicionVenta"=\'RECETA_SIMPLE\' WHERE id=$1',
     [productId],
   );
+  // Con receta: la preparación informa la receta exigida y la venta sin
+  // receta se rechaza. Sin clasificar sigue bloqueado.
+  const prescription = (
+    await api("ventas/preparar", {
+      sucursalId: branchId,
+      items: [{ medicamentoId: productId, cantidad: 1 }],
+    })
+  ).data;
+  assert.equal(prescription.recetaRequerida, "SIMPLE");
+  if (prescription.sugeridos.length)
+    assert.match(
+      (await api("ventas", saleBody(prescription), "POST", 409)).data.error,
+      /exigen receta simple/,
+    );
+  await db.query(
+    'UPDATE "Medicamento" SET "condicionVenta"=\'SIN_CLASIFICAR\' WHERE id=$1',
+    [productId],
+  );
   await api(
     "ventas/preparar",
     {
@@ -469,7 +489,7 @@ try {
     409,
   );
   console.log(
-    "PASS: FEFO by expiry, receipt tie, split lots, physical confirmation, idempotency, concurrent last unit, expired exclusion/withdrawal audit, pending returns/month-year, cancellation without restock and prescription block.",
+    "PASS: FEFO by expiry, receipt tie, split lots, physical confirmation, idempotency, concurrent last unit, expired exclusion/withdrawal audit, pending returns/month-year, cancellation without restock, prescription requirement and unclassified block.",
   );
 } finally {
   if (productId) {

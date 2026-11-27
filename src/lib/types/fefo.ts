@@ -3,6 +3,7 @@ import {
   documentoVentaSchema,
   montoPos,
 } from "@/lib/validation/punto-de-venta";
+import { recetaSchema, type TipoReceta } from "@/lib/validation/recetas";
 export const lotStates = [
   "APTO",
   "PENDIENTE_REVISION",
@@ -35,6 +36,7 @@ export const saleSchema = preparationSchema.extend({
     "Confirma los lotes físicos y sus cantidades.",
   ),
   motivoExcepcion: z.string().trim().max(500).default(""),
+  receta: recetaSchema.optional(),
   lotes: z
     .array(
       z.object({
@@ -65,6 +67,8 @@ export type FefoPlan = {
   faltantes: { medicamentoId: number; nombre: string; cantidad: number }[];
   total: number;
   permiteExcepcion: boolean;
+  /** Receta más exigente que pide el pedido; null si es de venta directa. */
+  recetaRequerida: TipoReceta | null;
 };
 export const receiptSchema = z.object({
   medicamentoId: z.number().int().positive(),
@@ -86,4 +90,8 @@ export const operationalPermissions = [
   { key: "inventario_configurar", label: "Configurar sucursales y alertas" },
   { key: "ventas_anular", label: "Anular ventas" },
   { key: "devoluciones", label: "Registrar devoluciones" },
+  {
+    key: "controlados_firmar",
+    label: "Firmar y ajustar el libro de controlados (Químico Farmacéutico)",
+  },
 ] as const;

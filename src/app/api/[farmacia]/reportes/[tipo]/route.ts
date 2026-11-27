@@ -13,7 +13,11 @@ type Params = { params: Promise<{ farmacia: string; tipo: string }> };
 
 export async function GET(request: Request, { params }: Params) {
   const { farmacia, tipo } = await params;
-  if (!isPharmacy(farmacia) || !esTipoReporte(tipo))
+  if (
+    !isPharmacy(farmacia) ||
+    !esTipoReporte(tipo) ||
+    (TIPOS_REPORTE[tipo].soloPrivada && farmacia !== "privada")
+  )
     return new Response(null, { status: 404 });
 
   const user = await getPharmacyUser(farmacia);
@@ -21,7 +25,9 @@ export async function GET(request: Request, { params }: Params) {
     return Response.json({ error: "Debes iniciar sesión." }, { status: 401 });
   const permitido =
     user.rol.nombre === "Administrador" ||
-    TIPOS_REPORTE[tipo].permisos.some((p) => user.rol.permisos.includes(p));
+    TIPOS_REPORTE[tipo].permisos.some((p: string) =>
+      user.rol.permisos.includes(p),
+    );
   if (!permitido)
     return Response.json(
       { error: "Tu rol no tiene acceso a este reporte." },

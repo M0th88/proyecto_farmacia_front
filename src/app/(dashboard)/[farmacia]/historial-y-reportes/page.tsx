@@ -62,7 +62,9 @@ export default async function HistorialYReportesPage({
   const opcionesReporte = Object.entries(TIPOS_REPORTE)
     .filter(
       ([, r]) =>
-        esAdmin || r.permisos.some((p) => user.rol.permisos.includes(p)),
+        (!r.soloPrivada || pharmacy === "privada") &&
+        (esAdmin ||
+          r.permisos.some((p: string) => user.rol.permisos.includes(p))),
     )
     .map(([tipo, r]) => ({ tipo, titulo: r.titulo, usaFechas: r.usaFechas }));
   const rangoInicial = rangoReporte();

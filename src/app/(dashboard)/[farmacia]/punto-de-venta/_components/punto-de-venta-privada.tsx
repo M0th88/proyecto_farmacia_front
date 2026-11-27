@@ -22,8 +22,20 @@ import {
   pesos,
   tasaIva,
 } from "@/lib/validation/punto-de-venta";
+import {
+  type RecetaInput,
+  recetaCubre,
+  recetaExigida,
+  recetaRequerida,
+} from "@/lib/validation/recetas";
 import { ClientesPendientes } from "./clientes-pendientes";
 import { FefoConfirmation } from "./fefo-confirmation";
+import {
+  type RecetaBorrador,
+  RecetaForm,
+  recetaVacia,
+  validarReceta,
+} from "./receta-form";
 
 const facturacionVacia: Facturacion = {
   rut: "",
@@ -58,6 +70,10 @@ export function PuntoDeVentaPrivada() {
   const [cargando, setCargando] = useState(false);
   const [cargandoSucursales, setCargandoSucursales] = useState(true);
   const [cobrando, setCobrando] = useState(false);
+  const [recetaBorrador, setRecetaBorrador] = useState<RecetaBorrador | null>(
+    null,
+  );
+  const [recetaEnviada, setRecetaEnviada] = useState<RecetaInput | null>(null);
   const bloqueado = cobrando || preparing !== null;
   const lector = useRef<HTMLInputElement>(null);
   const confirmacion = useRef<HTMLAnchorElement>(null);
@@ -147,6 +163,17 @@ export function PuntoDeVentaPrivada() {
       0,
     ) / 100;
   const importeDescuento = Number(descuento || 0);
+  const recetaPedida = recetaRequerida(
+    lineas.map((x) => x.producto.condicionVenta ?? "SIN_CLASIFICAR"),
+  );
+  const receta = recetaPedida
+    ? recetaBorrador && recetaCubre(recetaBorrador.tipo, recetaPedida)
+      ? recetaBorrador
+      : { ...(recetaBorrador ?? recetaVacia(recetaPedida)), tipo: recetaPedida }
+    : null;
+  const vendible = (p: Producto) =>
+    p.condicionVenta === "VENTA_DIRECTA" ||
+    recetaExigida(p.condicionVenta ?? "") !== null;
   const descuentoValido =
     montoPos.safeParse(importeDescuento).success &&
     importeDescuento <= subtotal;
@@ -157,9 +184,9 @@ export function PuntoDeVentaPrivada() {
   function agregar(p: Producto) {
     if (bloqueado || cargando || !branch) return;
     const actual = items.find((i) => i.id === p.id)?.cantidad ?? 0;
-    if (p.condicionVenta !== "VENTA_DIRECTA") {
+    if (!vendible(p)) {
       setMensaje(
-        "Este medicamento requiere clasificación o validación de receta antes de venderse.",
+        "Este medicamento no tiene condición de venta clasificada; corrígela en Productos y Empaques.",
       );
       return;
     }
@@ -238,6 +265,14 @@ export function PuntoDeVentaPrivada() {
       );
       return;
     }
+    if (recetaPedida && receta) {
+      const validada = validarReceta(receta, recetaPedida);
+      if ("error" in validada) {
+        setMensaje(`Receta: ${validada.error}`);
+        return;
+      }
+      setRecetaEnviada(validada.receta);
+    } else setRecetaEnviada(null);
     setPreparing(
       tipoDocumento === "FACTURA" && datos.success
         ? { tipo: tipoDocumento, facturacion: datos.data }
@@ -421,7 +456,7 @@ export function PuntoDeVentaPrivada() {
                           0) >= p.stock ||
                         p.precio === null ||
                         p.precio <= 0 ||
-                        p.condicionVenta !== "VENTA_DIRECTA"
+                        !vendible(p)
                       }
                       onClick={() => agregar(p)}
                     >
@@ -455,6 +490,7 @@ export function PuntoDeVentaPrivada() {
                 setPagoVerificado(false);
                 setTipoDocumento("BOLETA");
                 setFacturacion(facturacionVacia);
+                setRecetaBorrador(null);
                 setMensaje("");
               }}
             >
@@ -514,6 +550,14 @@ export function PuntoDeVentaPrivada() {
               </p>
             )}
           </div>
+          {recetaPedida && receta && (
+            <RecetaForm
+              exigida={recetaPedida}
+              value={receta}
+              onChange={setRecetaBorrador}
+              disabled={bloqueado}
+            />
+          )}
           <fieldset className="pos-controles" disabled={bloqueado}>
             <legend>Descuento, documento y pago</legend>
             <div className="pos-pay">
@@ -704,6 +748,7 @@ export function PuntoDeVentaPrivada() {
             recibido={pago === "EFECTIVO" ? Number(recibido) : undefined}
             tipoOperacion={operation}
             documento={preparing}
+            receta={recetaEnviada ?? undefined}
             descuento={importeDescuento}
             totalEsperado={total}
             onBusy={setCobrando}
@@ -716,6 +761,8 @@ export function PuntoDeVentaPrivada() {
               setDescuento("");
               setTipoDocumento("BOLETA");
               setFacturacion(facturacionVacia);
+              setRecetaBorrador(null);
+              setRecetaEnviada(null);
               void cargar();
             }}
           />

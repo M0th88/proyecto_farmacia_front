@@ -69,6 +69,8 @@ const groups = [
       { label: "Inventario Histórico", href: "/inventario-historico" },
       { label: "Historial y Reportes", href: "/historial-y-reportes" },
       { label: "Caja del Día", href: "/caja-del-dia" },
+      { label: "Recetas", href: "/recetas" },
+      { label: "Libro de Controlados", href: "/libro-controlados" },
     ],
   },
 ];

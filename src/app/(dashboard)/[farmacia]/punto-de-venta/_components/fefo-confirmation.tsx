@@ -10,6 +10,7 @@ import {
   type DocumentoVenta,
   pesos,
 } from "@/lib/validation/punto-de-venta";
+import type { RecetaInput } from "@/lib/validation/recetas";
 import styles from "./fefo-confirmation.module.css";
 
 type Props = {
@@ -19,6 +20,7 @@ type Props = {
   recibido?: number;
   tipoOperacion: string;
   documento: DocumentoVenta;
+  receta?: RecetaInput;
   descuento: number;
   totalEsperado: number;
   onBusy: (busy: boolean) => void;
@@ -81,6 +83,7 @@ export function FefoConfirmation(props: Props) {
         totalEsperado: props.totalEsperado,
         descuento: props.descuento,
         documento: props.documento,
+        receta: props.receta,
         confirmacionFisica: true,
         motivoExcepcion: reason,
         lotes: chosen.map((l) => ({

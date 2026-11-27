@@ -3,6 +3,7 @@ import type { z } from "zod";
 import { Prisma } from "@/generated/privada/client";
 import { prismaPrivada } from "@/lib/db/prisma-privada";
 import { allocateFefo, aptStock, canOperate, sameAllocation } from "@/lib/fefo";
+import { registrarSalidasControladas } from "@/lib/private/controlados";
 import { stockDate } from "@/lib/private/stock-dates";
 import {
   type FefoPlan,
@@ -15,6 +16,12 @@ import {
   facturacionSchema,
   montoPos,
 } from "@/lib/validation/punto-de-venta";
+import {
+  hoyChile,
+  problemaReceta,
+  recetaExigida,
+  recetaRequerida,
+} from "@/lib/validation/recetas";
 
 type User = { id: number; rol: { nombre: string; permisos: string[] } };
 type Tx = Prisma.TransactionClient;
@@ -33,6 +40,7 @@ async function plan(
   });
   if (!branch) throw new Error("Selecciona una sucursal válida.");
   const candidates: PreparedLot[] = [];
+  const condiciones: string[] = [];
   let total = new Prisma.Decimal(0);
   for (const item of input.items) {
     const product = await tx.medicamento.findUnique({
@@ -42,10 +50,14 @@ async function plan(
       throw new Error(
         `Producto #${item.medicamentoId} inactivo o sin precio válido.`,
       );
-    if (product.condicionVenta !== "VENTA_DIRECTA")
+    if (
+      product.condicionVenta !== "VENTA_DIRECTA" &&
+      !recetaExigida(product.condicionVenta)
+    )
       throw new Error(
-        `${product.nombre}: requiere clasificación o validación de receta. Se conserva el bloqueo hasta disponer de ese procedimiento.`,
+        `${product.nombre}: falta clasificar su condición de venta antes de venderlo.`,
       );
+    condiciones.push(product.condicionVenta);
     total = total.add(product.precioVenta.mul(item.cantidad));
     const stocks = await tx.stock.findMany({
       where: {
@@ -79,6 +91,7 @@ async function plan(
       branch.permiteExcepcion &&
       !!branch.procedimiento &&
       canOperate(user, "fefo_excepcion"),
+    recetaRequerida: recetaRequerida(condiciones),
   };
 }
 export async function prepareSale(
@@ -167,6 +180,36 @@ export async function confirmSale(
       )
         throw new Error("Hay lotes ajenos al pedido.");
       const exception = !sameAllocation(input.lotes, current.sugeridos);
+      const errorReceta = problemaReceta(
+        input.receta,
+        current.recetaRequerida,
+        hoyChile(),
+      );
+      if (errorReceta) throw new Error(errorReceta);
+      const receta =
+        current.recetaRequerida && input.receta ? input.receta : null;
+      if (receta && receta.tipo !== "SIMPLE") {
+        const usada = await tx.receta.findFirst({
+          where: { tipo: receta.tipo, folio: receta.folio },
+          select: { ventaId: true },
+        });
+        if (usada)
+          throw new Error(
+            `La receta folio ${receta.folio} ya fue retenida${usada.ventaId ? ` en la venta #${usada.ventaId}` : ""}.`,
+          );
+      }
+      const recetaGuardada = receta
+        ? await tx.receta.create({
+            data: {
+              ...receta,
+              folio: receta.folio || null,
+              observaciones: receta.observaciones || null,
+              fechaEmision: new Date(`${receta.fechaEmision}T00:00:00Z`),
+              vigenteHasta: new Date(`${receta.vigenteHasta}T00:00:00Z`),
+              registradaPor: user.id,
+            },
+          })
+        : null;
       if (
         exception &&
         (!current.permiteExcepcion || !input.motivoExcepcion.trim())
@@ -212,6 +255,10 @@ export async function confirmSale(
           );
         const subtotal = product.precioVenta!.mul(chosen.cantidad);
         details.push({
+          recetaId:
+            recetaGuardada && recetaExigida(product.condicionVenta)
+              ? recetaGuardada.id
+              : null,
           medicamentoId: product.id,
           nombreProducto: product.nombre,
           loteId: stock.loteId,
@@ -267,6 +314,20 @@ export async function confirmSale(
             motivo: `Salida FEFO${exception ? ` · Excepción: ${input.motivoExcepcion}` : ""} · ${stockDate(new Date())}`,
           },
         });
+      if (recetaGuardada)
+        await tx.receta.update({
+          where: { id: recetaGuardada.id },
+          data: { ventaId: sale.id },
+        });
+      await registrarSalidasControladas(
+        tx,
+        {
+          id: sale.id,
+          usuarioId: user.id,
+          recetaId: recetaGuardada?.id ?? null,
+        },
+        details,
+      );
       return sale;
     },
     { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },

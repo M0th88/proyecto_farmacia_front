@@ -1,0 +1,72 @@
+.receta {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 16px;
+  padding: 14px;
+  border: 1px solid #f1c7cf;
+  border-radius: 12px;
+  background: #fff8f9;
+}
+
+.receta legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 0 6px;
+  font-weight: 800;
+  color: #1f2a24;
+}
+
+.exigida {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #c8102e;
+  color: #fff;
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ancho {
+  grid-column: 1 / -1;
+}
+
+.grid label {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  color: #69796f;
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.grid input,
+.grid select {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid #d9e2dc;
+  border-radius: 8px;
+  background: #fff;
+  color: #1f2a24;
+  font: inherit;
+  font-weight: 500;
+}
+
+.nota {
+  margin: 0;
+  color: #69796f;
+  font-size: var(--text-xs);
+}
+
+@media (max-width: 520px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

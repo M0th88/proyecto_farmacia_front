@@ -84,8 +84,9 @@ model Medicamento {
   categoria  CategoriaMedicamento?  @relation(fields: [categoriaId], references: [id])
   fichaChile FichaMedicamentoChile?
 
-  lotes         Lote[]
-  detallesVenta DetalleVenta[]
+  lotes                Lote[]
+  detallesVenta        DetalleVenta[]
+  registrosControlados RegistroControlado[]
 
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
@@ -165,28 +166,30 @@ enum TipoDocumentoVenta {
 }
 
 model Venta {
-  id               Int                 @id @default(autoincrement())
-  creadaEn         DateTime            @default(now())
-  metodoPago       MetodoPago
-  total            Decimal             @db.Decimal(12, 2)
-  recibido         Decimal?            @db.Decimal(12, 2)
-  vuelto           Decimal?            @db.Decimal(12, 2)
-  claveOperacion   String?             @unique
-  subtotal         Decimal             @default(0) @db.Decimal(12, 2)
-  descuento        Decimal             @default(0) @db.Decimal(12, 2)
-  neto             Decimal?            @db.Decimal(12, 2)
-  iva              Decimal?            @db.Decimal(12, 2)
-  tipoDocumento    TipoDocumentoVenta?
-  datosFacturacion Json?
-  detalles         DetalleVenta[]
-  sucursalId       Int?
-  usuarioId        Int?
-  tipoOperacion    String              @default("VENTA")
-  estado           String              @default("CONFIRMADA")
-  anuladaPor       Int?
-  anuladaEn        DateTime?
-  motivoAnulacion  String?
-  motivoExcepcion  String?
+  id                   Int                  @id @default(autoincrement())
+  creadaEn             DateTime             @default(now())
+  metodoPago           MetodoPago
+  total                Decimal              @db.Decimal(12, 2)
+  recibido             Decimal?             @db.Decimal(12, 2)
+  vuelto               Decimal?             @db.Decimal(12, 2)
+  claveOperacion       String?              @unique
+  subtotal             Decimal              @default(0) @db.Decimal(12, 2)
+  descuento            Decimal              @default(0) @db.Decimal(12, 2)
+  neto                 Decimal?             @db.Decimal(12, 2)
+  iva                  Decimal?             @db.Decimal(12, 2)
+  tipoDocumento        TipoDocumentoVenta?
+  datosFacturacion     Json?
+  detalles             DetalleVenta[]
+  sucursalId           Int?
+  usuarioId            Int?
+  tipoOperacion        String               @default("VENTA")
+  estado               String               @default("CONFIRMADA")
+  anuladaPor           Int?
+  anuladaEn            DateTime?
+  motivoAnulacion      String?
+  motivoExcepcion      String?
+  recetas              Receta[]
+  registrosControlados RegistroControlado[]
 
   @@index([creadaEn])
 }
@@ -202,13 +205,16 @@ model DetalleVenta {
   subtotal       Decimal     @db.Decimal(12, 2)
   stockId        Int?
   ubicacionId    Int?
+  recetaId       Int?
   venta          Venta       @relation(fields: [ventaId], references: [id])
+  receta         Receta?     @relation(fields: [recetaId], references: [id])
   medicamento    Medicamento @relation(fields: [medicamentoId], references: [id])
   lote           Lote        @relation(fields: [loteId], references: [id])
 
   @@index([ventaId])
   @@index([medicamentoId])
   @@index([loteId])
+  @@index([recetaId])
 }
 
 model UbicacionInventario {
@@ -228,8 +234,8 @@ model UbicacionInventario {
 model Stock {
   id Int @id @default(autoincrement())
 
-  cantidadBloqueada Int @default(0)
-  cuarentenas CasoCuarentena[]
+  cantidadBloqueada Int              @default(0)
+  cuarentenas       CasoCuarentena[]
 
   cantidad       Int       @default(0)
   fechaRecepcion DateTime?
@@ -247,18 +253,18 @@ model Stock {
 }
 
 model CasoCuarentena {
-  id Int @id @default(autoincrement())
-  stockId Int
-  stock Stock @relation(fields: [stockId], references: [id])
-  tipo String
-  cantidad Int
-  motivo String
-  registradoPor Int
-  creadoEn DateTime @default(now())
-  resolucion String?
+  id               Int       @id @default(autoincrement())
+  stockId          Int
+  stock            Stock     @relation(fields: [stockId], references: [id])
+  tipo             String
+  cantidad         Int
+  motivo           String
+  registradoPor    Int
+  creadoEn         DateTime  @default(now())
+  resolucion       String?
   motivoResolucion String?
-  resueltoPor Int?
-  resueltoEn DateTime?
+  resueltoPor      Int?
+  resueltoEn       DateTime?
 
   @@index([tipo, resueltoEn])
   @@index([stockId])
@@ -321,4 +327,74 @@ model RevisionInventario {
 
   @@index([estado])
   @@index([detalleVentaId])
+}
+
+enum TipoReceta {
+  SIMPLE
+  RETENIDA
+  CHEQUE
+}
+
+enum OrigenReceta {
+  FISICA
+  DIGITAL
+}
+
+/// Receta presentada en el POS. Las retenidas y cheque quedan en la farmacia
+/// y su folio no puede volver a usarse.
+model Receta {
+  id             Int          @id @default(autoincrement())
+  tipo           TipoReceta
+  origen         OrigenReceta
+  folio          String?
+  pacienteRut    String
+  pacienteNombre String
+  medicoRut      String
+  medicoNombre   String
+  fechaEmision   DateTime     @db.Date
+  vigenteHasta   DateTime     @db.Date
+  observaciones  String?
+  ventaId        Int?
+  registradaPor  Int?
+  creadaEn       DateTime     @default(now())
+
+  venta                Venta?               @relation(fields: [ventaId], references: [id])
+  detalles             DetalleVenta[]
+  registrosControlados RegistroControlado[]
+
+  @@index([pacienteRut])
+  @@index([tipo, folio])
+  @@index([ventaId])
+}
+
+enum TipoRegistroControlado {
+  APERTURA
+  ENTRADA
+  SALIDA
+  AJUSTE
+}
+
+/// Libro oficial digital de estupefacientes y psicotrópicos. El saldo es el
+/// del libro; se compara con el stock real para detectar descuadres.
+model RegistroControlado {
+  id            Int                    @id @default(autoincrement())
+  medicamentoId Int
+  tipo          TipoRegistroControlado
+  cantidad      Int
+  saldo         Int
+  loteId        Int?
+  recetaId      Int?
+  ventaId       Int?
+  usuarioId     Int?
+  detalle       String
+  firmadoPor    Int?
+  firmadoEn     DateTime?
+  creadoEn      DateTime               @default(now())
+
+  medicamento Medicamento @relation(fields: [medicamentoId], references: [id])
+  receta      Receta?     @relation(fields: [recetaId], references: [id])
+  venta       Venta?      @relation(fields: [ventaId], references: [id])
+
+  @@index([medicamentoId, id])
+  @@index([firmadoEn])
 }

@@ -15,6 +15,12 @@ export const PRIVATE_SECTIONS = [
   { key: "proveedores", label: "Proveedores", href: "/privada/proveedores" },
   { key: "compras", label: "Compras", href: "/privada/compras" },
   { key: "caja", label: "Caja del Día", href: "/privada/caja-del-dia" },
+  { key: "recetas", label: "Recetas", href: "/privada/recetas" },
+  {
+    key: "controlados",
+    label: "Libro de Controlados",
+    href: "/privada/libro-controlados",
+  },
   { key: "ventas", label: "Historial", href: "/privada/historial-y-reportes" },
   {
     key: "indicadores",

@@ -1,5 +1,6 @@
 import "server-only";
 import type { PharmacyDb } from "@/lib/db/pharmacy-db";
+import { prismaPrivada } from "@/lib/db/prisma-privada";
 import { calcularTotales } from "@/lib/validation/punto-de-venta";
 
 export const TIPOS_REPORTE = {
@@ -7,21 +8,37 @@ export const TIPOS_REPORTE = {
     titulo: "Ventas",
     permisos: ["ventas", "indicadores"],
     usaFechas: true,
+    soloPrivada: false,
   },
   productos: {
     titulo: "Productos vendidos",
     permisos: ["ventas", "indicadores"],
     usaFechas: true,
+    soloPrivada: false,
   },
   inventario: {
     titulo: "Inventario por lote",
     permisos: ["inventario"],
     usaFechas: false,
+    soloPrivada: false,
   },
   categorias: {
     titulo: "Stock por categoría",
     permisos: ["inventario", "indicadores"],
     usaFechas: false,
+    soloPrivada: false,
+  },
+  recetas: {
+    titulo: "Recetas recibidas",
+    permisos: ["recetas", "controlados"],
+    usaFechas: true,
+    soloPrivada: true,
+  },
+  libro: {
+    titulo: "Libro de estupefacientes y psicotrópicos",
+    permisos: ["controlados", "controlados_firmar"],
+    usaFechas: true,
+    soloPrivada: true,
   },
 } as const;
 export type TipoReporte = keyof typeof TIPOS_REPORTE;
@@ -386,6 +403,115 @@ async function reporteCategorias(
   };
 }
 
+async function reporteRecetas(
+  gte: Date,
+  lt: Date,
+): Promise<Omit<Reporte, "titulo" | "subtitulo">> {
+  const recetas = await prismaPrivada.receta.findMany({
+    where: { creadaEn: { gte, lt } },
+    orderBy: { id: "asc" },
+  });
+  const tipo = { SIMPLE: "Simple", RETENIDA: "Retenida", CHEQUE: "Cheque" };
+  const filas = recetas.map((r) => ({
+    registro: fechaHoraChile(r.creadaEn),
+    tipo: tipo[r.tipo],
+    origen: r.origen === "DIGITAL" ? "Digital" : "Física",
+    folio: r.folio ?? "",
+    paciente: `${r.pacienteNombre} (${r.pacienteRut})`,
+    medico: `${r.medicoNombre} (${r.medicoRut})`,
+    emision: r.fechaEmision.toISOString().slice(0, 10),
+    vigencia: r.vigenteHasta.toISOString().slice(0, 10),
+    venta: r.ventaId,
+  }));
+  return {
+    columnas: [
+      { clave: "registro", titulo: "Registro", ancho: 16 },
+      { clave: "tipo", titulo: "Tipo", ancho: 10 },
+      { clave: "origen", titulo: "Formato", ancho: 9 },
+      { clave: "folio", titulo: "Folio", ancho: 12 },
+      { clave: "paciente", titulo: "Paciente", ancho: 30 },
+      { clave: "medico", titulo: "Médico", ancho: 30 },
+      { clave: "emision", titulo: "Emisión", ancho: 11 },
+      { clave: "vigencia", titulo: "Vigencia", ancho: 11 },
+      { clave: "venta", titulo: "Venta", formato: "entero", ancho: 8 },
+    ],
+    filas,
+    totales: {
+      registro: `${filas.length} recetas`,
+      tipo: null,
+      origen: null,
+      folio: null,
+      paciente: null,
+      medico: null,
+      emision: null,
+      vigencia: null,
+      venta: null,
+    },
+  };
+}
+
+async function reporteLibro(
+  gte: Date,
+  lt: Date,
+): Promise<Omit<Reporte, "titulo" | "subtitulo">> {
+  const registros = await prismaPrivada.registroControlado.findMany({
+    where: { creadoEn: { gte, lt } },
+    orderBy: [{ medicamentoId: "asc" }, { id: "asc" }],
+    include: {
+      medicamento: { select: { nombre: true } },
+      receta: { select: { tipo: true, folio: true, pacienteRut: true } },
+    },
+  });
+  const ids = [
+    ...new Set(
+      registros.flatMap((r) =>
+        [r.usuarioId, r.firmadoPor].filter((x): x is number => !!x),
+      ),
+    ),
+  ];
+  const usuarios = new Map(
+    (
+      await prismaPrivada.usuario.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, nombre: true, apellido: true },
+      })
+    ).map((u) => [u.id, [u.nombre, u.apellido].filter(Boolean).join(" ")]),
+  );
+  const tipo = {
+    APERTURA: "Apertura",
+    ENTRADA: "Entrada",
+    SALIDA: "Salida",
+    AJUSTE: "Ajuste",
+  };
+  const filas = registros.map((r) => ({
+    numero: r.id,
+    fecha: fechaHoraChile(r.creadoEn),
+    medicamento: r.medicamento.nombre,
+    tipo: tipo[r.tipo],
+    cantidad: r.tipo === "SALIDA" ? -r.cantidad : r.cantidad,
+    saldo: r.saldo,
+    detalle: r.receta
+      ? `${r.detalle} · Receta ${r.receta.folio ?? ""} · ${r.receta.pacienteRut}`
+      : r.detalle,
+    firma: r.firmadoEn
+      ? `${usuarios.get(r.firmadoPor ?? 0) ?? "Q.F."} ${fechaHoraChile(r.firmadoEn)}`
+      : "PENDIENTE",
+  }));
+  return {
+    columnas: [
+      { clave: "numero", titulo: "N°", formato: "entero", ancho: 7 },
+      { clave: "fecha", titulo: "Fecha", ancho: 16 },
+      { clave: "medicamento", titulo: "Medicamento", ancho: 26 },
+      { clave: "tipo", titulo: "Tipo", ancho: 10 },
+      { clave: "cantidad", titulo: "Cantidad", formato: "entero", ancho: 10 },
+      { clave: "saldo", titulo: "Saldo", formato: "entero", ancho: 9 },
+      { clave: "detalle", titulo: "Detalle", ancho: 36 },
+      { clave: "firma", titulo: "Firma Q.F.", ancho: 26 },
+    ],
+    filas,
+  };
+}
+
 export async function generarReporte(
   db: PharmacyDb,
   tipo: TipoReporte,
@@ -400,7 +526,11 @@ export async function generarReporte(
         ? await reporteProductos(db, rango.gte, rango.lt)
         : tipo === "inventario"
           ? await reporteInventario(db)
-          : await reporteCategorias(db);
+          : tipo === "recetas"
+            ? await reporteRecetas(rango.gte, rango.lt)
+            : tipo === "libro"
+              ? await reporteLibro(rango.gte, rango.lt)
+              : await reporteCategorias(db);
   const nombreFarmacia =
     farmacia === "asistencial" ? "Farmacia Asistencial" : "Farmacia Privada";
   const periodo = usaFechas
