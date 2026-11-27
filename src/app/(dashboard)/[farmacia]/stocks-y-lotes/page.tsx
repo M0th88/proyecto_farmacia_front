@@ -1,11 +1,10 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { requirePharmacySection } from "@/lib/auth/pharmacy-permissions";
 import {
   type PharmacyParams,
   resolvePharmacy,
 } from "@/lib/auth/pharmacy-scope";
-import { getPharmacyUser } from "@/lib/auth/session";
 import { pharmacyDb } from "@/lib/db/pharmacy-db";
 import {
   paginateStock,
@@ -20,13 +19,7 @@ import StockLoading from "./loading";
 export const instant = false;
 async function StockContent({ params }: PharmacyParams) {
   const pharmacy = await resolvePharmacy(params);
-  const user = await getPharmacyUser(pharmacy);
-  if (!user) redirect(`/login/${pharmacy}`);
-  if (
-    user.rol.nombre !== "Administrador" &&
-    !user.rol.permisos.includes("inventario")
-  )
-    redirect(`/${pharmacy}/sin-acceso`);
+  const user = await requirePharmacySection(pharmacy, "/stocks-y-lotes");
   const snapshot = await stockSnapshot(pharmacyDb(pharmacy));
   const queryClient = getQueryClient();
   queryClient.setQueryData([...stockQueryKey, user.id, "", []], {

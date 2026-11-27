@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { Pharmacy } from "@/lib/auth/pharmacies";
 import { pharmacyRoute } from "@/lib/auth/pharmacy-route";
 import { getPharmacyUser } from "@/lib/auth/session";
+import { roleHasPermission } from "@/lib/private/permissions";
 import {
   assignProductBarcode,
   createProduct,
@@ -16,11 +17,7 @@ import { productProfileSchema } from "@/lib/types/productos";
 
 async function catalogUser(pharmacy: Pharmacy) {
   const user = await getPharmacyUser(pharmacy);
-  return user &&
-    (user.rol.nombre === "Administrador" ||
-      user.rol.permisos.includes("catalogo"))
-    ? user
-    : null;
+  return user && roleHasPermission(user.rol, "catalogo") ? user : null;
 }
 const denied = () =>
   Response.json(

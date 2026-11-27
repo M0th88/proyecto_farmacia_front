@@ -1,11 +1,10 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { requirePharmacySection } from "@/lib/auth/pharmacy-permissions";
 import {
   type PharmacyParams,
   resolvePharmacy,
 } from "@/lib/auth/pharmacy-scope";
-import { requirePharmacyUser } from "@/lib/auth/session";
 import { pharmacyDb } from "@/lib/db/pharmacy-db";
 import { listUsersPage, userListSchema } from "@/lib/private/users";
 import { getQueryClient } from "@/lib/query-client";
@@ -18,8 +17,7 @@ import { usersQueryKey } from "./actions";
 export const instant = false;
 async function UsersContent({ params }: PharmacyParams) {
   const pharmacy = await resolvePharmacy(params);
-  const user = await requirePharmacyUser(pharmacy);
-  if (user.rol.nombre !== "Administrador") redirect(`/${pharmacy}/sin-acceso`);
+  const user = await requirePharmacySection(pharmacy, "/usuarios");
   const queryClient = getQueryClient();
   await queryClient.prefetchInfiniteQuery({
     queryKey: [...usersQueryKey, user.id, "", []],

@@ -1,17 +1,20 @@
 "use client";
 import { type Dispatch, type SetStateAction, useEffect, useRef } from "react";
 import type { Pharmacy } from "@/lib/auth/pharmacies";
+import type { PrivatePermission } from "@/lib/private/permissions";
 import styles from "./app-shell.module.css";
 import { SidebarNav } from "./sidebar-nav";
 
 type Props = {
   selected: Pharmacy;
+  permissions: PrivatePermission[];
   sidebarOpen: boolean;
   mobileOpen: boolean;
   setMobileOpen: Dispatch<SetStateAction<boolean>>;
 };
 export function AppSidebar({
   selected,
+  permissions,
   sidebarOpen,
   mobileOpen,
   setMobileOpen,
@@ -43,7 +46,7 @@ export function AppSidebar({
         inert={!sidebarOpen}
       >
         <div className={styles.sidebarBody}>
-          <SidebarNav pharmacy={selected} />
+          <SidebarNav pharmacy={selected} permissions={permissions} />
         </div>
       </aside>
       {mobileOpen && (
@@ -100,6 +103,7 @@ export function AppSidebar({
         <div className={styles.sidebarBody}>
           <SidebarNav
             pharmacy={selected}
+            permissions={permissions}
             onNavigate={() => setMobileOpen(false)}
           />
         </div>

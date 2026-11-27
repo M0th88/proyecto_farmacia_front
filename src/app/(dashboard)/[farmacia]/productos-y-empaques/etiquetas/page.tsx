@@ -1,11 +1,10 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { requirePharmacySection } from "@/lib/auth/pharmacy-permissions";
 import {
   type PharmacyParams,
   resolvePharmacy,
 } from "@/lib/auth/pharmacy-scope";
-import { getPharmacyUser } from "@/lib/auth/session";
 import { pharmacyDb } from "@/lib/db/pharmacy-db";
 import { productLabel } from "@/lib/private/products";
 import { EtiquetasProductos } from "./_components/etiquetas-productos";
@@ -18,14 +17,7 @@ type Props = PharmacyParams & {
 
 async function ContenidoEtiquetas({ params, searchParams }: Props) {
   const pharmacy = await resolvePharmacy(params);
-  const user = await getPharmacyUser(pharmacy);
-  if (!user) redirect(`/login/${pharmacy}`);
-  if (
-    user.rol.nombre !== "Administrador" &&
-    !user.rol.permisos.includes("catalogo")
-  ) {
-    redirect(`/${pharmacy}/sin-acceso`);
-  }
+  const user = await requirePharmacySection(pharmacy, "/productos-y-empaques");
 
   const { producto } = await searchParams;
   const id = typeof producto === "string" ? Number(producto) : NaN;

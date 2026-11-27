@@ -3,6 +3,7 @@ import { FileText, Printer, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePharmacy } from "@/components/pharmacy-provider";
+import type { PrivatePermission } from "@/lib/private/permissions";
 import {
   type Item,
   type MedioPago,
@@ -31,10 +32,22 @@ const facturacionVacia: Facturacion = {
   email: "",
 };
 
-type VentaConfirmada = { id: number; total: number; vuelto: number | null };
+type VentaConfirmada = {
+  id: number;
+  total: number;
+  vuelto: number | null;
+  cobroId: string;
+};
 
-export function PuntoDeVenta() {
+export function PuntoDeVenta({
+  permissions,
+}: {
+  permissions: PrivatePermission[];
+}) {
   const pharmacy = usePharmacy();
+  const puedeVerHistorial = permissions.includes("ventas");
+  const puedeVerStock = permissions.includes("inventario");
+  const puedeVerCaja = permissions.includes("caja");
   const [productos, setProductos] = useState<Producto[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [busqueda, setBusqueda] = useState("");
@@ -50,11 +63,19 @@ export function PuntoDeVenta() {
   const [mensaje, setMensaje] = useState("");
   const [cargando, setCargando] = useState(true);
   const [cobrando, setCobrando] = useState(false);
-  const cobro = useRef<string | null>(null);
+  const cobro = useRef<{ id: string; body: string } | null>(null);
   const enCurso = useRef(false);
   const bloqueado = cobrando || reintentar;
   const lector = useRef<HTMLInputElement>(null);
   const confirmacion = useRef<HTMLAnchorElement>(null);
+  const documentoUrl = ultimaVenta
+    ? `/${pharmacy}/historial-y-reportes/${ultimaVenta.id}`
+    : "";
+  const documentoParams = new URLSearchParams();
+  if (ultimaVenta && !puedeVerHistorial)
+    documentoParams.set("cobro", ultimaVenta.cobroId);
+  const documentoQuery = documentoParams.toString();
+  documentoParams.set("imprimir", "1");
   useEffect(() => {
     if (ultimaVenta) confirmacion.current?.focus();
   }, [ultimaVenta]);
@@ -193,8 +214,9 @@ export function PuntoDeVenta() {
         );
         return;
       }
-      cobro.current = JSON.stringify({
-        cobroId: crypto.randomUUID(),
+      const cobroId = crypto.randomUUID();
+      const body = JSON.stringify({
+        cobroId,
         metodoPago: pago,
         recibido: pago === "EFECTIVO" ? Number(recibido) : undefined,
         descuento: importeDescuento,
@@ -208,23 +230,25 @@ export function PuntoDeVenta() {
           cantidad,
         })),
       });
+      cobro.current = { id: cobroId, body };
     }
 
     enCurso.current = true;
     setCobrando(true);
     setMensaje("");
     try {
+      const solicitud = cobro.current;
       const respuesta = await fetch(`/api/${pharmacy}/ventas`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: cobro.current,
+        body: solicitud.body,
         signal: AbortSignal.timeout(15000),
       });
       const data = await respuesta.json();
       if (!respuesta.ok) {
         if (
           [400, 409].includes(respuesta.status) ||
-          (respuesta.status === 401 && !reintentar)
+          ([401, 403].includes(respuesta.status) && !reintentar)
         ) {
           cobro.current = null;
           setReintentar(false);
@@ -239,7 +263,7 @@ export function PuntoDeVenta() {
       }
       cobro.current = null;
       setReintentar(false);
-      setUltimaVenta(data);
+      setUltimaVenta({ ...data, cobroId: solicitud.id });
       setItems([]);
       setRecibido("");
       setDescuento("");
@@ -267,15 +291,23 @@ export function PuntoDeVenta() {
         <div>
           <h1>POS</h1>
           <span>Escanea, prepara el pedido y registra el cobro.</span>
-          <nav className="pos-accesos" aria-label="Accesos del POS">
-            <Link
-              href={`/${pharmacy}/historial-y-reportes#operaciones-recientes`}
-            >
-              Historial de ventas
-            </Link>
-            <Link href={`/${pharmacy}/stocks-y-lotes`}>Stock y lotes</Link>
-            <Link href={`/${pharmacy}/caja-del-dia`}>Caja</Link>
-          </nav>
+          {(puedeVerHistorial || puedeVerStock || puedeVerCaja) && (
+            <nav className="pos-accesos" aria-label="Accesos del POS">
+              {puedeVerHistorial && (
+                <Link
+                  href={`/${pharmacy}/historial-y-reportes#operaciones-recientes`}
+                >
+                  Historial de ventas
+                </Link>
+              )}
+              {puedeVerStock && (
+                <Link href={`/${pharmacy}/stocks-y-lotes`}>Stock y lotes</Link>
+              )}
+              {puedeVerCaja && (
+                <Link href={`/${pharmacy}/caja-del-dia`}>Caja</Link>
+              )}
+            </nav>
+          )}
         </div>
         <button disabled={cargando || bloqueado} onClick={() => void cargar()}>
           Actualizar catálogo
@@ -303,14 +335,20 @@ export function PuntoDeVenta() {
           <div className="pos-confirmacion-acciones">
             <Link
               ref={confirmacion}
-              href={`/${pharmacy}/historial-y-reportes/${ultimaVenta.id}`}
+              href={
+                documentoQuery
+                  ? `${documentoUrl}?${documentoQuery}`
+                  : documentoUrl
+              }
+              prefetch={false}
             >
               <FileText size={17} aria-hidden="true" />
               Ver documento
             </Link>
             <Link
               className="pos-imprimir"
-              href={`/${pharmacy}/historial-y-reportes/${ultimaVenta.id}?imprimir=1`}
+              href={`${documentoUrl}?${documentoParams}`}
+              prefetch={false}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Imprimir (abre en otra pestaña)"

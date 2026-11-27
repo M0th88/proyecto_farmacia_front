@@ -1,13 +1,13 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import styles from "@/components/admin-table.module.css";
 import { UserProfileForm } from "@/components/user-profile-form";
+import { requirePharmacySection } from "@/lib/auth/pharmacy-permissions";
 import {
   type PharmacyParams,
   resolvePharmacy,
 } from "@/lib/auth/pharmacy-scope";
-import { requirePharmacyUser } from "@/lib/auth/session";
 import { pharmacyDb } from "@/lib/db/pharmacy-db";
 import { serializeUser, userSelect } from "@/lib/private/users";
 
@@ -20,8 +20,7 @@ async function EditContent({
   searchParams: Promise<{ usuario?: string }>;
 }) {
   const pharmacy = await resolvePharmacy(params);
-  const admin = await requirePharmacyUser(pharmacy);
-  if (admin.rol.nombre !== "Administrador") redirect(`/${pharmacy}/sin-acceso`);
+  const admin = await requirePharmacySection(pharmacy, "/usuarios");
   const { usuario } = await searchParams;
   const id = usuario === undefined ? null : Number(usuario);
   if (id !== null && (!Number.isSafeInteger(id) || id < 1)) notFound();

@@ -1,4 +1,14 @@
-export default function ProveedoresPage() {
+import { requirePharmacySection } from "@/lib/auth/pharmacy-permissions";
+import {
+  type PharmacyParams,
+  resolvePharmacy,
+} from "@/lib/auth/pharmacy-scope";
+
+export const instant = false;
+
+export default async function ProveedoresPage({ params }: PharmacyParams) {
+  const pharmacy = await resolvePharmacy(params);
+  await requirePharmacySection(pharmacy, "/proveedores");
   return (
     <section className="pos-shell">
       <header className="pos-header">

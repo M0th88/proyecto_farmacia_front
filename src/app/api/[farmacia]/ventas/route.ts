@@ -2,6 +2,7 @@ import { z } from "zod";
 import { Prisma } from "@/generated/privada/client";
 import { pharmacyRoute } from "@/lib/auth/pharmacy-route";
 import { getPharmacyUser } from "@/lib/auth/session";
+import { roleHasPermission } from "@/lib/private/permissions";
 import {
   calcularTotales,
   facturacionSchema,
@@ -33,8 +34,14 @@ const entrada = z.object({
 });
 
 export const GET = pharmacyRoute(async (_request, pharmacy, db) => {
-  if (!(await getPharmacyUser(pharmacy)))
+  const user = await getPharmacyUser(pharmacy);
+  if (!user)
     return Response.json({ error: "Debes iniciar sesión." }, { status: 401 });
+  if (!roleHasPermission(user.rol, "ventas"))
+    return Response.json(
+      { error: "Tu perfil no tiene permiso para esta operación." },
+      { status: 403 },
+    );
   try {
     const ventas = await db.venta.findMany({
       take: 30,
@@ -74,8 +81,14 @@ export const GET = pharmacyRoute(async (_request, pharmacy, db) => {
 });
 
 export const POST = pharmacyRoute(async (request, pharmacy, db) => {
-  if (!(await getPharmacyUser(pharmacy)))
+  const user = await getPharmacyUser(pharmacy);
+  if (!user)
     return Response.json({ error: "Debes iniciar sesión." }, { status: 401 });
+  if (!roleHasPermission(user.rol, "pos"))
+    return Response.json(
+      { error: "Tu perfil no tiene permiso para esta operación." },
+      { status: 403 },
+    );
   const parsed = entrada.safeParse(await request.json().catch(() => null));
   if (!parsed.success)
     return Response.json(

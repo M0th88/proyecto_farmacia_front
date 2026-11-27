@@ -4,6 +4,7 @@ import { noAdmin, pharmacyAdmin } from "@/lib/private/admin";
 import {
   ALL_PRIVATE_PERMISSIONS,
   PRIVATE_SECTIONS,
+  rolePermissions,
 } from "@/lib/private/permissions";
 
 const permiso = z.enum(ALL_PRIVATE_PERMISSIONS);
@@ -28,7 +29,7 @@ const roleSelect = {
 
 export const GET = pharmacyRoute(async (request, pharmacy, db) => {
   if (!(await pharmacyAdmin(pharmacy))) return noAdmin();
-  const roles = await db.rol.findMany({
+  const storedRoles = await db.rol.findMany({
     orderBy: { nombre: "asc" },
     select: {
       id: true,
@@ -38,6 +39,10 @@ export const GET = pharmacyRoute(async (request, pharmacy, db) => {
       _count: { select: { usuarios: true } },
     },
   });
+  const roles = storedRoles.map((role) => ({
+    ...role,
+    permisos: rolePermissions(role),
+  }));
   const params = new URL(request.url).searchParams;
   if (!params.has("page")) return Response.json(roles);
   const parsed = z

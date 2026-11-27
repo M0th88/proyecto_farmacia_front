@@ -16,6 +16,7 @@ export type DashboardUser = {
 
 type Props = {
   selected: Pharmacy;
+  canUsePos: boolean;
   user?: DashboardUser;
   sidebarOpen: boolean;
   mobileOpen: boolean;
@@ -23,6 +24,7 @@ type Props = {
 };
 export function AppNavbar({
   selected,
+  canUsePos,
   user,
   sidebarOpen,
   mobileOpen,
@@ -76,7 +78,7 @@ export function AppNavbar({
         />
       </div>
       <div className={styles.navbarEnd}>
-        {
+        {canUsePos && (
           <Link
             href={puntoDeVenta}
             className={styles.posLink}
@@ -85,7 +87,7 @@ export function AppNavbar({
             <ShoppingCart size={18} aria-hidden="true" />
             <span>POS</span>
           </Link>
-        }
+        )}
         <div
           ref={navMenu}
           className={styles.navMenu}

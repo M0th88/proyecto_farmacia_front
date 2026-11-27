@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { connection } from "next/server";
+import { requirePharmacySection } from "@/lib/auth/pharmacy-permissions";
 import {
   type PharmacyParams,
   resolvePharmacy,
 } from "@/lib/auth/pharmacy-scope";
-import { requirePharmacyUser } from "@/lib/auth/session";
 import { pharmacyDb } from "@/lib/db/pharmacy-db";
+import { roleHasPermission } from "@/lib/private/permissions";
 
 import { mediosPago } from "@/lib/types/punto-de-venta";
 import { pesos } from "@/lib/validation/punto-de-venta";
@@ -22,7 +23,9 @@ const diaChile = (fecha: Date) =>
 
 export default async function CajaDelDiaPage({ params }: PharmacyParams) {
   const pharmacy = await resolvePharmacy(params);
-  await requirePharmacyUser(pharmacy);
+  const user = await requirePharmacySection(pharmacy, "/caja-del-dia");
+  const puedeUsarPos = roleHasPermission(user.rol, "pos");
+  const puedeVerHistorial = roleHasPermission(user.rol, "ventas");
   await connection();
   const ahora = new Date();
   const hoy = diaChile(ahora);
@@ -49,14 +52,20 @@ export default async function CajaDelDiaPage({ params }: PharmacyParams) {
         <div>
           <h1>Caja del Día</h1>
           <span>Resumen de las ventas internas registradas hoy en Chile.</span>
-          <p>
-            <Link href={`/${pharmacy}/punto-de-venta`}>Ir al POS</Link>
-            <Link
-              href={`/${pharmacy}/historial-y-reportes#operaciones-recientes`}
-            >
-              Historial de ventas
-            </Link>
-          </p>
+          {(puedeUsarPos || puedeVerHistorial) && (
+            <p>
+              {puedeUsarPos && (
+                <Link href={`/${pharmacy}/punto-de-venta`}>Ir al POS</Link>
+              )}
+              {puedeVerHistorial && (
+                <Link
+                  href={`/${pharmacy}/historial-y-reportes#operaciones-recientes`}
+                >
+                  Historial de ventas
+                </Link>
+              )}
+            </p>
+          )}
         </div>
       </header>
       <div className="pos-metrics">

@@ -1,9 +1,16 @@
 import { pharmacyRoute } from "@/lib/auth/pharmacy-route";
 import { getPharmacyUser } from "@/lib/auth/session";
+import { roleHasPermission } from "@/lib/private/permissions";
 
 export const GET = pharmacyRoute(async (_request, pharmacy, db) => {
-  if (!(await getPharmacyUser(pharmacy)))
+  const user = await getPharmacyUser(pharmacy);
+  if (!user)
     return Response.json({ error: "Debes iniciar sesión." }, { status: 401 });
+  if (!roleHasPermission(user.rol, "pos"))
+    return Response.json(
+      { error: "Tu perfil no tiene permiso para esta operación." },
+      { status: 403 },
+    );
   try {
     const medicamentos = await db.medicamento.findMany({
       where: { activo: true },

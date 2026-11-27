@@ -6,8 +6,20 @@ import {
 } from "@/lib/auth/identity";
 import { pharmacyRoute } from "@/lib/auth/pharmacy-route";
 import { getPharmacyUser } from "@/lib/auth/session";
+import { rolePermissions } from "@/lib/private/permissions";
 import { serializeUser, userSelect } from "@/lib/private/users";
 import { ownProfileSchema } from "@/lib/types/usuarios-y-roles";
+
+export const GET = pharmacyRoute(async (_request, pharmacy) => {
+  const user = await getPharmacyUser(pharmacy);
+  const headers = { "Cache-Control": "private, no-store" };
+  if (!user)
+    return Response.json(
+      { error: "Debes iniciar sesión." },
+      { status: 401, headers },
+    );
+  return Response.json(rolePermissions(user.rol), { headers });
+});
 
 export const PATCH = pharmacyRoute(async (request, pharmacy, db) => {
   const user = await getPharmacyUser(pharmacy);

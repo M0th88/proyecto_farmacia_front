@@ -10,45 +10,50 @@ import type { DashboardData } from "@/lib/types/panel";
 
 export async function dashboardSnapshot(
   db = prismaPrivada,
+  access = { sales: true, inventory: true },
 ): Promise<DashboardData> {
   const now = new Date();
   const today = stockDate(now);
   const start = new Date(stockExpiry(panelDay(today, -60)).getTime() + 1);
   const [sales, products] = await Promise.all([
-    db.venta.findMany({
-      where: { creadaEn: { gte: start, lte: now } },
-      orderBy: { creadaEn: "desc" },
-      select: {
-        id: true,
-        creadaEn: true,
-        total: true,
-        metodoPago: true,
-        detalles: {
-          select: {
-            medicamentoId: true,
-            cantidad: true,
-            subtotal: true,
-            medicamento: { select: { nombre: true } },
-          },
-        },
-      },
-    }),
-    db.medicamento.findMany({
-      select: {
-        id: true,
-        nombre: true,
-        activo: true,
-        stockMinimo: true,
-        lotes: {
+    access.sales
+      ? db.venta.findMany({
+          where: { creadaEn: { gte: start, lte: now } },
+          orderBy: { creadaEn: "desc" },
           select: {
             id: true,
-            numeroLote: true,
-            fechaVencimiento: true,
-            stocks: { select: { cantidad: true } },
+            creadaEn: true,
+            total: true,
+            metodoPago: true,
+            detalles: {
+              select: {
+                medicamentoId: true,
+                cantidad: true,
+                subtotal: true,
+                medicamento: { select: { nombre: true } },
+              },
+            },
           },
-        },
-      },
-    }),
+        })
+      : [],
+    access.inventory
+      ? db.medicamento.findMany({
+          select: {
+            id: true,
+            nombre: true,
+            activo: true,
+            stockMinimo: true,
+            lotes: {
+              select: {
+                id: true,
+                numeroLote: true,
+                fechaVencimiento: true,
+                stocks: { select: { cantidad: true } },
+              },
+            },
+          },
+        })
+      : [],
   ]);
   const inventory = { vigente: 0, proximo: 0, vencido: 0 };
   const lows: DashboardData["bajos"] = [];

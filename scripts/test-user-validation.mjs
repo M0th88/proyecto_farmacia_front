@@ -219,7 +219,10 @@ assert.equal(hashes, 1);
 assert.equal(users[0].telefono, "+56221234567");
 admin = false;
 assert.equal((await api.POST(request("POST", profile))).status, 403);
-let ownSession = { id: 10 };
+let ownSession = {
+  id: 10,
+  rol: { nombre: "Cajero", permisos: ["inicio", "pos", "caja", "ventas"] },
+};
 let ownWrites = 0;
 const ownApiDeps = {
   bcrypt: {
@@ -231,6 +234,7 @@ const ownApiDeps = {
     },
   },
   "@/lib/auth/session": { getPharmacyUser: async () => ownSession },
+  "@/lib/private/permissions": load("../src/lib/private/permissions.ts"),
   "@/lib/db/prisma-privada": {
     prismaPrivada: {
       usuario: {
@@ -269,6 +273,22 @@ const ownApi = load("../src/app/api/[farmacia]/perfil/route.ts", {
       ),
   },
 });
+const sessionPermissions = await ownApi.GET(request("GET"));
+assert.equal(
+  sessionPermissions.headers.get("Cache-Control"),
+  "private, no-store",
+);
+assert.deepEqual(await sessionPermissions.json(), [
+  "inicio",
+  "pos",
+  "caja",
+  "ventas",
+]);
+ownSession.rol = { nombre: "Bodega", permisos: ["inicio", "inventario"] };
+assert.deepEqual(await (await ownApi.GET(request("GET"))).json(), [
+  "inicio",
+  "inventario",
+]);
 for (const change of [
   { id: 99, nombre: "Ajeno" },
   { rolId: 1 },
@@ -304,6 +324,7 @@ assert.equal(
   400,
 );
 ownSession = null;
+assert.equal((await ownApi.GET(request("GET"))).status, 401);
 assert.equal(
   (await ownApi.PATCH(request("PATCH", { nombre: "Sin sesión" }))).status,
   401,

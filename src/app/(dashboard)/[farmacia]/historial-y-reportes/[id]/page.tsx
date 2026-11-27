@@ -1,9 +1,11 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { z } from "zod";
 import { pharmacies } from "@/lib/auth/pharmacies";
 import { resolvePharmacy } from "@/lib/auth/pharmacy-scope";
 import { requirePharmacyUser } from "@/lib/auth/session";
 import { pharmacyDb } from "@/lib/db/pharmacy-db";
+import { roleHasPermission } from "@/lib/private/permissions";
 import { mediosPago } from "@/lib/types/punto-de-venta";
 import {
   camposFacturacion,
@@ -15,21 +17,38 @@ import styles from "./_components/documento-venta.module.css";
 import { ImprimirVenta } from "./_components/imprimir-venta";
 import { OperacionesDeVenta } from "./_components/operaciones-de-venta";
 
+export const instant = false;
+
 export default async function DocumentoVentaPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string; farmacia: string }>;
-  searchParams: Promise<{ imprimir?: string | string[] }>;
+  searchParams: Promise<{
+    imprimir?: string | string[];
+    cobro?: string | string[];
+  }>;
 }) {
   const pharmacy = await resolvePharmacy(params);
-  await requirePharmacyUser(pharmacy);
-  const [{ id }, { imprimir }] = await Promise.all([params, searchParams]);
+  const { rol } = await requirePharmacyUser(pharmacy);
+  const puedeVerHistorial = roleHasPermission(rol, "ventas");
+  const puedeUsarPos = roleHasPermission(rol, "pos");
+  const [{ id }, { imprimir, cobro }] = await Promise.all([
+    params,
+    searchParams,
+  ]);
   const numeroVenta = Number(id);
   if (!/^\d{1,10}$/.test(id) || numeroVenta < 1 || numeroVenta > 2_147_483_647)
     notFound();
+  const where: { id: number; claveOperacion?: string } = { id: numeroVenta };
+  if (!puedeVerHistorial) {
+    const comprobantePos = z.uuid().safeParse(cobro);
+    if (!puedeUsarPos || !comprobantePos.success)
+      redirect(`/${pharmacy}/sin-acceso`);
+    where.claveOperacion = comprobantePos.data;
+  }
   const venta = await pharmacyDb(pharmacy).venta.findUnique({
-    where: { id: numeroVenta },
+    where,
     include: {
       detalles: {
         orderBy: { id: "asc" },
@@ -67,12 +86,16 @@ export default async function DocumentoVentaPage({
         <div>
           <h1>Venta #{venta.id}</h1>
           <p>
-            <Link
-              href={`/${pharmacy}/historial-y-reportes#operaciones-recientes`}
-            >
-              Volver al historial
-            </Link>
-            <Link href={`/${pharmacy}/punto-de-venta`}>Ir al POS</Link>
+            {puedeVerHistorial && (
+              <Link
+                href={`/${pharmacy}/historial-y-reportes#operaciones-recientes`}
+              >
+                Volver al historial
+              </Link>
+            )}
+            {puedeUsarPos && (
+              <Link href={`/${pharmacy}/punto-de-venta`}>Ir al POS</Link>
+            )}
           </p>
         </div>
         <ImprimirVenta abrirDialogo={imprimir === "1"} />
@@ -184,7 +207,7 @@ export default async function DocumentoVentaPage({
           )}
         </dl>
       </article>
-      <OperacionesDeVenta lineas={lineas} />
+      {puedeVerHistorial && <OperacionesDeVenta lineas={lineas} />}
     </section>
   );
 }

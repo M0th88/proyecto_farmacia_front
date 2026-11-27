@@ -1,10 +1,9 @@
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { requirePharmacySection } from "@/lib/auth/pharmacy-permissions";
 import {
   type PharmacyParams,
   resolvePharmacy,
 } from "@/lib/auth/pharmacy-scope";
-import { requirePharmacyUser } from "@/lib/auth/session";
 import { RolesTable } from "./_components/roles-table";
 import RolesLoading from "./loading";
 
@@ -12,8 +11,7 @@ export const instant = false;
 
 async function RolesContent({ params }: PharmacyParams) {
   const pharmacy = await resolvePharmacy(params);
-  const user = await requirePharmacyUser(pharmacy);
-  if (user.rol.nombre !== "Administrador") redirect(`/${pharmacy}/sin-acceso`);
+  const user = await requirePharmacySection(pharmacy, "/roles");
   return <RolesTable currentUserId={user.id} />;
 }
 

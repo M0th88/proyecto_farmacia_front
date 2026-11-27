@@ -6,6 +6,7 @@ import {
   resolvePharmacy,
 } from "@/lib/auth/pharmacy-scope";
 import { requirePharmacyUser } from "@/lib/auth/session";
+import { rolePermissions } from "@/lib/private/permissions";
 import { AppShell } from "../_components/app-shell";
 import "./privada.css";
 
@@ -21,6 +22,7 @@ async function PharmacyContent({
     <PharmacyProvider key={pharmacy} pharmacy={pharmacy}>
       <AppShell
         selected={pharmacy}
+        permissions={rolePermissions(user.rol)}
         user={{
           name: [user.nombre, user.apellido].filter(Boolean).join(" "),
           role: isSuperAdmin(user) ? "Superadministrador" : user.rol.nombre,

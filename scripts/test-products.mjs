@@ -328,6 +328,7 @@ const route = load("../src/app/api/[farmacia]/productos/route.ts", {
   },
   ...deps,
   "@/lib/auth/session": { getPharmacyUser: async () => user },
+  "@/lib/private/permissions": load("../src/lib/private/permissions.ts"),
   "@/lib/private/products": service,
   "@/lib/types/productos": types,
 });

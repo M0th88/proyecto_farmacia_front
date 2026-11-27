@@ -4,6 +4,7 @@ import {
   ChartColumnIncreasing,
   ChevronDown,
   House,
+  Package,
   PackageX,
   Settings2,
   ShoppingBag,
@@ -13,12 +14,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { type Pharmacy, pharmacies } from "@/lib/auth/pharmacies";
+import {
+  canAccessSection,
+  type PharmacySection,
+  type PrivatePermission,
+} from "@/lib/private/permissions";
 import styles from "./app-shell.module.css";
 
 const shortcuts = [
   { label: "Panel", href: "/panel", icon: House },
   { label: "Compras", href: "/compras", icon: ShoppingBag },
-];
+] as const;
 
 const groups = [
   {
@@ -50,14 +56,20 @@ const groups = [
     ],
   },
   {
-    label: "Administrador",
-    icon: Settings2,
+    label: "Catálogo y proveedores",
+    icon: Package,
     links: [
       { label: "Productos y Empaques", href: "/productos-y-empaques" },
       { label: "Proveedores", href: "/proveedores" },
+      { label: "Marcas", href: "/marcas" },
+    ],
+  },
+  {
+    label: "Administrador",
+    icon: Settings2,
+    links: [
       { label: "Usuarios", href: "/usuarios" },
       { label: "Roles", href: "/roles" },
-      { label: "Marcas", href: "/marcas" },
     ],
   },
   {
@@ -70,17 +82,24 @@ const groups = [
       { label: "Caja del Día", href: "/caja-del-dia" },
     ],
   },
-];
+] as const;
 
 export function SidebarNav({
   pharmacy,
+  permissions,
   onNavigate,
 }: {
   pharmacy: Pharmacy;
+  permissions: PrivatePermission[];
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
   const nav = useRef<HTMLElement>(null);
+  const canOpen = ({ href }: { href: PharmacySection }) =>
+    canAccessSection(permissions, href);
+  const visibleGroups = groups
+    .map((group) => ({ ...group, links: group.links.filter(canOpen) }))
+    .filter(({ links }) => links.length > 0);
   const isActive = (href: string) => {
     const path = `/${pharmacy}${href}`;
     return pathname === path || pathname.startsWith(`${path}/`);
@@ -99,7 +118,7 @@ export function SidebarNav({
       aria-label={`Secciones de ${pharmacies[pharmacy].name}`}
     >
       <ul className={styles.sidebarList}>
-        {shortcuts.map(({ label, href, icon: Icon }) => (
+        {shortcuts.filter(canOpen).map(({ label, href, icon: Icon }) => (
           <li key={href}>
             <Link
               href={`/${pharmacy}${href}`}
@@ -112,7 +131,7 @@ export function SidebarNav({
             </Link>
           </li>
         ))}
-        {groups.map(({ label, icon: Icon, links }) => (
+        {visibleGroups.map(({ label, icon: Icon, links }) => (
           <li key={label} className={styles.sidebarGroup}>
             <details open>
               <summary

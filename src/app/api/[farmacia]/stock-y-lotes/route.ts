@@ -3,6 +3,7 @@ import { pharmacyRoute } from "@/lib/auth/pharmacy-route";
 import { getPharmacyUser } from "@/lib/auth/session";
 import { addStock } from "@/lib/private/add-stock";
 import { editStock } from "@/lib/private/edit-stock";
+import { roleHasPermission } from "@/lib/private/permissions";
 import {
   paginateStock,
   stockListSchema,
@@ -13,11 +14,7 @@ import { stockEditSchema, stockEntrySchema } from "@/lib/types/stock-y-lotes";
 
 async function inventoryUser(pharmacy: Pharmacy) {
   const user = await getPharmacyUser(pharmacy);
-  return user &&
-    (user.rol.nombre === "Administrador" ||
-      user.rol.permisos.includes("inventario"))
-    ? user
-    : null;
+  return user && roleHasPermission(user.rol, "inventario") ? user : null;
 }
 const denied = () =>
   Response.json(

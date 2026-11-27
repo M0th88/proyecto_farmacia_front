@@ -168,6 +168,27 @@ assert.equal(
   dates.stockDate(saleOptions.where.creadaEn.gte),
   summary.panelDay(today, -59),
 );
+const inventoryOnly = await server.dashboardSnapshot(
+  {
+    ...db,
+    venta: { findMany: () => assert.fail("Se consultaron ventas sin permiso") },
+  },
+  { sales: false, inventory: true },
+);
+assert.deepEqual(inventoryOnly.ventas, []);
+assert.equal(inventoryOnly.disponibles, snapshot.disponibles);
+const salesOnly = await server.dashboardSnapshot(
+  {
+    ...db,
+    medicamento: {
+      findMany: () => assert.fail("Se consultó inventario sin permiso"),
+    },
+  },
+  { sales: true, inventory: false },
+);
+assert.deepEqual(salesOnly.bajos, []);
+assert.deepEqual(salesOnly.vencimientos, []);
+assert.equal(salesOnly.ventas.length, snapshot.ventas.length);
 console.log(
-  "Panel: períodos, comparación, días vacíos, pagos, productos, fechas chilenas e inventario verificados.",
+  "Panel: períodos, comparación, pagos, fechas chilenas y permisos de ventas e inventario verificados.",
 );

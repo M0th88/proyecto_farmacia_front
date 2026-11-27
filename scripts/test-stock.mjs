@@ -465,6 +465,7 @@ const route = load("../src/app/api/[farmacia]/stock-y-lotes/route.ts", {
   },
   ...deps,
   "@/lib/auth/session": { getPharmacyUser: async () => user },
+  "@/lib/private/permissions": load("../src/lib/private/permissions.ts"),
   "@/lib/private/add-stock": service,
   "@/lib/private/stock": listing,
   "@/lib/private/stock-dates": dates,

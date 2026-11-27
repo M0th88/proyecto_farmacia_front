@@ -1,11 +1,10 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { requirePharmacySection } from "@/lib/auth/pharmacy-permissions";
 import {
   type PharmacyParams,
   resolvePharmacy,
 } from "@/lib/auth/pharmacy-scope";
-import { getPharmacyUser } from "@/lib/auth/session";
 import { pharmacyDb } from "@/lib/db/pharmacy-db";
 import {
   paginateProducts,
@@ -20,13 +19,7 @@ import ProductsLoading from "./loading";
 export const instant = false;
 async function ProductsContent({ params }: PharmacyParams) {
   const pharmacy = await resolvePharmacy(params);
-  const user = await getPharmacyUser(pharmacy);
-  if (!user) redirect(`/login/${pharmacy}`);
-  if (
-    user.rol.nombre !== "Administrador" &&
-    !user.rol.permisos.includes("catalogo")
-  )
-    redirect(`/${pharmacy}/sin-acceso`);
+  const user = await requirePharmacySection(pharmacy, "/productos-y-empaques");
   const snapshot = await productSnapshot(pharmacyDb(pharmacy));
   const client = getQueryClient();
   client.setQueryData([...productsQueryKey, user.id, "", []], {

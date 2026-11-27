@@ -25,6 +25,107 @@ const permissions = load("../src/lib/private/permissions.ts");
 const { roleProfileSchema } = load("../src/lib/types/roles.ts", {
   "@/lib/private/permissions": permissions,
 });
+let sessionUser = null;
+const redirect = (path) => {
+  throw new Error(path);
+};
+const { requirePharmacySection } = load(
+  "../src/lib/auth/pharmacy-permissions.ts",
+  {
+    "server-only": {},
+    "next/navigation": { redirect },
+    "@/lib/private/permissions": permissions,
+    "./session": {
+      requirePharmacyUser: async (pharmacy) =>
+        sessionUser ?? redirect(`/login/${pharmacy}`),
+    },
+  },
+);
+const routeDependencies = {
+  "@/lib/auth/pharmacy-route": {
+    pharmacyRoute: (handler) => (request) =>
+      handler(request, "privada", {
+        medicamento: { findMany: async () => [] },
+        venta: { findMany: async () => [] },
+      }),
+  },
+  "@/lib/auth/session": { getPharmacyUser: async () => sessionUser },
+  "@/lib/private/permissions": permissions,
+};
+const catalog = load(
+  "../src/app/api/[farmacia]/catalogo/route.ts",
+  routeDependencies,
+);
+const sales = load("../src/app/api/[farmacia]/ventas/route.ts", {
+  ...routeDependencies,
+  "@/generated/privada/client": {},
+  "@/lib/validation/punto-de-venta": load(
+    "../src/lib/validation/punto-de-venta.ts",
+    {
+      "@/lib/user-input": load("../src/lib/user-input.ts"),
+      "@/lib/validation/user-fields": load(
+        "../src/lib/validation/user-fields.ts",
+      ),
+    },
+  ),
+});
+async function salesStatus(method) {
+  const response = await sales[method](
+    new Request("http://localhost:3000/api/privada/ventas", { method }),
+  );
+  return response.status;
+}
+assert.equal((await catalog.GET()).status, 401);
+assert.equal(await salesStatus("GET"), 401);
+
+sessionUser = {
+  rol: {
+    nombre: "Bodega",
+    permisos: ["inicio", "catalogo", "inventario", "proveedores", "compras"],
+  },
+};
+for (const pharmacy of ["privada", "asistencial"]) {
+  await requirePharmacySection(pharmacy, "/stocks-y-lotes");
+  await requirePharmacySection(pharmacy, "/compras");
+  await assert.rejects(
+    requirePharmacySection(pharmacy, "/punto-de-venta"),
+    new RegExp(`/${pharmacy}/sin-acceso`),
+  );
+  await assert.rejects(
+    requirePharmacySection(pharmacy, "/caja-del-dia"),
+    new RegExp(`/${pharmacy}/sin-acceso`),
+  );
+}
+assert.equal((await catalog.GET()).status, 403);
+assert.equal(await salesStatus("GET"), 403);
+assert.equal(await salesStatus("POST"), 403);
+
+sessionUser.rol = {
+  nombre: "Cajero",
+  permisos: ["inicio", "pos", "caja", "ventas"],
+};
+await requirePharmacySection("privada", "/punto-de-venta");
+await requirePharmacySection("privada", "/caja-del-dia");
+await assert.rejects(
+  requirePharmacySection("privada", "/stocks-y-lotes"),
+  /sin-acceso/,
+);
+assert.equal((await catalog.GET()).status, 200);
+assert.equal(await salesStatus("GET"), 200);
+assert.equal(await salesStatus("POST"), 400);
+
+sessionUser.rol = { nombre: "Vendedor", permisos: ["pos"] };
+assert.equal(await salesStatus("GET"), 403);
+assert.equal(await salesStatus("POST"), 400);
+sessionUser.rol.permisos = ["indicadores", "roles"];
+await requirePharmacySection("privada", "/historial-y-reportes");
+await assert.rejects(requirePharmacySection("privada", "/roles"), /sin-acceso/);
+assert.equal(await salesStatus("POST"), 403);
+
+sessionUser.rol = { nombre: "Administrador", permisos: [] };
+await requirePharmacySection("privada", "/roles");
+assert.equal(await salesStatus("GET"), 200);
+
 const requiredFields = roleProfileSchema.safeParse({
   nombre: "",
   descripcion: "   ",
@@ -42,7 +143,7 @@ const rows = [
     id: 1,
     nombre: "Administrador",
     descripcion: "Administración",
-    permisos: permissions.ALL_PRIVATE_PERMISSIONS,
+    permisos: [],
     _count: { usuarios: 1 },
   },
   {
@@ -125,6 +226,10 @@ for (const method of ["GET", "POST", "PATCH", "DELETE"])
   );
 admin = true;
 assert.equal((await api("GET")).data.length, 3);
+assert.deepEqual(
+  (await api("GET")).data.find(({ id }) => id === 1).permisos,
+  permissions.ALL_PRIVATE_PERMISSIONS,
+);
 const page = await api(
   "GET",
   undefined,
@@ -262,5 +367,5 @@ assert.equal((await api("DELETE", { id: 999 })).status, 404);
 assert.equal((await api("DELETE", { id: created.data.id })).status, 200);
 assert.equal(rows.length, 3);
 console.log(
-  "Roles: acceso, filtros, paginación, creación, edición y eliminación verificados.",
+  "Roles: permisos de vistas y API, filtros, paginación, creación, edición y eliminación verificados.",
 );
