@@ -56,6 +56,7 @@ const groups = [
     links: [
       { label: "Productos y Empaques", href: "/productos-y-empaques" },
       { label: "Proveedores", href: "/proveedores" },
+      { label: "Convenios", href: "/convenios" },
       { label: "Usuarios", href: "/usuarios" },
       { label: "Roles", href: "/roles" },
       { label: "Marcas", href: "/marcas" },

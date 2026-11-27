@@ -190,6 +190,9 @@ model Venta {
   motivoExcepcion      String?
   recetas              Receta[]
   registrosControlados RegistroControlado[]
+  clienteRut           String?
+  convenioNombre       String?
+  descuentoPorcentaje  Decimal              @default(0) @db.Decimal
 
   @@index([creadaEn])
 }
@@ -397,4 +400,30 @@ model RegistroControlado {
 
   @@index([medicamentoId, id])
   @@index([firmadoEn])
+}
+
+/// Convenio de descuento (Isapre, Fonasa, GES, seguro). Tabla creada en la
+/// base compartida por la migración 202611110001; se adopta tal cual.
+model ConvenioDescuento {
+  id         Int      @id @default(autoincrement())
+  nombre     String   @unique
+  tipo       String
+  porcentaje Decimal  @db.Decimal
+  activo     Boolean  @default(true)
+  creadoEn   DateTime @default(now())
+
+  clientes ClienteConvenio[]
+}
+
+/// Cliente afiliado a un convenio, identificado por RUT.
+model ClienteConvenio {
+  id         Int      @id @default(autoincrement())
+  rut        String   @unique
+  nombre     String
+  convenioId Int
+  creadoEn   DateTime @default(now())
+
+  convenio ConvenioDescuento @relation(fields: [convenioId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([convenioId])
 }

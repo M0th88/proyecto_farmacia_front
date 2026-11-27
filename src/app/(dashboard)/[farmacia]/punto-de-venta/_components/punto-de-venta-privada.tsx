@@ -12,6 +12,7 @@ import {
   type TipoDocumento,
   type VentaConfirmada,
 } from "@/lib/types/punto-de-venta";
+import { descuentoConvenio } from "@/lib/validation/convenios";
 import {
   calcularTotales,
   camposFacturacion,
@@ -29,6 +30,7 @@ import {
   recetaRequerida,
 } from "@/lib/validation/recetas";
 import { ClientesPendientes } from "./clientes-pendientes";
+import { type ConvenioAplicado, ConvenioCliente } from "./convenio-cliente";
 import { FefoConfirmation } from "./fefo-confirmation";
 import {
   type RecetaBorrador,
@@ -74,6 +76,7 @@ export function PuntoDeVentaPrivada() {
     null,
   );
   const [recetaEnviada, setRecetaEnviada] = useState<RecetaInput | null>(null);
+  const [convenio, setConvenio] = useState<ConvenioAplicado | null>(null);
   const bloqueado = cobrando || preparing !== null;
   const lector = useRef<HTMLInputElement>(null);
   const confirmacion = useRef<HTMLAnchorElement>(null);
@@ -162,7 +165,10 @@ export function PuntoDeVentaPrivada() {
       (n, x) => n + Math.round((x.producto.precio ?? 0) * 100) * x.cantidad,
       0,
     ) / 100;
-  const importeDescuento = Number(descuento || 0);
+  // Con convenio, el descuento lo fija el porcentaje y el servidor lo recalcula.
+  const importeDescuento = convenio
+    ? descuentoConvenio(subtotal, convenio.convenio.porcentaje)
+    : Number(descuento || 0);
   const recetaPedida = recetaRequerida(
     lineas.map((x) => x.producto.condicionVenta ?? "SIN_CLASIFICAR"),
   );
@@ -491,6 +497,7 @@ export function PuntoDeVentaPrivada() {
                 setTipoDocumento("BOLETA");
                 setFacturacion(facturacionVacia);
                 setRecetaBorrador(null);
+                setConvenio(null);
                 setMensaje("");
               }}
             >
@@ -558,6 +565,16 @@ export function PuntoDeVentaPrivada() {
               disabled={bloqueado}
             />
           )}
+          <ConvenioCliente
+            aplicado={convenio}
+            descuento={importeDescuento}
+            disabled={bloqueado}
+            onChange={(c) => {
+              setConvenio(c);
+              setDescuento("");
+              setPagoVerificado(false);
+            }}
+          />
           <fieldset className="pos-controles" disabled={bloqueado}>
             <legend>Descuento, documento y pago</legend>
             <div className="pos-pay">
@@ -584,7 +601,11 @@ export function PuntoDeVentaPrivada() {
                   min="0"
                   step="0.01"
                   max={subtotal}
-                  value={descuento}
+                  value={convenio ? importeDescuento : descuento}
+                  disabled={convenio !== null}
+                  title={
+                    convenio ? "Descuento fijado por el convenio" : undefined
+                  }
                   onChange={(e) => {
                     setDescuento(e.target.value);
                     setPagoVerificado(false);
@@ -749,6 +770,7 @@ export function PuntoDeVentaPrivada() {
             tipoOperacion={operation}
             documento={preparing}
             receta={recetaEnviada ?? undefined}
+            clienteRut={convenio?.rut}
             descuento={importeDescuento}
             totalEsperado={total}
             onBusy={setCobrando}
@@ -763,6 +785,7 @@ export function PuntoDeVentaPrivada() {
               setFacturacion(facturacionVacia);
               setRecetaBorrador(null);
               setRecetaEnviada(null);
+              setConvenio(null);
               void cargar();
             }}
           />

@@ -4,6 +4,7 @@ import { Prisma } from "@/generated/privada/client";
 import { prismaPrivada } from "@/lib/db/prisma-privada";
 import { allocateFefo, aptStock, canOperate, sameAllocation } from "@/lib/fefo";
 import { registrarSalidasControladas } from "@/lib/private/controlados";
+import { convenioDeCliente } from "@/lib/private/convenios";
 import { stockDate } from "@/lib/private/stock-dates";
 import {
   type FefoPlan,
@@ -11,6 +12,7 @@ import {
   preparationSchema,
   saleSchema,
 } from "@/lib/types/fefo";
+import { descuentoConvenio } from "@/lib/validation/convenios";
 import {
   calcularTotales,
   facturacionSchema,
@@ -180,6 +182,19 @@ export async function confirmSale(
       )
         throw new Error("Hay lotes ajenos al pedido.");
       const exception = !sameAllocation(input.lotes, current.sugeridos);
+      const convenio = input.clienteRut
+        ? await convenioDeCliente(input.clienteRut, tx)
+        : null;
+      if (input.clienteRut && !convenio)
+        throw new Error("El RUT del cliente no tiene un convenio activo.");
+      if (
+        convenio &&
+        input.descuento !==
+          descuentoConvenio(current.total, convenio.convenio.porcentaje)
+      )
+        throw new Error(
+          "El descuento del convenio no coincide con el pedido. Vuelve a aplicar el convenio.",
+        );
       const errorReceta = problemaReceta(
         input.receta,
         current.recetaRequerida,
@@ -282,6 +297,9 @@ export async function confirmSale(
           tipoOperacion: input.tipoOperacion,
           claveOperacion: input.claveOperacion,
           motivoExcepcion: exception ? input.motivoExcepcion : null,
+          clienteRut: convenio?.rut ?? null,
+          convenioNombre: convenio?.convenio.nombre ?? null,
+          descuentoPorcentaje: convenio?.convenio.porcentaje ?? 0,
           metodoPago: input.metodoPago,
           subtotal: current.total,
           descuento: input.descuento,

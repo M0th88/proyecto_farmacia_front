@@ -21,6 +21,7 @@ type Props = {
   tipoOperacion: string;
   documento: DocumentoVenta;
   receta?: RecetaInput;
+  clienteRut?: string;
   descuento: number;
   totalEsperado: number;
   onBusy: (busy: boolean) => void;
@@ -84,6 +85,7 @@ export function FefoConfirmation(props: Props) {
         descuento: props.descuento,
         documento: props.documento,
         receta: props.receta,
+        clienteRut: props.clienteRut,
         confirmacionFisica: true,
         motivoExcepcion: reason,
         lotes: chosen.map((l) => ({

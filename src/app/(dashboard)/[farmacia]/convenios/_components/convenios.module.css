@@ -1,0 +1,139 @@
+.columnas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.lista {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lista li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid #e7ece9;
+  border-radius: 10px;
+}
+
+.lista li[data-inactivo] {
+  opacity: 0.6;
+}
+
+.lista small {
+  display: block;
+  color: #69796f;
+}
+
+.lista strong {
+  color: #2e7455;
+  font-size: 1.1rem;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.form label,
+.modal label {
+  display: grid;
+  gap: 6px;
+  color: #69796f;
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.form input,
+.form select,
+.modal input,
+.modal select,
+.buscar {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid #d9e2dc;
+  border-radius: 8px;
+  font: inherit;
+  color: #1f2a24;
+}
+
+.buscar {
+  width: 100%;
+  margin: 14px 0 10px;
+}
+
+.modal {
+  display: grid;
+  gap: 14px;
+}
+
+.modal .check {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: var(--text-sm, 0.875rem);
+}
+
+.modal .check input {
+  min-height: auto;
+}
+
+.primario,
+.icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primario {
+  min-height: 40px;
+  padding: 0 14px;
+  background: #2e7455;
+  color: #fff;
+}
+
+.icono {
+  width: 34px;
+  height: 34px;
+  background: #e6f1e9;
+  color: #2e7455;
+}
+
+.primario:disabled,
+.icono:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ok,
+.error {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.ok {
+  background: #e6f1e9;
+  color: #2e7455;
+}
+
+.error {
+  background: #fef3f2;
+  color: #b42318;
+}

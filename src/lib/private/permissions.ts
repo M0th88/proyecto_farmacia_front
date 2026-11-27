@@ -16,6 +16,7 @@ export const PRIVATE_SECTIONS = [
   { key: "compras", label: "Compras", href: "/privada/compras" },
   { key: "caja", label: "Caja del Día", href: "/privada/caja-del-dia" },
   { key: "recetas", label: "Recetas", href: "/privada/recetas" },
+  { key: "convenios", label: "Convenios", href: "/privada/convenios" },
   {
     key: "controlados",
     label: "Libro de Controlados",

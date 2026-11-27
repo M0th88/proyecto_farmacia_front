@@ -120,6 +120,7 @@ const METODO: Record<string, string> = {
 
 async function reporteVentas(
   db: PharmacyDb,
+  farmacia: string,
   gte: Date,
   lt: Date,
 ): Promise<Omit<Reporte, "titulo" | "subtitulo">> {
@@ -139,6 +140,17 @@ async function reporteVentas(
       _count: { select: { detalles: true } },
     },
   });
+  // Solo Farmacia Privada registra convenios en la venta.
+  const convenios = new Map(
+    farmacia === "privada"
+      ? (
+          await prismaPrivada.venta.findMany({
+            where: { creadaEn: { gte, lt }, convenioNombre: { not: null } },
+            select: { id: true, convenioNombre: true },
+          })
+        ).map((v) => [v.id, v.convenioNombre ?? ""])
+      : [],
+  );
   const filas = ventas.map((v) => {
     const total = Number(v.total);
     const descuento = Number(v.descuento);
@@ -156,6 +168,7 @@ async function reporteVentas(
       items: v._count.detalles,
       subtotal: Number(v.subtotal) || total + descuento,
       descuento,
+      convenio: convenios.get(v.id) ?? "",
       neto: desglose.neto,
       iva: desglose.iva,
       total,
@@ -172,6 +185,7 @@ async function reporteVentas(
       { clave: "items", titulo: "Ítems", formato: "entero", ancho: 8 },
       { clave: "subtotal", titulo: "Subtotal", formato: "pesos", ancho: 14 },
       { clave: "descuento", titulo: "Descuento", formato: "pesos", ancho: 13 },
+      { clave: "convenio", titulo: "Convenio", ancho: 16 },
       { clave: "neto", titulo: "Neto", formato: "pesos", ancho: 14 },
       { clave: "iva", titulo: "IVA", formato: "pesos", ancho: 12 },
       { clave: "total", titulo: "Total", formato: "pesos", ancho: 14 },
@@ -185,6 +199,7 @@ async function reporteVentas(
       items: suma("items"),
       subtotal: suma("subtotal"),
       descuento: suma("descuento"),
+      convenio: null,
       neto: suma("neto"),
       iva: suma("iva"),
       total: suma("total"),
@@ -521,7 +536,7 @@ export async function generarReporte(
   const { titulo, usaFechas } = TIPOS_REPORTE[tipo];
   const datos =
     tipo === "ventas"
-      ? await reporteVentas(db, rango.gte, rango.lt)
+      ? await reporteVentas(db, farmacia, rango.gte, rango.lt)
       : tipo === "productos"
         ? await reporteProductos(db, rango.gte, rango.lt)
         : tipo === "inventario"

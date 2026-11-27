@@ -267,3 +267,18 @@ APIs: `POST /api/privada/libro-controlados` (apertura, entrada o ajuste) y `POST
 Historial y Reportes incluye **Exportar reportes** en Excel (`exceljs`) y PDF (`jspdf`): ventas, productos vendidos, inventario por lote, stock por categoría y, en Privada, recetas recibidas y libro de controlados. `GET /api/[farmacia]/reportes/[tipo]?formato=xlsx|pdf&desde=AAAA-MM-DD&hasta=AAAA-MM-DD` aplica los permisos de cada reporte; las ventas antiguas sin desglose de IVA se recalculan con la fórmula del POS.
 
 `node scripts/test-recetas.mjs` verifica las reglas de recetas sin base de datos. `scripts/test-fefo-integration.mjs` cubre ahora la exigencia de receta en la venta.
+
+### Convenios de descuento
+
+`/privada/convenios` (Administrador, permiso operativo `convenios`) administra convenios Isapre, Fonasa, GES o seguros con su porcentaje, y afilia clientes por RUT. En el POS, **Convenio del cliente** busca el RUT (`GET /api/privada/convenios/cliente?rut=`) y fija el descuento sobre el subtotal con IVA; `POST /api/privada/ventas` lo recalcula, rechaza montos distintos y guarda `clienteRut`, `convenioNombre` y `descuentoPorcentaje` en la venta. Es una simulación: no consulta Isapres ni Fonasa reales.
+
+Las tablas `ConvenioDescuento` y `ClienteConvenio` ya existían en la base compartida por una migración `202611110001_convenios_descuento` que nunca se subió; el archivo se reconstruyó con la misma estructura, de modo que esa base la reconoce como aplicada y las nuevas quedan iguales.
+
+### Datos de demostración
+
+```sh
+npm run demo:farmacia              # simula y muestra lo que haría
+npm run demo:farmacia -- --apply   # aplica en una sola transacción
+```
+
+Clasifica la condición de venta de los medicamentos `SIN_CLASIFICAR` según la planilla ISP importada, asigna precios ficticios a los que no tienen, crea bodega y vitrina en «Sucursal demo POS», carga lotes (algunos por vencer y algunos bajo stock mínimo), crea cinco convenios con clientes afiliados ficticios, agrega los permisos nuevos a los roles existentes y abre el libro de controlados. Es idempotente y nunca reemplaza datos cargados a mano.

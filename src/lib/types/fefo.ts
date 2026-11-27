@@ -37,6 +37,7 @@ export const saleSchema = preparationSchema.extend({
   ),
   motivoExcepcion: z.string().trim().max(500).default(""),
   receta: recetaSchema.optional(),
+  clienteRut: z.string().trim().min(3).max(20).optional(),
   lotes: z
     .array(
       z.object({
