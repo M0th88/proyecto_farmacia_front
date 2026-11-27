@@ -6,7 +6,9 @@ import {
 import { requirePharmacyUser } from "@/lib/auth/session";
 import { panelDay } from "@/lib/dashboard-summary";
 import { pharmacyDb } from "@/lib/db/pharmacy-db";
+import { rangoReporte, TIPOS_REPORTE } from "@/lib/private/reportes";
 import { pesos } from "@/lib/validation/punto-de-venta";
+import { ExportarReportes } from "./_components/exportar-reportes";
 import {
   getRecentOperations,
   OperacionesRecientes,
@@ -28,7 +30,7 @@ export default async function HistorialYReportesPage({
   searchParams: Promise<{ venta?: string | string[] }>;
 }) {
   const pharmacy = await resolvePharmacy(params);
-  await requirePharmacyUser(pharmacy);
+  const user = await requirePharmacyUser(pharmacy);
   await connection();
   const { venta } = await searchParams;
   const busqueda = typeof venta === "string" ? venta.trim() : "";
@@ -56,6 +58,14 @@ export default async function HistorialYReportesPage({
   const total = dias.reduce((n, d) => n + d.total, 0);
   const tickets = dias.reduce((n, d) => n + d.tickets, 0);
   const max = Math.max(1, ...dias.map((d) => d.total));
+  const esAdmin = user.rol.nombre === "Administrador";
+  const opcionesReporte = Object.entries(TIPOS_REPORTE)
+    .filter(
+      ([, r]) =>
+        esAdmin || r.permisos.some((p) => user.rol.permisos.includes(p)),
+    )
+    .map(([tipo, r]) => ({ tipo, titulo: r.titulo, usaFechas: r.usaFechas }));
+  const rangoInicial = rangoReporte();
   return (
     <section className="pos-shell">
       <header className="pos-header">
@@ -82,6 +92,14 @@ export default async function HistorialYReportesPage({
           <strong>{dias.filter((d) => d.tickets > 0).length}</strong>
         </div>
       </div>
+      {opcionesReporte.length > 0 && !("error" in rangoInicial) && (
+        <ExportarReportes
+          pharmacy={pharmacy}
+          opciones={opcionesReporte}
+          desdeInicial={rangoInicial.desde}
+          hastaInicial={rangoInicial.hasta}
+        />
+      )}
       <OperacionesRecientes
         pharmacy={pharmacy}
         resultado={operacionesRecientes}
