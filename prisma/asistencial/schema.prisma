@@ -86,6 +86,8 @@ model Medicamento {
 
   lotes         Lote[]
   detallesVenta DetalleVenta[]
+  programas     ProgramaMedicamento[]
+  dispensados   DispensacionDetalle[]
 
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
@@ -133,6 +135,8 @@ model Lote {
   stocks        Stock[]
   movimientos   MovimientoStock[]
   detallesVenta DetalleVenta[]
+  dispensados   DispensacionDetalle[]
+  remesas       RemesaDetalle[]
 
   creadoEn DateTime @default(now())
 
@@ -213,8 +217,8 @@ model UbicacionInventario {
 model Stock {
   id Int @id @default(autoincrement())
 
-  cantidadBloqueada Int @default(0)
-  cuarentenas CasoCuarentena[]
+  cantidadBloqueada Int              @default(0)
+  cuarentenas       CasoCuarentena[]
 
   cantidad Int @default(0)
 
@@ -231,18 +235,18 @@ model Stock {
 }
 
 model CasoCuarentena {
-  id Int @id @default(autoincrement())
-  stockId Int
-  stock Stock @relation(fields: [stockId], references: [id])
-  tipo String
-  cantidad Int
-  motivo String
-  registradoPor Int
-  creadoEn DateTime @default(now())
-  resolucion String?
+  id               Int       @id @default(autoincrement())
+  stockId          Int
+  stock            Stock     @relation(fields: [stockId], references: [id])
+  tipo             String
+  cantidad         Int
+  motivo           String
+  registradoPor    Int
+  creadoEn         DateTime  @default(now())
+  resolucion       String?
   motivoResolucion String?
-  resueltoPor Int?
-  resueltoEn DateTime?
+  resueltoPor      Int?
+  resueltoEn       DateTime?
 
   @@index([tipo, resueltoEn])
   @@index([stockId])
@@ -263,4 +267,138 @@ model MovimientoStock {
 
   @@index([loteId])
   @@index([creadoEn])
+}
+
+enum TipoPrograma {
+  GES
+  CRONICO
+  OTRO
+}
+
+/// Programa de salud de la red pública (GES/AUGE, crónicos) que da derecho
+/// a retirar medicamentos sin costo.
+model ProgramaSalud {
+  id          Int          @id @default(autoincrement())
+  codigo      String       @unique
+  nombre      String
+  tipo        TipoPrograma
+  descripcion String?
+  activo      Boolean      @default(true)
+  creadoEn    DateTime     @default(now())
+
+  medicamentos   ProgramaMedicamento[]
+  inscripciones  InscripcionPrograma[]
+  dispensaciones Dispensacion[]
+}
+
+/// Medicamento cubierto por un programa y unidades máximas por paciente al mes.
+model ProgramaMedicamento {
+  programaId    Int
+  medicamentoId Int
+  cuotaMensual  Int
+
+  programa    ProgramaSalud @relation(fields: [programaId], references: [id], onDelete: Cascade)
+  medicamento Medicamento   @relation(fields: [medicamentoId], references: [id])
+
+  @@id([programaId, medicamentoId])
+  @@index([medicamentoId])
+}
+
+model Paciente {
+  id              Int       @id @default(autoincrement())
+  rut             String    @unique
+  nombre          String
+  fechaNacimiento DateTime? @db.Date
+  telefono        String?
+  direccion       String?
+  creadoEn        DateTime  @default(now())
+  actualizadoEn   DateTime  @updatedAt
+
+  inscripciones  InscripcionPrograma[]
+  dispensaciones Dispensacion[]
+}
+
+model InscripcionPrograma {
+  id         Int       @id @default(autoincrement())
+  pacienteId Int
+  programaId Int
+  desde      DateTime  @db.Date
+  hasta      DateTime? @db.Date
+  activo     Boolean   @default(true)
+  creadoEn   DateTime  @default(now())
+
+  paciente Paciente      @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
+  programa ProgramaSalud @relation(fields: [programaId], references: [id])
+
+  @@unique([pacienteId, programaId])
+  @@index([programaId])
+}
+
+/// Entrega sin costo a un paciente inscrito. Si retira un tercero queda
+/// registrado su RUT, nombre y parentesco.
+model Dispensacion {
+  id               Int      @id @default(autoincrement())
+  claveOperacion   String   @unique
+  pacienteId       Int
+  programaId       Int
+  folioReceta      String?
+  medicoRut        String
+  medicoNombre     String
+  fechaReceta      DateTime @db.Date
+  retiraRut        String?
+  retiraNombre     String?
+  retiraParentesco String?
+  observaciones    String?
+  usuarioId        Int?
+  creadaEn         DateTime @default(now())
+
+  paciente Paciente              @relation(fields: [pacienteId], references: [id])
+  programa ProgramaSalud         @relation(fields: [programaId], references: [id])
+  detalles DispensacionDetalle[]
+
+  @@index([pacienteId, creadaEn])
+  @@index([creadaEn])
+}
+
+model DispensacionDetalle {
+  id             Int @id @default(autoincrement())
+  dispensacionId Int
+  medicamentoId  Int
+  loteId         Int
+  ubicacionId    Int
+  cantidad       Int
+
+  dispensacion Dispensacion @relation(fields: [dispensacionId], references: [id], onDelete: Cascade)
+  medicamento  Medicamento  @relation(fields: [medicamentoId], references: [id])
+  lote         Lote         @relation(fields: [loteId], references: [id])
+
+  @@index([dispensacionId])
+  @@index([medicamentoId])
+}
+
+/// Recepción de una remesa (por defecto CENABAST) con su guía de despacho.
+model Remesa {
+  id            Int      @id @default(autoincrement())
+  guia          String
+  proveedor     String   @default("CENABAST")
+  recibidaEn    DateTime @default(now())
+  observaciones String?
+  usuarioId     Int?
+
+  detalles RemesaDetalle[]
+
+  @@unique([proveedor, guia])
+}
+
+model RemesaDetalle {
+  id          Int @id @default(autoincrement())
+  remesaId    Int
+  loteId      Int
+  ubicacionId Int
+  cantidad    Int
+
+  remesa Remesa @relation(fields: [remesaId], references: [id], onDelete: Cascade)
+  lote   Lote   @relation(fields: [loteId], references: [id])
+
+  @@index([remesaId])
 }

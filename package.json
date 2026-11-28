@@ -33,7 +33,8 @@
     "demo:precios:privada": "node scripts/seed-private-demo-prices.mjs",
     "demo:pos:privada": "node scripts/seed-private-demo-pos.mjs",
     "import:medicamentos:chile": "node scripts/import-private-medicines-chile.mjs",
-    "demo:farmacia": "node scripts/seed-farmacia-demo.mjs"
+    "demo:farmacia": "node scripts/seed-farmacia-demo.mjs",
+    "demo:asistencial": "node scripts/seed-asistencial-demo.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "5.2.2",

@@ -282,3 +282,24 @@ npm run demo:farmacia -- --apply   # aplica en una sola transacción
 ```
 
 Clasifica la condición de venta de los medicamentos `SIN_CLASIFICAR` según la planilla ISP importada, asigna precios ficticios a los que no tienen, crea bodega y vitrina en «Sucursal demo POS», carga lotes (algunos por vencer y algunos bajo stock mínimo), crea cinco convenios con clientes afiliados ficticios, agrega los permisos nuevos a los roles existentes y abre el libro de controlados. Es idempotente y nunca reemplaza datos cargados a mano.
+
+## Farmacia Asistencial (CESFAM)
+
+La farmacia asistencial no vende: **entrega sin costo** a pacientes inscritos en programas de salud. El menú de Asistencial muestra el grupo **Dispensación CESFAM**; Recetas, Libro de Controlados y Convenios quedan solo en Privada.
+
+| Ruta | Qué hace | Permiso |
+| --- | --- | --- |
+| `/asistencial/dispensacion` | Busca al paciente por RUT, elige el programa, muestra cuota del mes, entregado y stock; registra receta (médico, fecha, folio) y quién retira (titular o tercero con RUT y parentesco) | `pos` |
+| `/asistencial/pacientes` | Alta de pacientes, inscripción y activación de programas; acceso directo a dispensar (`?rut=`) | `pos` |
+| `/asistencial/programas` | Programas GES/crónicos con sus medicamentos y cuota mensual por paciente | sesión |
+| `/asistencial/remesas` | Recepción de remesas CENABAST por guía de despacho: lote, vencimiento, cantidad y ubicación | `inventario` |
+
+Reglas (`src/lib/asistencial/dispensacion.ts`, `src/lib/validation/dispensacion.ts`): inscripción vigente y programa activo; el medicamento debe pertenecer al programa; lo entregado en el mes calendario de Chile más lo pedido no puede superar la cuota; receta con RUT de médico válido, no futura y de hasta 180 días (parámetro del simulador); salida FEFO desde los lotes vigentes más próximos a vencer; transacción serializable e idempotente por `claveOperacion`. Una remesa rechaza guías repetidas, lotes vencidos y lotes existentes con otro vencimiento.
+
+APIs: `GET|POST /api/asistencial/pacientes`, `POST /api/asistencial/pacientes/inscripciones`, `POST /api/asistencial/dispensaciones`, `POST /api/asistencial/remesas`. Requiere la migración `202611270001_dispensacion_asistencial` (solo agrega tablas).
+
+```sh
+npm run demo:asistencial              # simula
+npm run demo:asistencial -- --apply   # arsenal de crónicos, 5 programas, 8 pacientes y una remesa CENABAST
+node scripts/test-dispensacion.mjs    # reglas sin base de datos
+```

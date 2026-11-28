@@ -1,0 +1,298 @@
+.buscar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: end;
+}
+
+.buscar label,
+.grupo label {
+  display: grid;
+  gap: 6px;
+  color: #69796f;
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.buscar label {
+  flex: 1 1 220px;
+}
+
+.buscar input,
+.grupo input:not([type="radio"]),
+.grupo select,
+.grupo textarea,
+.cantidad input {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid #d9e2dc;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  color: #1f2a24;
+}
+
+.grupo textarea {
+  padding: 8px 12px;
+}
+
+.buscar button,
+.cantidad button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  background: #e6f1e9;
+  color: #2e7455;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.buscar button:disabled,
+.cantidad button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.exito,
+.error {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 14px 0 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.exito {
+  background: #e6f1e9;
+  color: #2e7455;
+}
+
+.error {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.paciente {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  color: #2e7455;
+}
+
+.paciente h2 {
+  margin: 0;
+  color: #1f2a24;
+}
+
+.paciente small {
+  color: #69796f;
+}
+
+.programas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.programas button {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  border: 1px solid #d9e2dc;
+  border-radius: 10px;
+  background: #fff;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.programas button[aria-checked="true"] {
+  border-color: #2e7455;
+  background: #e6f1e9;
+  box-shadow: inset 0 0 0 1px #2e7455;
+}
+
+.programas button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.programas small {
+  color: #69796f;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm, 0.875rem);
+}
+
+.tabla th,
+.tabla td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #e7ece9;
+  text-align: left;
+}
+
+.tabla th {
+  color: #69796f;
+  font-size: var(--text-xs);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.num {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.alerta {
+  color: #b42318;
+  font-weight: 800;
+}
+
+.cantidad {
+  display: inline-flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.cantidad input {
+  width: 76px;
+  text-align: right;
+}
+
+.cantidad button {
+  padding: 0 10px;
+}
+
+.grupo {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 16px;
+  padding: 14px;
+  border: 1px solid #e7ece9;
+  border-radius: 12px;
+}
+
+.grupo legend {
+  padding: 0 6px;
+  font-weight: 800;
+}
+
+.grupo small {
+  color: #69796f;
+}
+
+.opciones {
+  display: flex;
+  gap: 16px;
+}
+
+.opciones label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: #1f2a24;
+  font-size: var(--text-sm, 0.875rem);
+}
+
+@media (max-width: 900px) {
+  .columnas {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chip {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  margin: 2px 6px 2px 0;
+  padding: 3px 4px 3px 10px;
+  border-radius: 999px;
+  background: #e6f1e9;
+  color: #2e7455;
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.chip[data-inactivo] {
+  background: #f1f3f2;
+  color: #8a958f;
+  text-decoration: line-through;
+}
+
+.chip button {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  color: inherit;
+  cursor: pointer;
+}
+
+.celda {
+  width: 100%;
+  min-width: 110px;
+  min-height: 38px;
+  padding: 0 8px;
+  border: 1px solid #d9e2dc;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+  margin-top: 14px;
+}
+
+.secundario,
+.icono {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 8px;
+  background: #e6f1e9;
+  color: #2e7455;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.secundario {
+  min-height: 40px;
+  padding: 0 14px;
+}
+
+.icono {
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+}
+
+.icono:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

@@ -3,6 +3,7 @@
 import {
   ChartColumnIncreasing,
   ChevronDown,
+  HeartPulse,
   House,
   PackageX,
   Settings2,
@@ -20,7 +21,26 @@ const shortcuts = [
   { label: "Compras", href: "/compras", icon: ShoppingBag },
 ];
 
-const groups = [
+type NavLink = { label: string; href: string; solo?: Pharmacy };
+type NavGroup = {
+  label: string;
+  icon: typeof House;
+  links: NavLink[];
+  solo?: Pharmacy;
+};
+
+const groups: NavGroup[] = [
+  {
+    label: "Dispensación CESFAM",
+    icon: HeartPulse,
+    solo: "asistencial",
+    links: [
+      { label: "Dispensación", href: "/dispensacion" },
+      { label: "Pacientes", href: "/pacientes" },
+      { label: "Programas de Salud", href: "/programas" },
+      { label: "Remesas CENABAST", href: "/remesas" },
+    ],
+  },
   {
     label: "Almacén",
     icon: Warehouse,
@@ -56,7 +76,7 @@ const groups = [
     links: [
       { label: "Productos y Empaques", href: "/productos-y-empaques" },
       { label: "Proveedores", href: "/proveedores" },
-      { label: "Convenios", href: "/convenios" },
+      { label: "Convenios", href: "/convenios", solo: "privada" },
       { label: "Usuarios", href: "/usuarios" },
       { label: "Roles", href: "/roles" },
       { label: "Marcas", href: "/marcas" },
@@ -70,8 +90,12 @@ const groups = [
       { label: "Inventario Histórico", href: "/inventario-historico" },
       { label: "Historial y Reportes", href: "/historial-y-reportes" },
       { label: "Caja del Día", href: "/caja-del-dia" },
-      { label: "Recetas", href: "/recetas" },
-      { label: "Libro de Controlados", href: "/libro-controlados" },
+      { label: "Recetas", href: "/recetas", solo: "privada" },
+      {
+        label: "Libro de Controlados",
+        href: "/libro-controlados",
+        solo: "privada",
+      },
     ],
   },
 ];
@@ -116,38 +140,44 @@ export function SidebarNav({
             </Link>
           </li>
         ))}
-        {groups.map(({ label, icon: Icon, links }) => (
-          <li key={label} className={styles.sidebarGroup}>
-            <details open>
-              <summary
-                className={styles.sidebarGroupToggle}
-                data-active={links.some(({ href }) => isActive(href))}
-              >
-                <Icon size={18} aria-hidden="true" />
-                <span>{label}</span>
-                <ChevronDown
-                  size={15}
-                  className={styles.sidebarChevron}
-                  aria-hidden="true"
-                />
-              </summary>
-              <ul className={styles.sidebarGroupList}>
-                {links.map(({ href, label }) => (
-                  <li key={href}>
-                    <Link
-                      href={`/${pharmacy}${href}`}
-                      className={styles.sidebarLink}
-                      aria-current={isActive(href) ? "page" : undefined}
-                      onNavigate={onNavigate}
-                    >
-                      {label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </details>
-          </li>
-        ))}
+        {groups
+          .filter((g) => !g.solo || g.solo === pharmacy)
+          .map((g) => ({
+            ...g,
+            links: g.links.filter((l) => !l.solo || l.solo === pharmacy),
+          }))
+          .map(({ label, icon: Icon, links }) => (
+            <li key={label} className={styles.sidebarGroup}>
+              <details open>
+                <summary
+                  className={styles.sidebarGroupToggle}
+                  data-active={links.some(({ href }) => isActive(href))}
+                >
+                  <Icon size={18} aria-hidden="true" />
+                  <span>{label}</span>
+                  <ChevronDown
+                    size={15}
+                    className={styles.sidebarChevron}
+                    aria-hidden="true"
+                  />
+                </summary>
+                <ul className={styles.sidebarGroupList}>
+                  {links.map(({ href, label }) => (
+                    <li key={href}>
+                      <Link
+                        href={`/${pharmacy}${href}`}
+                        className={styles.sidebarLink}
+                        aria-current={isActive(href) ? "page" : undefined}
+                        onNavigate={onNavigate}
+                      >
+                        {label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            </li>
+          ))}
       </ul>
     </nav>
   );
