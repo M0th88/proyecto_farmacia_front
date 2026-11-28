@@ -20,7 +20,8 @@ async function Contenido({ params, vista }: Props) {
   const user = await getPharmacyUser(farmacia);
   if (!user) redirect(`/login/${farmacia}`);
   if (!canOperate(user, "inventario")) redirect(`/${farmacia}/sin-acceso`);
-  if (farmacia === "asistencial") return <EmptyPrivateSection title={vista} />;
+  if (farmacia === "asistencial")
+    return <EmptyPrivateSection params={params} title={vista} />;
   return <ConfiguracionAlmacen vista={vista} />;
 }
 

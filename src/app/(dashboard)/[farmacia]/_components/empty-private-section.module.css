@@ -1,0 +1,133 @@
+.tarjeta {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 22px;
+  max-width: 760px;
+  overflow: hidden;
+}
+
+/* Franja de obra en el borde superior: identifica la sección como pendiente. */
+.tarjeta::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: repeating-linear-gradient(-45deg, #c8102e 0 10px, #fff 10px 20px);
+  opacity: 0.55;
+}
+
+.icono {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: #fdeced;
+  color: #c8102e;
+}
+
+.cuerpo h2 {
+  margin: 4px 0 12px;
+  font-size: var(--text-lg, 1.125rem);
+}
+
+.cuerpo h3 {
+  margin: 20px 0 10px;
+  color: #69796f;
+  font-size: var(--text-xs);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.estado {
+  display: inline-block;
+  margin: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #fff4e5;
+  color: #9a5b00;
+  font-size: var(--text-xs);
+  font-weight: 800;
+}
+
+.plan {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: paso;
+}
+
+.plan li {
+  position: relative;
+  padding-left: 34px;
+  color: #33403a;
+  line-height: 1.45;
+  counter-increment: paso;
+}
+
+.plan li::before {
+  content: counter(paso);
+  position: absolute;
+  left: 0;
+  top: -1px;
+  display: grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  border-radius: 999px;
+  background: #e6f1e9;
+  color: #2e7455;
+  font-size: var(--text-xs);
+  font-weight: 800;
+}
+
+.relacionados {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.relacionados a {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 9px 14px;
+  border: 1px solid #d9e2dc;
+  border-radius: 10px;
+  background: #fff;
+  color: #2e7455;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    border-color 0.15s,
+    transform 0.15s;
+}
+
+.relacionados a:hover {
+  border-color: #2e7455;
+  transform: translateX(2px);
+}
+
+.relacionados a:focus-visible {
+  outline: 2px solid #2e7455;
+  outline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  .tarjeta {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .relacionados a {
+    transition: none;
+  }
+}

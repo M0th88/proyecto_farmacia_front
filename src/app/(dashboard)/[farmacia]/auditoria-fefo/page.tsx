@@ -15,7 +15,7 @@ export const instant = false;
 async function Content({ params }: PharmacyParams) {
   const pharmacy = await resolvePharmacy(params);
   if (pharmacy === "asistencial")
-    return <EmptyPrivateSection title="Auditoría FEFO" />;
+    return <EmptyPrivateSection params={params} title="Auditoría FEFO" />;
 
   const user = await getPrivateUser();
   if (!user) redirect("/login/privada");

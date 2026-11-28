@@ -52,3 +52,8 @@ No hay framework de tests. Las pruebas son scripts Node independientes en `scrip
 - Biome 2.3.6, dos espacios, imports ordenados; ESLint para reglas React/Next.
 - Usar APPCONSTANCIAS como referencia de patrones y librerías; no instalar dependencias ajenas a la función pedida.
 - Documentar nuevas rutas en el README.
+
+## Problemas conocidos del entorno de desarrollo
+
+- **La página se recarga sola en bucle** (`✓ Compiled` + `GET` repetidos en la terminal): la caché de Turbopack en `.next` quedó desfasada, típicamente tras editar archivos que el observador no detectó o tras intentar un segundo `next dev` en la misma carpeta. Detén el servidor, borra `.next` y vuelve a ejecutar `npm run dev`. No levantes dos `next dev` en el mismo directorio.
+- **Errores de hidratación por formato**: Node y el navegador traen versiones distintas de ICU (espacios especiales, "K"/"k", "nov"/"nov."). En componentes cliente usa los formateadores estables de `panel/_components/panel-charts.tsx` (`estable`, `hora`, `shortDay`) o formatea en el servidor y pasa el texto.

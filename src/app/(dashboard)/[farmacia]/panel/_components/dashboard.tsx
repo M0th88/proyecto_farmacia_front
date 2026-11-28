@@ -21,11 +21,14 @@ import { dashboardSummary } from "@/lib/dashboard-summary";
 import type { DashboardData } from "@/lib/types/panel";
 import styles from "./panel.module.css";
 import {
+  hora,
+  longDay,
   money,
   number,
   PaymentChart,
   SalesChart,
   shortDay,
+  unDecimal,
 } from "./panel-charts";
 
 function Change({ current, previous }: { current: number; previous: number }) {
@@ -37,11 +40,7 @@ function Change({ current, previous }: { current: number; previous: number }) {
       className={`${styles.metricNote} ${change < 0 ? styles.negative : ""}`}
     >
       {change < 0 ? <ArrowDownRight size={14} /> : <ArrowUpRight size={14} />}
-      <b>
-        {Math.abs(change).toLocaleString("es-CL", { maximumFractionDigits: 1 })}
-        %
-      </b>{" "}
-      vs. período anterior
+      <b>{unDecimal(Math.abs(change))}%</b> vs. período anterior
     </span>
   );
 }
@@ -55,17 +54,12 @@ export function Dashboard({ data }: { data: DashboardData }) {
   const available = data.disponibles;
   const totalUnits =
     data.inventario.vigente + data.inventario.proximo + data.inventario.vencido;
-  const date = new Intl.DateTimeFormat("es-CL", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "America/Santiago",
-  }).format(new Date(data.actualizado));
-  const time = new Intl.DateTimeFormat("es-CL", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "America/Santiago",
-  }).format(new Date(data.actualizado));
+  const date = longDay(
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/Santiago",
+    }).format(new Date(data.actualizado)),
+  );
+  const time = hora(data.actualizado);
   return (
     <div className={styles.dashboard}>
       <header className={styles.header}>
@@ -413,12 +407,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
                       </Link>
                     </td>
                     <td>
-                      {shortDay(sale.dia)} ·{" "}
-                      {new Date(sale.fecha).toLocaleTimeString("es-CL", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        timeZone: "America/Santiago",
-                      })}
+                      {shortDay(sale.dia)} · {hora(sale.fecha)}
                     </td>
                     <td>
                       <span className={styles.paymentBadge}>

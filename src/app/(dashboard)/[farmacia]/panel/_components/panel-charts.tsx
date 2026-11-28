@@ -2,27 +2,66 @@
 import { useId, useState } from "react";
 import styles from "./panel.module.css";
 
+/**
+ * Node (servidor) y el navegador traen versiones distintas de ICU: los
+ * espacios especiales y las abreviaturas cambian y React reclama un error de
+ * hidratación. Todo texto formateado pasa por `estable`.
+ */
+export const estable = (text: string) => text.replace(/[\u00a0\u202f]/g, " ");
 export const money = (value: number) =>
-  new Intl.NumberFormat("es-CL", {
-    style: "currency",
-    currency: "CLP",
-    maximumFractionDigits: 0,
-  }).format(value);
+  estable(
+    new Intl.NumberFormat("es-CL", {
+      style: "currency",
+      currency: "CLP",
+      maximumFractionDigits: 0,
+    }).format(value),
+  );
 export const number = (value: number) =>
-  new Intl.NumberFormat("es-CL").format(value);
-export const shortDay = (day: string) =>
-  new Intl.DateTimeFormat("es-CL", {
-    day: "numeric",
-    month: "short",
-    timeZone: "UTC",
-  }).format(new Date(`${day}T12:00:00Z`));
-const compactMoney = (value: number) =>
-  new Intl.NumberFormat("es-CL", {
-    style: "currency",
-    currency: "CLP",
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value);
+  estable(new Intl.NumberFormat("es-CL").format(value));
+const MESES = [
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
+];
+/** "2026-11-14" → "14 nov", sin depender de ICU. */
+export const shortDay = (day: string) => {
+  const [, m, d] = day.split("-").map(Number);
+  return `${d} ${MESES[m - 1].slice(0, 3)}`;
+};
+/** "2026-11-27" → "27 de noviembre de 2026". */
+export const longDay = (day: string) => {
+  const [y, m, d] = day.split("-").map(Number);
+  return `${d} de ${MESES[m - 1]} de ${y}`;
+};
+/** Hora 24 h en Chile, igual en servidor y navegador (ej. 21:49). */
+export const hora = (value: Date | string | number) =>
+  estable(
+    new Intl.DateTimeFormat("es-CL", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+      timeZone: "America/Santiago",
+    }).format(new Date(value)),
+  );
+/** Un decimal con coma, sin depender de ICU (ej. 2,5). */
+export const unDecimal = (value: number) =>
+  String(Math.round(value * 10) / 10).replace(".", ",");
+// Formato compacto propio: la notación "compact" de ICU varía ("K"/"k", "mil").
+const compactMoney = (value: number) => {
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000) return `$${unDecimal(value / 1_000_000)} M`;
+  if (abs >= 1_000) return `$${unDecimal(value / 1_000)} k`;
+  return money(value);
+};
 
 export function SalesChart({
   points,
@@ -140,9 +179,8 @@ export function SalesChart({
                 onFocus={() => setActive(index)}
                 onBlur={() => setActive(null)}
               >
-                <title>
-                  {shortDay(point.dia)}: {money(point.total)}
-                </title>
+                {/* Un solo texto: varios nodos dentro de <title> no hidratan igual. */}
+                <title>{`${shortDay(point.dia)}: ${money(point.total)}`}</title>
               </circle>
             </g>
           ))}
