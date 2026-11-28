@@ -18,6 +18,9 @@
 }
 
 .segmento button {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
   padding: 7px 12px;
   border: 0;
   border-radius: 8px;
@@ -256,4 +259,45 @@
   padding: 10px 0 0;
   border-top: 1px solid #e5ebe6;
   font-weight: 800;
+}
+
+/* Línea editable dentro de un modal (por ejemplo, recepción de compras) */
+.linea {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid #e5ebe6;
+  border-radius: 10px;
+}
+
+.linea legend {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 0 6px;
+  font-weight: 800;
+}
+
+.linea legend small {
+  color: #839389;
+  font-weight: 600;
+}
+
+.lineaCampos {
+  display: grid;
+  grid-template-columns: 90px 1fr 1fr;
+  gap: 10px;
+}
+
+.lineaMotivo {
+  grid-column: span 2;
+}
+
+@media (max-width: 520px) {
+  .lineaCampos {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .lineaMotivo {
+    grid-column: 1 / -1;
+  }
 }

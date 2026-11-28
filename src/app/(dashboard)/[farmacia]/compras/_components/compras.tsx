@@ -597,105 +597,86 @@ export function Compras({
                 ))}
               </select>
             </label>
-            <div className={g.scroll}>
-              <table className={g.tabla}>
-                <thead>
-                  <tr>
-                    <th>Producto</th>
-                    <th className={g.num}>Aceptadas</th>
-                    <th>Lote</th>
-                    <th>Vence</th>
-                    <th className={g.num}>Rechazadas</th>
-                    <th>Motivo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recibir.items
-                    .filter((i) => pendiente(i) > 0)
-                    .map((i) => {
-                      const l = recepcion[i.id];
-                      const cambiar = (c: Partial<LineaRecepcion>) =>
-                        setRecepcion({ ...recepcion, [i.id]: { ...l, ...c } });
-                      return (
-                        <tr key={i.id}>
-                          <td>
-                            {i.producto}
-                            <small>Pendientes: {pendiente(i)}</small>
-                          </td>
-                          <td className={g.num}>
-                            <input
-                              className={g.celda}
-                              type="number"
-                              min={0}
-                              max={pendiente(i)}
-                              aria-label={`Aceptadas de ${i.producto}`}
-                              value={l.aceptada}
-                              onChange={(e) =>
-                                cambiar({ aceptada: e.target.value })
-                              }
-                            />
-                          </td>
-                          <td>
-                            <input
-                              className={g.celda}
-                              aria-label={`Lote de ${i.producto}`}
-                              maxLength={60}
-                              value={l.numeroLote}
-                              onChange={(e) =>
-                                cambiar({ numeroLote: e.target.value })
-                              }
-                            />
-                          </td>
-                          <td>
-                            <input
-                              className={g.celda}
-                              type="date"
-                              aria-label={`Vencimiento de ${i.producto}`}
-                              value={l.vencimiento}
-                              onChange={(e) =>
-                                cambiar({ vencimiento: e.target.value })
-                              }
-                            />
-                          </td>
-                          <td className={g.num}>
-                            <input
-                              className={g.celda}
-                              type="number"
-                              min={0}
-                              aria-label={`Rechazadas de ${i.producto}`}
-                              value={l.rechazada}
-                              onChange={(e) =>
-                                cambiar({ rechazada: e.target.value })
-                              }
-                            />
-                          </td>
-                          <td>
-                            <select
-                              className={g.celda}
-                              aria-label={`Motivo de rechazo de ${i.producto}`}
-                              value={l.motivoRechazo}
-                              disabled={!Number(l.rechazada)}
-                              onChange={(e) =>
-                                cambiar({
-                                  motivoRechazo: e.target
-                                    .value as MotivoRechazo,
-                                })
-                              }
-                            >
-                              <option value="">—</option>
-                              {Object.entries(MOTIVOS_RECHAZO).map(([k, v]) => (
-                                <option key={k} value={k}>
-                                  {v}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                </tbody>
-              </table>
-            </div>
+            {recibir.items
+              .filter((i) => pendiente(i) > 0)
+              .map((i) => {
+                const l = recepcion[i.id];
+                const cambiar = (c: Partial<LineaRecepcion>) =>
+                  setRecepcion({ ...recepcion, [i.id]: { ...l, ...c } });
+                return (
+                  <fieldset key={i.id} className={g.linea}>
+                    <legend>
+                      {i.producto}
+                      <small>Pendientes: {pendiente(i)}</small>
+                    </legend>
+                    <div className={g.lineaCampos}>
+                      <label>
+                        Aceptadas
+                        <input
+                          type="number"
+                          min={0}
+                          max={pendiente(i)}
+                          value={l.aceptada}
+                          onChange={(e) =>
+                            cambiar({ aceptada: e.target.value })
+                          }
+                        />
+                      </label>
+                      <label>
+                        Lote
+                        <input
+                          maxLength={60}
+                          value={l.numeroLote}
+                          placeholder="Ej. L2611"
+                          onChange={(e) =>
+                            cambiar({ numeroLote: e.target.value })
+                          }
+                        />
+                      </label>
+                      <label>
+                        Vence
+                        <input
+                          type="date"
+                          value={l.vencimiento}
+                          onChange={(e) =>
+                            cambiar({ vencimiento: e.target.value })
+                          }
+                        />
+                      </label>
+                      <label>
+                        Rechazadas
+                        <input
+                          type="number"
+                          min={0}
+                          value={l.rechazada}
+                          onChange={(e) =>
+                            cambiar({ rechazada: e.target.value })
+                          }
+                        />
+                      </label>
+                      <label className={g.lineaMotivo}>
+                        Motivo del rechazo
+                        <select
+                          value={l.motivoRechazo}
+                          disabled={!Number(l.rechazada)}
+                          onChange={(e) =>
+                            cambiar({
+                              motivoRechazo: e.target.value as MotivoRechazo,
+                            })
+                          }
+                        >
+                          <option value="">—</option>
+                          {Object.entries(MOTIVOS_RECHAZO).map(([k, v]) => (
+                            <option key={k} value={k}>
+                              {v}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                  </fieldset>
+                );
+              })}
             <p className={g.nota}>
               Lo que no ingreses queda pendiente para una próxima recepción.
             </p>
