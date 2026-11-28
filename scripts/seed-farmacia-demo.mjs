@@ -257,6 +257,52 @@ try {
     anotar(`${nuevos} convenios y ${afiliados} clientes afiliados creados`);
   }
 
+  // 5b. Proveedores y marcas de ejemplo (si las tablas existen).
+  if (tablas.has("Proveedor")) {
+    let nuevos = 0;
+    for (const [i, [razon, fantasia, contacto]] of [
+      ["Droguería Sur Austral SpA", "DroguSur", "Paula Henríquez"],
+      [
+        "Distribuidora Farmacéutica Araucanía Ltda.",
+        "FarmaAraucanía",
+        "Jorge Lagos",
+      ],
+      ["Laboratorio Andino S.A.", "Lab Andino", "Marcela Soto"],
+    ].entries())
+      nuevos += (
+        await q(
+          `INSERT INTO "Proveedor" (rut, "razonSocial", "nombreFantasia", contacto, telefono, email, activo, "creadoEn", "actualizadoEn")
+           VALUES ($1, $2, $3, $4, $5, $6, true, NOW(), NOW()) ON CONFLICT (rut) DO NOTHING`,
+          [
+            rut(900 + i),
+            razon,
+            fantasia,
+            contacto,
+            `+5645${2200000 + i}`,
+            `ventas${i + 1}@proveedor.test`,
+          ],
+        )
+      ).rowCount;
+    anotar(`${nuevos} proveedores de ejemplo creados`);
+  }
+  if (tablas.has("Marca")) {
+    let nuevas = 0;
+    for (const [nombre, laboratorio, pais] of [
+      ["Laboratorio Chile", "Laboratorio Chile S.A.", "Chile"],
+      ["Saval", "Laboratorios Saval S.A.", "Chile"],
+      ["Andrómaco", "Laboratorios Andrómaco S.A.", "Chile"],
+      ["Genérico", null, null],
+    ])
+      nuevas += (
+        await q(
+          `INSERT INTO "Marca" (nombre, laboratorio, pais, activo, "creadoEn")
+           VALUES ($1, $2, $3, true, NOW()) ON CONFLICT (nombre) DO NOTHING`,
+          [nombre, laboratorio, pais],
+        )
+      ).rowCount;
+    anotar(`${nuevas} marcas de ejemplo creadas`);
+  }
+
   // 6. Permisos nuevos para los roles existentes (solo se agregan).
   for (const [rol, permisos] of Object.entries(PERMISOS_ROL)) {
     const r = await q(

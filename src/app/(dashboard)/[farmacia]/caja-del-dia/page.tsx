@@ -6,10 +6,12 @@ import {
 } from "@/lib/auth/pharmacy-scope";
 import { requirePharmacyUser } from "@/lib/auth/session";
 import { pharmacyDb } from "@/lib/db/pharmacy-db";
-
+import { canOperate } from "@/lib/fefo";
+import { turnoActual, turnosCerrados } from "@/lib/private/abastecimiento";
 import { mediosPago } from "@/lib/types/punto-de-venta";
 import { pesos } from "@/lib/validation/punto-de-venta";
 import { ControlesDeCaja } from "./_components/controles-de-caja";
+import { TurnoCaja } from "./_components/turno-caja";
 
 export const instant = false;
 const diaChile = (fecha: Date) =>
@@ -22,7 +24,7 @@ const diaChile = (fecha: Date) =>
 
 export default async function CajaDelDiaPage({ params }: PharmacyParams) {
   const pharmacy = await resolvePharmacy(params);
-  await requirePharmacyUser(pharmacy);
+  const user = await requirePharmacyUser(pharmacy);
   await connection();
   const ahora = new Date();
   const hoy = diaChile(ahora);
@@ -95,7 +97,15 @@ export default async function CajaDelDiaPage({ params }: PharmacyParams) {
             </div>
           ))}
         </section>
-        <ControlesDeCaja />
+        {pharmacy === "privada" ? (
+          <TurnoCaja
+            turno={await turnoActual(user.id)}
+            historial={await turnosCerrados()}
+            puedeOperar={canOperate(user, "caja")}
+          />
+        ) : (
+          <ControlesDeCaja />
+        )}
       </div>
     </section>
   );

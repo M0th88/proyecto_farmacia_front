@@ -87,6 +87,12 @@ model Medicamento {
   lotes                Lote[]
   detallesVenta        DetalleVenta[]
   registrosControlados RegistroControlado[]
+  marcaId              Int?
+  marca                Marca?               @relation(fields: [marcaId], references: [id], onDelete: SetNull)
+  itemsCompra          OrdenCompraItem[]
+  rechazos             ProductoRechazado[]
+  devoluciones         DevolucionItem[]
+  alertasRetiro        AlertaRetiro[]
 
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
@@ -426,4 +432,174 @@ model ClienteConvenio {
   convenio ConvenioDescuento @relation(fields: [convenioId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([convenioId])
+}
+
+/// Laboratorio o marca comercial de un producto.
+model Marca {
+  id          Int      @id @default(autoincrement())
+  nombre      String   @unique
+  laboratorio String?
+  pais        String?
+  activo      Boolean  @default(true)
+  creadoEn    DateTime @default(now())
+
+  medicamentos Medicamento[]
+}
+
+model Proveedor {
+  id             Int      @id @default(autoincrement())
+  rut            String   @unique
+  razonSocial    String
+  nombreFantasia String?
+  contacto       String?
+  telefono       String?
+  email          String?
+  direccion      String?
+  activo         Boolean  @default(true)
+  creadoEn       DateTime @default(now())
+  actualizadoEn  DateTime @updatedAt
+
+  ordenes      OrdenCompra[]
+  rechazos     ProductoRechazado[]
+  devoluciones DevolucionProveedor[]
+}
+
+/// Estados: BORRADOR, ENVIADA, RECIBIDA_PARCIAL, RECIBIDA, ANULADA.
+model OrdenCompra {
+  id            Int       @id @default(autoincrement())
+  proveedorId   Int
+  estado        String    @default("BORRADOR")
+  fechaEsperada DateTime? @db.Date
+  observaciones String?
+  usuarioId     Int?
+  creadaEn      DateTime  @default(now())
+  enviadaEn     DateTime?
+  recibidaEn    DateTime?
+
+  proveedor Proveedor           @relation(fields: [proveedorId], references: [id])
+  items     OrdenCompraItem[]
+  rechazos  ProductoRechazado[]
+
+  @@index([estado])
+  @@index([proveedorId])
+}
+
+model OrdenCompraItem {
+  id            Int     @id @default(autoincrement())
+  ordenId       Int
+  medicamentoId Int
+  cantidad      Int
+  costoUnitario Decimal @db.Decimal(12, 2)
+  recibida      Int     @default(0)
+  rechazada     Int     @default(0)
+
+  orden       OrdenCompra @relation(fields: [ordenId], references: [id], onDelete: Cascade)
+  medicamento Medicamento @relation(fields: [medicamentoId], references: [id])
+
+  @@unique([ordenId, medicamentoId])
+}
+
+/// Producto no aceptado en la recepción. Estados: PENDIENTE, DEVUELTO.
+model ProductoRechazado {
+  id            Int      @id @default(autoincrement())
+  ordenId       Int?
+  proveedorId   Int
+  medicamentoId Int
+  numeroLote    String?
+  cantidad      Int
+  motivo        String
+  detalle       String?
+  estado        String   @default("PENDIENTE")
+  devolucionId  Int?
+  usuarioId     Int?
+  creadoEn      DateTime @default(now())
+
+  orden       OrdenCompra?         @relation(fields: [ordenId], references: [id])
+  proveedor   Proveedor            @relation(fields: [proveedorId], references: [id])
+  medicamento Medicamento          @relation(fields: [medicamentoId], references: [id])
+  devolucion  DevolucionProveedor? @relation(fields: [devolucionId], references: [id])
+
+  @@index([estado])
+}
+
+/// Salida de productos hacia el proveedor. Estados: EMITIDA, CERRADA.
+model DevolucionProveedor {
+  id               Int       @id @default(autoincrement())
+  proveedorId      Int
+  motivo           String
+  guia             String?
+  estado           String    @default("EMITIDA")
+  notaCredito      String?
+  montoNotaCredito Decimal?  @db.Decimal(12, 2)
+  observaciones    String?
+  usuarioId        Int?
+  creadaEn         DateTime  @default(now())
+  cerradaEn        DateTime?
+
+  proveedor Proveedor           @relation(fields: [proveedorId], references: [id])
+  items     DevolucionItem[]
+  rechazos  ProductoRechazado[]
+}
+
+model DevolucionItem {
+  id            Int  @id @default(autoincrement())
+  devolucionId  Int
+  medicamentoId Int
+  loteId        Int?
+  stockId       Int?
+  cantidad      Int
+
+  devolucion  DevolucionProveedor @relation(fields: [devolucionId], references: [id], onDelete: Cascade)
+  medicamento Medicamento         @relation(fields: [medicamentoId], references: [id])
+
+  @@index([devolucionId])
+}
+
+/// Alerta sanitaria del ISP que retira lotes del mercado. Estados: ACTIVA, CERRADA.
+model AlertaRetiro {
+  id            Int       @id @default(autoincrement())
+  resolucion    String
+  fecha         DateTime  @db.Date
+  medicamentoId Int
+  lotes         String[]
+  motivo        String
+  estado        String    @default("ACTIVA")
+  usuarioId     Int?
+  creadaEn      DateTime  @default(now())
+  cerradaEn     DateTime?
+
+  medicamento Medicamento @relation(fields: [medicamentoId], references: [id])
+
+  @@index([estado])
+}
+
+/// Turno de caja de un usuario: apertura, movimientos y arqueo de cierre.
+model TurnoCaja {
+  id            Int       @id @default(autoincrement())
+  usuarioId     Int
+  montoInicial  Decimal   @db.Decimal(12, 2)
+  abiertoEn     DateTime  @default(now())
+  cerradoEn     DateTime?
+  montoContado  Decimal?  @db.Decimal(12, 2)
+  montoEsperado Decimal?  @db.Decimal(12, 2)
+  observaciones String?
+
+  movimientos MovimientoCaja[]
+
+  @@index([usuarioId, cerradoEn])
+}
+
+/// Ingreso o retiro manual de efectivo durante un turno.
+model MovimientoCaja {
+  id        Int      @id @default(autoincrement())
+  turnoId   Int
+  tipo      String
+  monto     Decimal  @db.Decimal(12, 2)
+  motivo    String
+  usuarioId Int?
+  creadoEn  DateTime @default(now())
+
+  turno TurnoCaja @relation(fields: [turnoId], references: [id], onDelete: Cascade)
+
+  @@index([turnoId])
 }

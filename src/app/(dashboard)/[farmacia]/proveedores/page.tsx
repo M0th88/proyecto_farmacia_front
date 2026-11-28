@@ -1,68 +1,51 @@
-export default function ProveedoresPage() {
+import { connection } from "next/server";
+import {
+  type PharmacyParams,
+  resolvePharmacy,
+} from "@/lib/auth/pharmacy-scope";
+import { requirePharmacyUser } from "@/lib/auth/session";
+import { prismaPrivada as db } from "@/lib/db/prisma-privada";
+import { canOperate } from "@/lib/fefo";
+import { EmptyPrivateSection } from "../_components/empty-private-section";
+import { SinPermiso } from "../_components/solo-asistencial";
+import { Proveedores } from "./_components/proveedores";
+
+export const instant = false;
+
+export default async function ProveedoresPage({ params }: PharmacyParams) {
+  const pharmacy = await resolvePharmacy(params);
+  const user = await requirePharmacyUser(pharmacy);
+  if (pharmacy !== "privada")
+    return <EmptyPrivateSection params={params} title="Proveedores" />;
+  if (!canOperate(user, "proveedores"))
+    return <SinPermiso texto="Tu rol no puede ver proveedores." />;
+  await connection();
+  const proveedores = await db.proveedor.findMany({
+    orderBy: [{ activo: "desc" }, { razonSocial: "asc" }],
+    include: {
+      _count: {
+        select: {
+          ordenes: true,
+          rechazos: { where: { estado: "PENDIENTE" } },
+        },
+      },
+    },
+  });
   return (
-    <section className="pos-shell">
-      <header className="pos-header">
-        <div>
-          <h1>Proveedores</h1>
-          <span>Laboratorios y distribuidores que abastecen la farmacia.</span>
-        </div>
-      </header>
-      <div className="pos-grid">
-        <section className="pos-panel">
-          <div className="pos-title">
-            <div>
-              <small>DIRECTORIO</small>
-              <h2>Proveedores registrados</h2>
-            </div>
-            <span>0 proveedores</span>
-          </div>
-          <div className="pos-empty">
-            <b>Directorio pendiente de implementación</b>
-            <p>
-              Esta vista se conectará a proveedores y órdenes de compra. No se
-              muestran datos de demostración como si fueran reales.
-            </p>
-          </div>
-        </section>
-        <aside className="pos-panel">
-          <div className="pos-title">
-            <div>
-              <small>PRÓXIMO PASO</small>
-              <h2>Ficha de proveedor</h2>
-            </div>
-          </div>
-          <div className="provider-fields">
-            <label>
-              Razón social
-              <input disabled placeholder="Nombre legal" />
-            </label>
-            <label>
-              RUT
-              <input disabled placeholder="RUT del proveedor" />
-            </label>
-            <label>
-              Contacto
-              <input disabled placeholder="Nombre de contacto" />
-            </label>
-            <label>
-              Teléfono
-              <input disabled placeholder="Teléfono" />
-            </label>
-            <label>
-              Correo
-              <input disabled placeholder="Correo electrónico" />
-            </label>
-            <label>
-              Dirección
-              <input disabled placeholder="Dirección comercial" />
-            </label>
-          </div>
-          <p className="pos-footnote">
-            El alta y edición se habilitarán al crear el modelo de proveedores y
-            los permisos correspondientes.
-          </p>
-        </aside>
-      </div>
-    </section>
+    <Proveedores
+      proveedores={proveedores.map((p) => ({
+        id: p.id,
+        rut: p.rut,
+        razonSocial: p.razonSocial,
+        nombreFantasia: p.nombreFantasia ?? "",
+        contacto: p.contacto ?? "",
+        telefono: p.telefono ?? "",
+        email: p.email ?? "",
+        direccion: p.direccion ?? "",
+        activo: p.activo,
+        ordenes: p._count.ordenes,
+        rechazosPendientes: p._count.rechazos,
+      }))}
+    />
   );
 }

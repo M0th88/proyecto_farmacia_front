@@ -8,10 +8,24 @@ import { receiptSchema } from "@/lib/types/fefo";
 export type Receipt = z.infer<typeof receiptSchema>;
 
 export async function receiveFefo(input: Receipt, userId: number) {
+  return prismaPrivada.$transaction((tx) => receiveFefoTx(tx, input, userId), {
+    isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+  });
+}
+
+/**
+ * Recepción FEFO dentro de una transacción existente (por ejemplo, la
+ * recepción de una orden de compra con varias líneas).
+ */
+export async function receiveFefoTx(
+  tx: Prisma.TransactionClient,
+  input: Receipt,
+  userId: number,
+) {
   if (new Date(input.fechaRecepcion) > new Date())
     throw new Error("La recepción no puede estar en el futuro.");
-  return prismaPrivada.$transaction(
-    async (tx) => {
+  {
+    {
       const product = await tx.medicamento.findUnique({
         where: { id: input.medicamentoId },
       });
@@ -129,7 +143,6 @@ export async function receiveFefo(input: Receipt, userId: number) {
         },
       });
       return { pendiente: false, id: saved.id };
-    },
-    { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
-  );
+    }
+  }
 }

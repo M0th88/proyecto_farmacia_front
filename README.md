@@ -303,3 +303,19 @@ npm run demo:asistencial              # simula
 npm run demo:asistencial -- --apply   # arsenal de crónicos, 5 programas, 8 pacientes y una remesa CENABAST
 node scripts/test-dispensacion.mjs    # reglas sin base de datos
 ```
+
+## Abastecimiento y caja (Farmacia Privada)
+
+Flujo completo de compras a devoluciones; las reglas están en `src/lib/validation/abastecimiento.ts` y `src/lib/private/abastecimiento.ts`, y las APIs en `src/app/api/privada/` (todas pasan por `_gestion.ts`: sesión, permiso, validación y errores).
+
+| Sección | Qué hace | Permiso |
+| --- | --- | --- |
+| Proveedores | Directorio con RUT validado, contacto y estado | `proveedores` |
+| Marcas | Laboratorios y marcas; asignación de marca a cada producto (`Medicamento.marcaId`) | `catalogo` |
+| Compras | Órdenes en borrador → enviadas → recepción parcial o total. Lo aceptado entra al stock con `receiveFefoTx` (misma recepción verificada de Stocks y Lotes) y lo rechazado queda con su motivo | `compras` |
+| Productos Rechazados | Rechazos pendientes por proveedor; se agrupan en una devolución | `compras` |
+| Devoluciones a Proveedor | Devolución de rechazos o de stock vencido/retirado (descuenta stock con movimiento `DEVOLUCION_PROVEEDOR`) y cierre con nota de crédito | `compras` |
+| Retiro de Mercado | Alerta ISP que marca los lotes como `RETIRADO_ALERTA`: dejan de aparecer en el POS FEFO y pasan a devolverse | `inventario` |
+| Caja del Día | Turno por usuario: fondo inicial, ventas en efectivo del turno, ingresos/retiros y arqueo de cierre con sobrante o faltante | `caja` |
+
+Requiere la migración `202611280001_abastecimiento_y_caja` (solo agrega tablas y la columna opcional `marcaId`). `npm run demo:farmacia -- --apply` crea proveedores y marcas de ejemplo. `node scripts/test-abastecimiento.mjs` verifica las reglas sin base de datos.
