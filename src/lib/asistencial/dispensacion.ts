@@ -115,6 +115,8 @@ export async function fichaPaciente(rut: string) {
     id: paciente.id,
     rut: paciente.rut,
     nombre: paciente.nombre,
+    prevision: paciente.prevision,
+    tramoFonasa: paciente.tramoFonasa,
     programas: paciente.inscripciones.map((i) => {
       const vigente =
         i.activo &&

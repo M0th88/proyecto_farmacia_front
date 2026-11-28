@@ -30,7 +30,11 @@ const CONVENIOS = [
   { nombre: "Isapre Colmena", tipo: "ISAPRE", porcentaje: 15 },
   { nombre: "Isapre Banmédica", tipo: "ISAPRE", porcentaje: 12 },
   { nombre: "Isapre Cruz Blanca", tipo: "ISAPRE", porcentaje: 10 },
+  { nombre: "Fonasa tramo A", tipo: "FONASA", porcentaje: 15 },
   { nombre: "Fonasa tramo B", tipo: "FONASA", porcentaje: 8 },
+  { nombre: "Fonasa tramo C", tipo: "FONASA", porcentaje: 6 },
+  { nombre: "Fonasa tramo D", tipo: "FONASA", porcentaje: 4 },
+  { nombre: "GES con copago 20 %", tipo: "GES", porcentaje: 80 },
   { nombre: "Seguro complementario MetLife", tipo: "SEGURO", porcentaje: 20 },
 ];
 const AFILIADOS = [
@@ -42,6 +46,9 @@ const AFILIADOS = [
   ["Diego Araya Castro", "Fonasa tramo B"],
   ["Javiera Reyes Núñez", "Seguro complementario MetLife"],
   ["Tomás Herrera Vega", "Isapre Banmédica"],
+  ["Isabel Cárcamo Lagos", "Fonasa tramo A"],
+  ["Ricardo Navarro Peña", "Fonasa tramo C"],
+  ["Gloria Ramírez Soto", "GES con copago 20 %"],
 ];
 const PERMISOS_ROL = {
   "Químico farmacéutico": [

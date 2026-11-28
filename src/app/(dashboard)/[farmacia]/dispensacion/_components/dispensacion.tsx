@@ -10,6 +10,7 @@ import {
   etiquetaTipoPrograma,
   parentescos,
   problemaRecetaAsistencial,
+  textoPrevision,
   VIGENCIA_RECETA_DIAS,
 } from "@/lib/validation/dispensacion";
 import { hoyChile } from "@/lib/validation/recetas";
@@ -193,9 +194,24 @@ export function Dispensacion({
               <UserRound aria-hidden size={28} />
               <div>
                 <h2>{ficha.nombre}</h2>
-                <small>{ficha.rut}</small>
+                <small>
+                  {ficha.rut} ·{" "}
+                  <span
+                    className={styles.prevision}
+                    data-alerta={ficha.prevision !== "FONASA" || undefined}
+                  >
+                    {textoPrevision(ficha.prevision, ficha.tramoFonasa)}
+                  </span>
+                </small>
               </div>
             </div>
+            {ficha.prevision !== "FONASA" && (
+              <p className={styles.aviso} role="note">
+                {ficha.prevision
+                  ? "El paciente no es beneficiario Fonasa: confirma su derecho a retiro sin costo en la red pública (por ejemplo, programa GES)."
+                  : "Previsión sin registrar: actualízala en Pacientes antes de entregar."}
+              </p>
+            )}
             {ficha.programas.length ? (
               <div
                 className={styles.programas}

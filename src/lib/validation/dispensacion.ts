@@ -81,13 +81,58 @@ export function problemaRecetaAsistencial(fecha: string, hoy: string) {
   return null;
 }
 
-export const pacienteSchema = z.object({
-  rut: rutSchema("RUT"),
-  nombre: nombre("del paciente"),
-  fechaNacimiento: z.union([z.iso.date(), z.literal("")]).default(""),
-  telefono: z.string().trim().max(20).default(""),
-  direccion: z.string().trim().max(160).default(""),
-});
+export const previsiones = [
+  "FONASA",
+  "ISAPRE",
+  "CAPREDENA",
+  "DIPRECA",
+  "PARTICULAR",
+] as const;
+export const etiquetaPrevision: Record<(typeof previsiones)[number], string> = {
+  FONASA: "Fonasa",
+  ISAPRE: "Isapre",
+  CAPREDENA: "Capredena",
+  DIPRECA: "Dipreca",
+  PARTICULAR: "Particular (sin previsión)",
+};
+export const tramosFonasa = ["A", "B", "C", "D"] as const;
+
+/** Previsión obligatoria; el tramo solo se pide (y se exige) para Fonasa. */
+export const previsionSchema = z
+  .object({
+    prevision: z.enum(previsiones, "Selecciona la previsión."),
+    tramoFonasa: z.union([z.enum(tramosFonasa), z.literal("")]).default(""),
+  })
+  .superRefine((v, ctx) => {
+    if (v.prevision === "FONASA" && !v.tramoFonasa)
+      ctx.addIssue({
+        code: "custom",
+        path: ["tramoFonasa"],
+        message: "Indica el tramo Fonasa (A, B, C o D).",
+      });
+  })
+  .transform((v) => ({
+    prevision: v.prevision,
+    tramoFonasa: v.prevision === "FONASA" ? v.tramoFonasa : "",
+  }));
+
+/** Texto corto de la previsión, por ejemplo «Fonasa tramo B». */
+export function textoPrevision(prevision: string | null, tramo: string | null) {
+  if (!prevision) return "Previsión sin registrar";
+  const base =
+    etiquetaPrevision[prevision as (typeof previsiones)[number]] ?? prevision;
+  return prevision === "FONASA" && tramo ? `${base} tramo ${tramo}` : base;
+}
+
+export const pacienteSchema = z
+  .object({
+    rut: rutSchema("RUT"),
+    nombre: nombre("del paciente"),
+    fechaNacimiento: z.union([z.iso.date(), z.literal("")]).default(""),
+    telefono: z.string().trim().max(20).default(""),
+    direccion: z.string().trim().max(160).default(""),
+  })
+  .and(previsionSchema);
 
 export const inscripcionSchema = z.object({
   pacienteId: z.number().int().positive(),

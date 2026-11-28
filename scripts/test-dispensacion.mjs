@@ -29,8 +29,10 @@ function load(path) {
 
 const {
   dispensacionSchema,
+  previsionSchema,
   problemaRecetaAsistencial,
   remesaSchema,
+  textoPrevision,
   VIGENCIA_RECETA_DIAS,
 } = load("../src/lib/validation/dispensacion.ts");
 
@@ -109,5 +111,29 @@ assert.ok(remesa().success);
 assert.equal(remesa().data.proveedor, "CENABAST");
 assert.match(remesa({ guia: "" }).error.issues[0].message, /guía/);
 assert.equal(remesa({ items: [] }).success, false);
+
+// Previsión: el tramo se exige solo para Fonasa y se descarta en las demás.
+assert.deepEqual(
+  previsionSchema.parse({ prevision: "FONASA", tramoFonasa: "B" }),
+  {
+    prevision: "FONASA",
+    tramoFonasa: "B",
+  },
+);
+assert.match(
+  previsionSchema.safeParse({ prevision: "FONASA" }).error.issues[0].message,
+  /tramo Fonasa/,
+);
+assert.deepEqual(
+  previsionSchema.parse({ prevision: "ISAPRE", tramoFonasa: "A" }),
+  {
+    prevision: "ISAPRE",
+    tramoFonasa: "",
+  },
+);
+assert.equal(previsionSchema.safeParse({ prevision: "OTRA" }).success, false);
+assert.equal(textoPrevision("FONASA", "C"), "Fonasa tramo C");
+assert.equal(textoPrevision("ISAPRE", null), "Isapre");
+assert.equal(textoPrevision(null, null), "Previsión sin registrar");
 
 console.log("Reglas de dispensación asistencial: OK");

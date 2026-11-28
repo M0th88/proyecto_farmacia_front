@@ -55,6 +55,8 @@ export default async function PacientesPage({
         id: p.id,
         rut: p.rut,
         nombre: p.nombre,
+        prevision: p.prevision,
+        tramoFonasa: p.tramoFonasa,
         entregas: p._count.dispensaciones,
         inscripciones: p.inscripciones.map((i) => ({
           programaId: i.programa.id,

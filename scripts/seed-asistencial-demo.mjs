@@ -69,15 +69,40 @@ const PROGRAMAS = [
   ],
 ];
 // [nombre, año de nacimiento, programas]
+// [nombre, año de nacimiento, programas, previsión, tramo Fonasa]
 const PACIENTES = [
-  ["Rosa Elena Catrileo Huenchumán", 1952, ["PSCV-HTA", "PSCV-DM2"]],
-  ["Luis Alberto Painemal Ñancupil", 1948, ["PSCV-HTA", "DOLOR-CRONICO"]],
-  ["María Inés Sepúlveda Lagos", 1960, ["HIPOTIROIDISMO"]],
-  ["José Miguel Antilef Curín", 1975, ["PSCV-DM2"]],
-  ["Carmen Gloria Riquelme Vidal", 1958, ["PSCV-HTA", "HIPOTIROIDISMO"]],
-  ["Pedro Pablo Millanao Lienlaf", 2012, ["ERA"]],
-  ["Ana Luisa Fernández Toledo", 1944, ["DOLOR-CRONICO", "PSCV-HTA"]],
-  ["Héctor Manuel Quintana Ortiz", 1966, ["PSCV-DM2", "ERA"]],
+  [
+    "Rosa Elena Catrileo Huenchumán",
+    1952,
+    ["PSCV-HTA", "PSCV-DM2"],
+    "FONASA",
+    "B",
+  ],
+  [
+    "Luis Alberto Painemal Ñancupil",
+    1948,
+    ["PSCV-HTA", "DOLOR-CRONICO"],
+    "FONASA",
+    "A",
+  ],
+  ["María Inés Sepúlveda Lagos", 1960, ["HIPOTIROIDISMO"], "FONASA", "C"],
+  ["José Miguel Antilef Curín", 1975, ["PSCV-DM2"], "FONASA", "D"],
+  [
+    "Carmen Gloria Riquelme Vidal",
+    1958,
+    ["PSCV-HTA", "HIPOTIROIDISMO"],
+    "FONASA",
+    "B",
+  ],
+  ["Pedro Pablo Millanao Lienlaf", 2012, ["ERA"], "FONASA", "A"],
+  [
+    "Ana Luisa Fernández Toledo",
+    1944,
+    ["DOLOR-CRONICO", "PSCV-HTA"],
+    "FONASA",
+    "B",
+  ],
+  ["Héctor Manuel Quintana Ortiz", 1966, ["PSCV-DM2", "ERA"], "ISAPRE", null],
 ];
 const GUIA = "GD-CENABAST-2026-0001";
 
@@ -161,7 +186,16 @@ try {
   resumen.push(`${nuevosProg} programas de salud creados`);
 
   let nuevosPac = 0;
-  for (const [i, [nombre, anio, programas]] of PACIENTES.entries()) {
+  const conPrevision = (
+    await q(
+      `SELECT 1 FROM information_schema.columns WHERE table_name = 'Paciente' AND column_name = 'prevision'`,
+    )
+  ).rowCount;
+  let previsiones = 0;
+  for (const [
+    i,
+    [nombre, anio, programas, prevision, tramo],
+  ] of PACIENTES.entries()) {
     const r = await q(
       `INSERT INTO "Paciente" (rut, nombre, "fechaNacimiento", "creadoEn", "actualizadoEn")
        VALUES ($1, $2, $3, NOW(), NOW()) ON CONFLICT (rut) DO NOTHING RETURNING id`,
@@ -171,6 +205,13 @@ try {
     const pid = (
       await q(`SELECT id FROM "Paciente" WHERE rut = $1`, [rut(i + 1)])
     ).rows[0].id;
+    if (conPrevision)
+      previsiones += (
+        await q(
+          `UPDATE "Paciente" SET prevision = $2, "tramoFonasa" = $3 WHERE id = $1 AND prevision IS NULL`,
+          [pid, prevision, tramo],
+        )
+      ).rowCount;
     for (const p of programas)
       await q(
         `INSERT INTO "InscripcionPrograma" ("pacienteId", "programaId", desde, activo, "creadoEn")
@@ -179,6 +220,8 @@ try {
       );
   }
   resumen.push(`${nuevosPac} pacientes inscritos creados`);
+  if (conPrevision)
+    resumen.push(`${previsiones} pacientes con previsión asignada`);
 
   const remesa = await q(
     `INSERT INTO "Remesa" (guia, proveedor, "recibidaEn", observaciones)

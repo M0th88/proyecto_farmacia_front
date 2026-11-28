@@ -311,6 +311,10 @@ model Paciente {
   fechaNacimiento DateTime? @db.Date
   telefono        String?
   direccion       String?
+  /// FONASA, ISAPRE, CAPREDENA, DIPRECA o PARTICULAR.
+  prevision       String?
+  /// Tramo Fonasa: A, B, C o D (solo si la previsión es FONASA).
+  tramoFonasa     String?
   creadoEn        DateTime  @default(now())
   actualizadoEn   DateTime  @updatedAt
 

@@ -6,20 +6,29 @@ import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import { formatRut } from "@/lib/user-input";
-import { pacienteSchema } from "@/lib/validation/dispensacion";
+import {
+  etiquetaPrevision,
+  pacienteSchema,
+  previsiones,
+  previsionSchema,
+  textoPrevision,
+  tramosFonasa,
+} from "@/lib/validation/dispensacion";
 import styles from "../../dispensacion/_components/dispensacion.module.css";
 
 type Paciente = {
   id: number;
   rut: string;
   nombre: string;
+  prevision: string | null;
+  tramoFonasa: string | null;
   entregas: number;
   inscripciones: { programaId: number; programa: string; activo: boolean }[];
 };
 
-async function enviar(url: string, body: unknown) {
+async function enviar(url: string, body: unknown, method = "POST") {
   const r = await fetch(url, {
-    method: "POST",
+    method,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
@@ -46,7 +55,11 @@ export function Pacientes({
     fechaNacimiento: "",
     telefono: "",
     direccion: "",
+    prevision: "FONASA",
+    tramoFonasa: "",
   });
+  const [editarPrevision, setEditarPrevision] = useState<Paciente | null>(null);
+  const [prev, setPrev] = useState({ prevision: "", tramoFonasa: "" });
   const [inscribir, setInscribir] = useState<Paciente | null>(null);
   const [programaId, setProgramaId] = useState(0);
   const [error, setError] = useState("");
@@ -109,6 +122,7 @@ export function Pacientes({
             <thead>
               <tr>
                 <th>Paciente</th>
+                <th>Previsión</th>
                 <th>Programas</th>
                 <th className={styles.num}>Entregas</th>
                 <th>Acciones</th>
@@ -121,6 +135,24 @@ export function Pacientes({
                     <b>{p.nombre}</b>
                     <br />
                     <small>{p.rut}</small>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      className={styles.enlace}
+                      data-alerta={p.prevision !== "FONASA" || undefined}
+                      title="Editar previsión"
+                      onClick={() => {
+                        setError("");
+                        setPrev({
+                          prevision: p.prevision ?? "",
+                          tramoFonasa: p.tramoFonasa ?? "",
+                        });
+                        setEditarPrevision(p);
+                      }}
+                    >
+                      {textoPrevision(p.prevision, p.tramoFonasa)}
+                    </button>
                   </td>
                   <td>
                     {p.inscripciones.length
@@ -217,6 +249,8 @@ export function Pacientes({
                 fechaNacimiento: "",
                 telefono: "",
                 direccion: "",
+                prevision: "FONASA",
+                tramoFonasa: "",
               });
             }
           }}
@@ -246,6 +280,39 @@ export function Pacientes({
               onChange={(e) => setForm({ ...form, nombre: e.target.value })}
             />
           </label>
+          <label htmlFor={`${id}-prev`}>
+            Previsión de salud
+            <select
+              id={`${id}-prev`}
+              value={form.prevision}
+              onChange={(e) => setForm({ ...form, prevision: e.target.value })}
+            >
+              {previsiones.map((v) => (
+                <option key={v} value={v}>
+                  {etiquetaPrevision[v]}
+                </option>
+              ))}
+            </select>
+          </label>
+          {form.prevision === "FONASA" && (
+            <label htmlFor={`${id}-tramo`}>
+              Tramo Fonasa
+              <select
+                id={`${id}-tramo`}
+                value={form.tramoFonasa}
+                onChange={(e) =>
+                  setForm({ ...form, tramoFonasa: e.target.value })
+                }
+              >
+                <option value="">Selecciona…</option>
+                {tramosFonasa.map((t) => (
+                  <option key={t} value={t}>
+                    Tramo {t}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <label htmlFor={`${id}-nac`}>
             Fecha de nacimiento (opcional)
             <input
@@ -277,6 +344,80 @@ export function Pacientes({
           </label>
           <button type="submit" className="pos-charge" disabled={ocupado}>
             Guardar paciente
+          </button>
+        </form>
+      </Modal>
+
+      <Modal
+        open={editarPrevision !== null}
+        onOpenChange={(o) => !ocupado && !o && setEditarPrevision(null)}
+        title={`Previsión de ${editarPrevision?.nombre ?? ""}`}
+        description="La red pública atiende principalmente a beneficiarios Fonasa."
+      >
+        <form
+          className={styles.grupo}
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (!editarPrevision) return;
+            const parsed = previsionSchema.safeParse(prev);
+            if (!parsed.success)
+              return setError(
+                parsed.error.issues[0]?.message ?? "Revisa los datos.",
+              );
+            if (
+              await accion(async () => {
+                await enviar(
+                  "/api/asistencial/pacientes",
+                  { id: editarPrevision.id, ...parsed.data },
+                  "PATCH",
+                );
+                return `${editarPrevision.nombre}: ${textoPrevision(parsed.data.prevision, parsed.data.tramoFonasa)}.`;
+              })
+            )
+              setEditarPrevision(null);
+          }}
+        >
+          {error && (
+            <p className={styles.error} role="alert">
+              {error}
+            </p>
+          )}
+          <label htmlFor={`${id}-eprev`}>
+            Previsión
+            <select
+              id={`${id}-eprev`}
+              value={prev.prevision}
+              onChange={(e) => setPrev({ ...prev, prevision: e.target.value })}
+            >
+              <option value="">Selecciona…</option>
+              {previsiones.map((v) => (
+                <option key={v} value={v}>
+                  {etiquetaPrevision[v]}
+                </option>
+              ))}
+            </select>
+          </label>
+          {prev.prevision === "FONASA" && (
+            <label htmlFor={`${id}-etramo`}>
+              Tramo Fonasa
+              <select
+                id={`${id}-etramo`}
+                value={prev.tramoFonasa}
+                onChange={(e) =>
+                  setPrev({ ...prev, tramoFonasa: e.target.value })
+                }
+              >
+                <option value="">Selecciona…</option>
+                {tramosFonasa.map((t) => (
+                  <option key={t} value={t}>
+                    Tramo {t}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <button type="submit" className="pos-charge" disabled={ocupado}>
+            Guardar previsión
           </button>
         </form>
       </Modal>
