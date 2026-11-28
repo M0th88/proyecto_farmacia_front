@@ -12,6 +12,7 @@ import {
 import { useState } from "react";
 import { flushSync } from "react-dom";
 import styles from "@/components/admin-table.module.css";
+import { CuarentenaNav } from "@/components/cuarentena-nav";
 import { DataTable } from "@/components/data-table";
 import { EtiquetaExistencia } from "@/components/etiqueta-existencia";
 import etiquetaStyles from "@/components/etiqueta-inventario.module.css";
@@ -166,7 +167,17 @@ export function SegregarProductosTable() {
 
   return (
     <section className={styles.page}>
-      <h1 className={styles.title}>Segregar Productos</h1>
+      <header className="pos-header">
+        <div>
+          <h1>Segregar Productos</h1>
+          <span>
+            Revisa las existencias y separa las que no deben dispensarse:
+            envíalas a cuarentena transitoria o sanitaria, o registra el retiro
+            de las vencidas.
+          </span>
+          <CuarentenaNav farmacia={farmacia} actual="SEGREGAR" />
+        </div>
+      </header>
       <DataTable
         columns={columnas}
         entityLabel="existencias"

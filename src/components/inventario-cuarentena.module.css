@@ -1,0 +1,86 @@
+.vacio {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 36px 16px;
+  color: #2e7455;
+  text-align: center;
+}
+
+.vacio p {
+  max-width: 460px;
+  margin: 0;
+  color: #55635b;
+  line-height: 1.5;
+}
+
+.verificar {
+  display: inline-flex !important;
+  gap: 4px;
+  align-items: center;
+  margin-top: 4px;
+  color: #9a5b00 !important;
+  font-weight: 700;
+}
+
+.caso {
+  display: grid;
+  gap: 3px;
+  max-width: 360px;
+}
+
+.caso small {
+  display: flex !important;
+  gap: 4px;
+  align-items: center;
+}
+
+.opciones {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.opciones legend {
+  margin-bottom: 6px;
+  color: #69796f;
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.opcion {
+  display: flex !important;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px;
+  border: 1px solid #d9e2dc;
+  border-radius: 10px;
+  color: #1f2a24 !important;
+  cursor: pointer;
+}
+
+.opcion:has(input:checked) {
+  border-color: #2e7455;
+  background: #f3f9f5;
+}
+
+.opcion:has(input:disabled) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.opcion input {
+  margin-top: 3px;
+}
+
+.opcion span {
+  display: grid;
+  gap: 2px;
+}
+
+.opcion small {
+  color: #69796f;
+  font-weight: 500;
+}

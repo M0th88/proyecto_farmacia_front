@@ -196,7 +196,7 @@
   font-weight: 700;
 }
 
-.form input:not([type="checkbox"]),
+.form input:not([type="checkbox"]):not([type="radio"]),
 .form select,
 .form textarea,
 .celda {
