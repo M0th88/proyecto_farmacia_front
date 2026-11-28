@@ -9,8 +9,7 @@ import { toast } from "sonner";
 import styles from "@/components/admin-table.module.css";
 import { usePharmacy } from "@/components/pharmacy-provider";
 import { Button } from "@/components/ui/button";
-import { PRIVATE_SECTIONS } from "@/lib/private/permissions";
-import { operationalPermissions } from "@/lib/types/fefo";
+import { GRUPOS_PERMISOS, PLANTILLAS_ROL } from "@/lib/private/permisos-grupos";
 import { type RoleProfile, roleProfileSchema } from "@/lib/types/roles";
 import type { Role } from "@/lib/types/usuarios-y-roles";
 import { rolesQueryKey, usersQueryKey } from "../../usuarios/actions";
@@ -41,6 +40,17 @@ export function RoleProfileForm({
   });
   const description = useWatch({ control: form.control, name: "descripcion" });
   const descriptionLength = description.length;
+  const permisos = (useWatch({ control: form.control, name: "permisos" }) ??
+    []) as string[];
+  const totalPermisos = GRUPOS_PERMISOS.reduce(
+    (n, g) => n + g.permisos.length,
+    0,
+  );
+  const aplicar = (claves: string[]) =>
+    form.setValue("permisos", claves as RoleProfile["permisos"], {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   const descriptionOverLimit = descriptionLength > 500;
   const mutation = useMutation({
     mutationFn: (values: RoleProfile) =>
@@ -131,25 +141,90 @@ export function RoleProfileForm({
           form.formState.errors.permisos ? `${id}-permissions-error` : undefined
         }
       >
-        <legend>Vistas permitidas</legend>
-        <div className={roleStyles.permissionGrid}>
-          {[
-            ...PRIVATE_SECTIONS.filter(
-              (section) =>
-                section.key !== "usuarios" && section.key !== "roles",
-            ),
-            ...operationalPermissions,
-          ].map((section) => (
-            <label className={styles.inline} key={section.key}>
-              <input
-                type="checkbox"
-                value={section.key}
-                {...form.register("permisos")}
-              />
-              {section.label}
-            </label>
-          ))}
-        </div>
+        <legend>
+          Permisos del rol{" "}
+          <span className={roleStyles.contador}>
+            {permisos.length} de {totalPermisos}
+          </span>
+        </legend>
+        {!role && (
+          <div className={roleStyles.plantillas}>
+            <span>Partir de una plantilla:</span>
+            {PLANTILLAS_ROL.map((p) => (
+              <button
+                key={p.nombre}
+                type="button"
+                className={roleStyles.plantilla}
+                onClick={() => {
+                  aplicar(p.permisos);
+                  if (!form.getValues("nombre"))
+                    form.setValue("nombre", p.nombre, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    });
+                }}
+              >
+                {p.nombre}
+              </button>
+            ))}
+          </div>
+        )}
+        {GRUPOS_PERMISOS.map((grupo) => {
+          const claves = grupo.permisos.map((p) => p.key);
+          const marcados = claves.filter((k) => permisos.includes(k)).length;
+          const todos = marcados === claves.length;
+          return (
+            <section className={roleStyles.grupo} key={grupo.id}>
+              <header className={roleStyles.grupoTitulo}>
+                <h3>{grupo.titulo}</h3>
+                <span>
+                  {marcados}/{claves.length}
+                </span>
+                <button
+                  type="button"
+                  className={roleStyles.marcarTodo}
+                  onClick={() =>
+                    aplicar(
+                      todos
+                        ? permisos.filter((k) => !claves.includes(k))
+                        : [...new Set([...permisos, ...claves])],
+                    )
+                  }
+                >
+                  {todos ? "Quitar todos" : "Marcar todos"}
+                </button>
+              </header>
+              <div className={roleStyles.permissionGrid}>
+                {grupo.permisos.map((permiso) => (
+                  <label
+                    className={roleStyles.permiso}
+                    key={permiso.key}
+                    data-sensible={permiso.sensible || undefined}
+                  >
+                    <input
+                      type="checkbox"
+                      value={permiso.key}
+                      {...form.register("permisos")}
+                    />
+                    <span>
+                      <b>
+                        {permiso.label}
+                        {permiso.sensible && (
+                          <em className={roleStyles.sensible}>sensible</em>
+                        )}
+                      </b>
+                      <small>{permiso.descripcion}</small>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </section>
+          );
+        })}
+        <p className={roleStyles.nota}>
+          Usuarios y Roles son exclusivos del Administrador y no se asignan a
+          otros roles.
+        </p>
       </fieldset>
       {form.formState.errors.permisos && (
         <p id={`${id}-permissions-error`} className={styles.error}>

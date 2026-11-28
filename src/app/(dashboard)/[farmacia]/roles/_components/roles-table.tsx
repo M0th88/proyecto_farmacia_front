@@ -7,7 +7,7 @@ import { DataTable } from "@/components/data-table";
 import { usePharmacy } from "@/components/pharmacy-provider";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
-import { PRIVATE_SECTIONS } from "@/lib/private/permissions";
+import { resumenPermisos } from "@/lib/private/permisos-grupos";
 import type { Role } from "@/lib/types/usuarios-y-roles";
 import { listRolesPage, rolesTableQueryKey } from "../actions";
 import { DeleteRoleDialog } from "./delete-role-dialog";
@@ -15,7 +15,20 @@ import { RoleActions } from "./role-actions";
 import { RoleProfileForm } from "./role-profile-form";
 import roleStyles from "./roles.module.css";
 
-export function RolesTable({ currentUserId }: { currentUserId: number }) {
+export type ResumenRoles = {
+  roles: number;
+  usuarios: number;
+  sinUsuarios: number;
+  conSensibles: number;
+};
+
+export function RolesTable({
+  currentUserId,
+  resumen,
+}: {
+  currentUserId: number;
+  resumen: ResumenRoles;
+}) {
   const pharmacy = usePharmacy();
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<Role | null>(null);
@@ -51,20 +64,25 @@ export function RolesTable({ currentUserId }: { currentUserId: number }) {
       },
       {
         id: "permisos",
-        accessorFn: (role) =>
-          PRIVATE_SECTIONS.filter((section) =>
-            role.permisos.includes(section.key),
-          ),
-        header: "Vistas permitidas",
-        size: 400,
-        cell: ({ getValue }) => {
-          const sections = getValue<(typeof PRIVATE_SECTIONS)[number][]>();
-          if (!sections.length) return "—";
+        accessorFn: (role) => role.permisos.length,
+        header: "Permisos",
+        size: 300,
+        cell: ({ row }) => {
+          if (row.original.nombre === "Administrador")
+            return <span className={roleStyles.total}>Acceso total</span>;
+          const grupos = resumenPermisos(row.original.permisos);
+          if (!grupos.length) return "—";
           return (
-            <ul className={roleStyles.permissionBadges}>
-              {sections.map(({ key, label }) => (
-                <li className={styles.badge} key={key}>
-                  {label}
+            <ul className={roleStyles.resumen}>
+              {grupos.map((g) => (
+                <li
+                  key={g.titulo}
+                  title={g.activos.map((p) => p.label).join(", ")}
+                >
+                  <b>
+                    {g.activos.length}/{g.total}
+                  </b>
+                  <span>{g.titulo}</span>
                 </li>
               ))}
             </ul>
@@ -95,7 +113,32 @@ export function RolesTable({ currentUserId }: { currentUserId: number }) {
   );
   return (
     <section className={styles.page}>
-      <h1 className={styles.title}>Roles</h1>
+      <header className={roleStyles.encabezado}>
+        <h1 className={styles.title}>Roles</h1>
+        <p>
+          Define qué puede ver y hacer cada perfil. Los permisos marcados como
+          sensibles (anular ventas, liberar cuarentena, firmar el libro de
+          controlados) conviene darlos solo a quien supervisa.
+        </p>
+      </header>
+      <dl className={roleStyles.metricas}>
+        <div>
+          <dt>Roles</dt>
+          <dd>{resumen.roles}</dd>
+        </div>
+        <div>
+          <dt>Usuarios asignados</dt>
+          <dd>{resumen.usuarios}</dd>
+        </div>
+        <div>
+          <dt>Roles sin usuarios</dt>
+          <dd>{resumen.sinUsuarios}</dd>
+        </div>
+        <div>
+          <dt>Con permisos sensibles</dt>
+          <dd>{resumen.conSensibles}</dd>
+        </div>
+      </dl>
       <DataTable<Role>
         entityLabel="roles"
         columns={columns}
@@ -117,7 +160,7 @@ export function RolesTable({ currentUserId }: { currentUserId: number }) {
           if (!open) close();
         }}
         title={editing ? "Editar rol" : "Crear rol"}
-        description="Ingresa el nombre, la descripción y las vistas permitidas para este rol."
+        description="Ingresa el nombre, la descripción y los permisos del rol. Puedes partir de una plantilla."
       >
         {(creating || editing) && (
           <RoleProfileForm
