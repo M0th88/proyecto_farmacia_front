@@ -9,6 +9,8 @@ import { rutSchema } from "@/lib/validation/dispensacion";
 import { SinPermiso, SoloAsistencial } from "../_components/solo-asistencial";
 import { Dispensacion } from "./_components/dispensacion";
 
+export const instant = false;
+
 export default async function DispensacionPage({
   params,
   searchParams,
